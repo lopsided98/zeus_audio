@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <script type="module" src="{{ url_for('static', filename='js/recorder.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/vu-meter.css') }}">
+{% endblock %}
+
+{% block body %}
+    <p id="recording-status"></p>
+    <div class="flex">
+        <a class="w-100 tc f6 link dim ph3 pv2 ma1 dib white bg-dark-green" href="/start">Start</a>
+        <a class="w-100 tc f6 link dim ph3 pv2 ma1 dib white bg-dark-red" href="/stop">Stop</a>
+    </div>
+    <canvas id="vu-meter" width="50px" height="200px"></canvas>
+    <p>Left: <span id="left-db"></span> dBFS</p>
+    <p>Right: <span id="right-db"></span> dBFS</p>
+    <input type="range" min="0" max="100" value="0" class="w-100" id="left-volume">
+    <br>
+    <input type="range" min="0" max="100" value="0" class="w-100" id="right-volume">
+{% endblock %}

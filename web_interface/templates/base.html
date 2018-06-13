@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tachyons.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+
+    <title>Audio Recorder</title>
+    {% block head %}{% endblock %}
+</head>
+<body class="sans-serif ma3">
+
+<header>
+    <h1><a class="link black" href="/">Audio Recorder</a></h1>
+</header>
+<main class="mw5">
+    {% block body %}{% endblock %}
+</main>
+
+</body>
+</html>

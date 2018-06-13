@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package audio_server;
+
+import "google/protobuf/empty.proto";
+
+service AudioServer {
+    // Sends a greeting
+    rpc StartRecording (google.protobuf.Empty) returns (google.protobuf.Empty) {
+    }
+    // Sends another greeting
+    rpc StopRecording (google.protobuf.Empty) returns (google.protobuf.Empty) {
+    }
+
+    rpc GetStatus(google.protobuf.Empty) returns (Status) {
+    }
+
+    rpc GetLevels (google.protobuf.Empty) returns (stream AudioLevels) {
+    }
+
+    rpc SetMixer (AudioLevels) returns (google.protobuf.Empty) {
+    }
+
+    rpc GetMixer (google.protobuf.Empty) returns (AudioLevels) {
+    }
+}
+
+message Status {
+    bool recording = 1;
+}
+
+message AudioLevels {
+    repeated float channels = 1;
+}
