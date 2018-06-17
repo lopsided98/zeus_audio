@@ -8,13 +8,27 @@
 {% block body %}
     <p id="recording-status"></p>
     <div class="flex">
-        <a class="w-100 tc f6 link dim ph3 pv2 ma1 dib white bg-dark-green" href="/start">Start</a>
-        <a class="w-100 tc f6 link dim ph3 pv2 ma1 dib white bg-dark-red" href="/stop">Stop</a>
+        <button id="start-recording-button" class="w-100 tc f6 link dim ph3 pv2 ma1 dib white bn bg-dark-green">Start</button>
+        <button id="stop-recording-button" class="w-100 tc f6 link dim ph3 pv2 ma1 dib white bn bg-dark-red">Stop</button>
     </div>
-    <canvas id="vu-meter" width="50px" height="200px"></canvas>
-    <p>Left: <span id="left-db"></span> dBFS</p>
-    <p>Right: <span id="right-db"></span> dBFS</p>
-    <input type="range" min="0" max="100" value="0" class="w-100" id="left-volume">
-    <br>
-    <input type="range" min="0" max="100" value="0" class="w-100" id="right-volume">
+    <section>
+        <canvas id="vu-meter" width="50px" height="200px"></canvas>
+        <p>Left: <span id="left-db"></span> dBFS</p>
+        <p>Right: <span id="right-db"></span> dBFS</p>
+    </section>
+    <section>
+        <h3>Volume</h3>
+        <div class="dt w-100">
+            <div class="dt-row mv2">
+                <label for="left-volume-slider" class="dtc pr2 v-mid w-10">Left</label>
+                <input type="range" min="0" max="100" value="0" class="dtc w-100" id="left-volume-slider">
+            </div>
+            <div class="dt-row mv2">
+                <label for="right-volume-slider" class="dtc pr2 v-mid w-10">Right</label>
+                <input type="range" min="0" max="100" value="0" class="dtc w-100" id="right-volume-slider">
+            </div>
+        </div>
+        <label for="volume-lock-checkbox" class="pr2">Lock Channels</label>
+        <input type="checkbox" checked class="" id="volume-lock-checkbox">
+    </section>
 {% endblock %}

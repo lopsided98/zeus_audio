@@ -41,20 +41,40 @@ class VuMeter {
 
 
 window.onload = () => {
+    const startRecordingButton = document.getElementById('start-recording-button');
+    const stopRecordingButton = document.getElementById('stop-recording-button');
     const recordingStatus = document.getElementById('recording-status');
+
     const vuMeter = new VuMeter(document.getElementById('vu-meter'));
     const leftDb = document.getElementById('left-db');
     const rightDb = document.getElementById('right-db');
-    const leftVolumeSlider = document.getElementById('left-volume');
-    const rightVolumeSlider = document.getElementById('right-volume');
 
-    audioServer.getStatus().then(status => {
-        if (status['recording'] === true) {
-            recordingStatus.innerText = "Recording"
+    const leftVolumeSlider = document.getElementById('left-volume-slider');
+    const rightVolumeSlider = document.getElementById('right-volume-slider');
+    const volumeLockCheckbox = document.getElementById('volume-lock-checkbox');
+
+    function setRecordingStatus(recording) {
+        if (recording === true) {
+            recordingStatus.innerText = "Recording";
         } else {
-            recordingStatus.innerText = "Not Recording"
+            recordingStatus.innerText = "Not Recording";
+        }
+    }
+
+    startRecordingButton.onclick = () => audioServer.startRecording().then(res => {
+        if (res.ok) {
+            setRecordingStatus(true);
         }
     });
+    stopRecordingButton.onclick = () => audioServer.stopRecording().then(res => {
+        if (res.ok) {
+            setRecordingStatus(false);
+        }
+    });
+
+    audioServer.getStatus()
+        .then(status => status['recording'])
+        .then(setRecordingStatus);
 
     audioServer.getLevelsEventSource().onmessage = event => {
         const levels = JSON.parse(event.data);
@@ -63,15 +83,34 @@ window.onload = () => {
         vuMeter.update(levels[0], levels[1]);
     };
 
-    audioServer.getVolumes().then((volumes) => {
+    audioServer.getMixer().then((volumes) => {
         leftVolumeSlider.value = volumes[0];
         rightVolumeSlider.value = volumes[1];
     });
 
     leftVolumeSlider.onchange = rightVolumeSlider.onchange = () => {
-        audioServer.setVolumes([
+        audioServer.setMixer([
             parseFloat(leftVolumeSlider.value),
             parseFloat(rightVolumeSlider.value)
         ]);
     };
+
+    // Synchronize sliders when channels are locked
+    leftVolumeSlider.oninput = rightVolumeSlider.oninput = e => {
+        if (volumeLockCheckbox.checked) {
+            if (e.target === leftVolumeSlider) {
+                rightVolumeSlider.value = leftVolumeSlider.value;
+            } else {
+                leftVolumeSlider.value = rightVolumeSlider.value;
+            }
+        }
+    };
+
+    volumeLockCheckbox.onchange = () => {
+        if (volumeLockCheckbox.checked) {
+            const avgValue = (parseFloat(leftVolumeSlider.value) + parseFloat(rightVolumeSlider.value)) / 2;
+            leftVolumeSlider.value = rightVolumeSlider.value = avgValue;
+            audioServer.setMixer([avgValue, avgValue]);
+        }
+    }
 };

@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
+import logging
+
 import concurrent.futures
+import logging.config
 import os
 
 import grpc
@@ -12,6 +15,8 @@ import audio_server.audio_server_pb2
 import audio_server.audio_server_pb2_grpc
 
 _SETTINGS_ENV_VAR = 'AUDIO_SERVER_SETTINGS'
+
+_log = logging.getLogger(__name__)
 
 
 class AudioServer(audio_server.audio_server_pb2_grpc.AudioServerServicer):
@@ -53,11 +58,34 @@ def main():
         'audio_dir': './audio',
         'device': 'default',
         'card_index': 0,
-        'control': 'Capture'
+        'control': 'Capture',
+        'logging': {
+            'version': 1,
+            'formatters': {
+                'standard': {
+                    'format': '[%(levelname)s] %(name)s: %(message)s'
+                },
+            },
+            'handlers': {
+                'stderr': {
+                    'level': 'DEBUG',
+                    'formatter': 'standard',
+                    'class': 'logging.StreamHandler',
+                },
+            },
+            'loggers': {
+                '': {
+                    'handlers': ['stderr'],
+                    'level': 'DEBUG',
+                }
+            }
+        }
     }
     if _SETTINGS_ENV_VAR in os.environ:
         with open(os.environ[_SETTINGS_ENV_VAR], mode='r') as config_file:
             config.update(yaml.load(config_file))
+
+    logging.config.dictConfig(config['logging'])
 
     audio_recorder = audio_server.audio.AudioRecorder(audio_dir=config['audio_dir'], device=config['device'],
                                                       card_index=config['card_index'], control=config['control'])
@@ -67,7 +95,7 @@ def main():
     server.add_insecure_port('[::]:34876')
 
     server.start()
-    print("Server started.")
+    logging.info("Server started")
 
     try:
         audio_recorder.run()

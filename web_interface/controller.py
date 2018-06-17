@@ -28,13 +28,13 @@ def root():
     return flask.render_template('index.html')
 
 
-@app.route('/start')
+@app.route('/start', methods=('POST',))
 def start():
     _audio_server.StartRecording(Empty())
     return '', 204
 
 
-@app.route('/stop')
+@app.route('/stop', methods=('POST',))
 def stop():
     _audio_server.StopRecording(Empty())
     return '', 204
@@ -51,6 +51,7 @@ def status():
 @app.route('/levels')
 def get_levels():
     res = flask.Response(_levels_stream(), mimetype="text/event-stream")
+    # Disable NGINX response buffering
     res.headers['X-Accel-Buffering'] = 'no'
     return res
 

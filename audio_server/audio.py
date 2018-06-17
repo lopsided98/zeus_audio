@@ -1,13 +1,12 @@
 import alsaaudio
+import logging
 import math
 import os.path
+import queue
 import re
-import select
-import sys
 import threading
 import typing
 import wave
-import queue
 
 import numpy as np
 
@@ -27,6 +26,8 @@ _MAX_FILE_SIZE = (2 ** 31) - 1
 class AudioRecorder:
 
     def __init__(self, audio_dir, device='default', card_index=0, control='Capture') -> None:
+        self._log = logging.getLogger(self.__class__.__name__)
+
         self._running = False
 
         self._recording_lock = threading.Lock()
@@ -56,7 +57,11 @@ class AudioRecorder:
         self._pcm.setperiodsize(_FRAMES_PER_BUFFER)
 
         self._mixer = alsaaudio.Mixer(control=control, device=device, cardindex=card_index)
-        self._mixer.setrec(1)
+        try:
+            self._mixer.setrec(1)
+        except alsaaudio.ALSAAudioError:
+            # Ignore error, meaning that there is no mute switch
+            pass
 
         self._sample_buffer = queue.Queue(maxsize=100)
 
@@ -66,12 +71,27 @@ class AudioRecorder:
 
     @recording.setter
     def recording(self, value):
+        changed = False
         with self._recording_lock:
             if value:
                 if not self._recording:
+                    changed = True
                     with self._new_file_lock:
                         self._new_file = True
+            else:
+                if self._recording:
+                    changed = True
             self._recording = value
+        if changed:
+            if value:
+                self._log.info("Started recording")
+            else:
+                self._log.info("Stopped recording")
+        else:
+            if value:
+                self._log.debug("Attempted to start recording, but already recording")
+            else:
+                self._log.debug("Attempted to stop recording, but not recording")
 
     @property
     def levels(self) -> typing.Tuple[float, float]:
@@ -107,7 +127,7 @@ class AudioRecorder:
                 if length == 0:
                     continue
                 elif length < 0:
-                    print("ALSA buffer overrun", file=sys.stderr)
+                    self._log.warning("ALSA buffer overrun")
                     continue
 
                 if not self._levels_event.is_set():
@@ -123,7 +143,7 @@ class AudioRecorder:
                     try:
                         self._sample_buffer.put(data, block=False)
                     except queue.Full:
-                        print("Internal buffer overrun", file=sys.stderr)
+                        self._log.warning("Internal buffer overrun")
 
         finally:
             self.recording = False
@@ -151,10 +171,12 @@ class AudioRecorder:
                             + len(data) > _MAX_FILE_SIZE or new_file:
                         if wave_file is not None:
                             wave_file.close()
-                        wave_file = wave.open(self._next_file_name(), mode='wb')
+                        file_name = self._next_file_name()
+                        wave_file = wave.open(file_name, mode='wb')
                         wave_file.setnchannels(_CHANNELS)
                         wave_file.setsampwidth(_WAVE_SAMPLE_WIDTH)
                         wave_file.setframerate(_SAMPLE_RATE)
+                        self._log.info("Created new file: %s", file_name)
 
                     wave_file.writeframes(data)
                 except queue.Empty:
