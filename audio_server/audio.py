@@ -17,16 +17,14 @@ _WAVE_SAMPLE_WIDTH = 2
 _CHANNELS: int = 2
 _SAMPLE_RATE: int = 44100
 _FRAMES_PER_BUFFER = 2000
-_FILE_NAME_FORMAT: str = 'audio_{0:04d}.wav'
-_FILE_NAME_REGEX = re.compile(r'audio_(?P<index>\d{4}).wav$')
 
 _MAX_FILE_SIZE = (2 ** 31) - 1
 
 
 class AudioRecorder:
 
-    def __init__(self, audio_dir, device='default', card_index=0, control='Capture') -> None:
-        self._log = logging.getLogger(self.__class__.__name__)
+    def __init__(self, file_prefix, audio_dir, device='default', card_index=0, control='Capture') -> None:
+        self._log = logging.getLogger(AudioRecorder.__qualname__)
 
         self._running = False
 
@@ -38,10 +36,13 @@ class AudioRecorder:
 
         self._audio_dir = audio_dir
 
+        self._file_name_format: str = file_prefix + '_{0:04d}.wav'
+        self._file_name_regex = re.compile(file_prefix + r'_(?P<index>\d{4}).wav$')
+
         # Determine where to start numbering files
-        existing_files = sorted([f for f in os.listdir(audio_dir) if _FILE_NAME_REGEX.match(f)], reverse=True)
+        existing_files = sorted([f for f in os.listdir(audio_dir) if self._file_name_regex.match(f)], reverse=True)
         if len(existing_files) > 0:
-            latest_file_search = _FILE_NAME_REGEX.search(existing_files[0])
+            latest_file_search = self._file_name_regex.search(existing_files[0])
             self._file_index = int(latest_file_search.group('index')) + 1
         else:
             self._file_index = 0
@@ -151,7 +152,7 @@ class AudioRecorder:
             writer_thread.join()
 
     def _next_file_name(self) -> str:
-        name = os.path.join(self._audio_dir, _FILE_NAME_FORMAT.format(self._file_index))
+        name = os.path.join(self._audio_dir, self._file_name_format.format(self._file_index))
         self._file_index += 1
         return name
 

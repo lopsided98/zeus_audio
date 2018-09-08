@@ -23,13 +23,25 @@ export function getLevelsEventSource() {
 export function setMixer(volumes) {
     return fetch('/mixer', {
         body: JSON.stringify(volumes),
-        headers: {
-            'content-type': 'application/json'
-        },
+        headers: {'content-type': 'application/json'},
         method: 'POST'
     })
 }
 
 export function getMixer() {
     return fetch('/mixer').then(response => response.json())
+}
+
+export function setTime(date = new Date()) {
+    const time = date.getTime();
+    const seconds = Math.floor(time / 1000);
+    const nanos = (time - seconds * 1000) * 1e6;
+    return fetch('/time', {
+        body: JSON.stringify({
+            'seconds': seconds,
+            'nanos': nanos
+        }),
+        headers: {'content-type': 'application/json'},
+        method: 'POST'
+    })
 }

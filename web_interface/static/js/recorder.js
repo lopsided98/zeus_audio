@@ -39,6 +39,8 @@ class VuMeter {
     }
 }
 
+// Set device time asynchronously
+audioServer.setTime();
 
 window.onload = () => {
     const startRecordingButton = document.getElementById('start-recording-button');

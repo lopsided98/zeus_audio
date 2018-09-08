@@ -4,6 +4,7 @@ import flask
 import grpc
 from flask import request
 from google.protobuf.empty_pb2 import Empty
+from google.protobuf.timestamp_pb2 import Timestamp
 
 import audio_server.audio_server_pb2
 import audio_server.audio_server_pb2_grpc
@@ -18,8 +19,9 @@ _channel = grpc.insecure_channel(app.config['AUDIO_SERVER_HOST'])
 _audio_server = audio_server.audio_server_pb2_grpc.AudioServerStub(_channel)
 
 
-def _levels_stream():
-    for audio_levels in _audio_server.GetLevels(Empty()):
+def _levels_stream(average=False):
+    req = audio_server.audio_server_pb2.LevelsRequest(average=average)
+    for audio_levels in _audio_server.GetLevels(req):
         yield 'data: {}\n\n'.format(json.dumps(tuple(audio_levels.channels)))
 
 
@@ -50,7 +52,12 @@ def status():
 
 @app.route('/levels')
 def get_levels():
-    res = flask.Response(_levels_stream(), mimetype="text/event-stream")
+    average = False
+    if request is not None:
+        request_json = request.get_json()
+        if request_json is not None:
+            average = request_json.get('average', average)
+    res = flask.Response(_levels_stream(average), mimetype="text/event-stream")
     # Disable NGINX response buffering
     res.headers['X-Accel-Buffering'] = 'no'
     return res
@@ -67,4 +74,11 @@ def set_mixer():
     levels = audio_server.audio_server_pb2.AudioLevels()
     levels.channels.extend(request.get_json())
     _audio_server.SetMixer(levels)
+    return '', 204
+
+
+@app.route('/time', methods=('POST',))
+def set_time():
+    time = request.get_json()
+    _audio_server.SetTime(Timestamp(seconds=time['seconds'], nanos=time['nanos']))
     return '', 204
