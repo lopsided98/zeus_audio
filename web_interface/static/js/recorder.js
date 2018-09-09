@@ -1,15 +1,14 @@
 'use strict';
 
-import * as audioServer from './audio-server.js';
+import AudioServer from './audio-server.js';
 
 class VuMeter {
     constructor(element) {
         this.ctx = element.getContext('2d');
         const gradient = this.ctx.createLinearGradient(0, this.height, 0, 0);
         gradient.addColorStop(0, '#00ff00');
-        gradient.addColorStop(0.7, '#00ff00');
-        gradient.addColorStop(0.8, '#ffff00');
-        gradient.addColorStop(0.9, '#ff0000');
+        gradient.addColorStop(0.8, '#00ff00');
+        gradient.addColorStop(0.95, '#ffff00');
         gradient.addColorStop(1, '#ff0000');
 
         this.ctx.fillStyle = "black";
@@ -24,95 +23,141 @@ class VuMeter {
         return this.ctx.canvas.clientHeight;
     }
 
-    draw(leftDb, rightDb, timestamp) {
+    draw(db, timestamp) {
         const width = this.width;
         const height = this.height;
-        const leftHeight = height * (1 + leftDb / 70.0);
-        const rightHeight = height * (1 + rightDb / 70.0);
+        const barHeight = height * (1 + db / 60.0);
         this.ctx.clearRect(0, 0, width, height);
-        this.ctx.fillRect(0, height - leftHeight, 0.4 * width, leftHeight);
-        this.ctx.fillRect(0.6 * width, height - rightHeight, 0.4 * width, rightHeight);
+        this.ctx.fillRect(0, height - barHeight, width, barHeight);
     }
 
-    update(leftDb, rightDb) {
-        window.requestAnimationFrame(this.draw.bind(this, leftDb, rightDb));
+    update(db) {
+        window.requestAnimationFrame(this.draw.bind(this, db));
     }
 }
 
-// Set device time asynchronously
-audioServer.setTime();
+class Device {
+    constructor(container, baseUrl = '') {
+        this.container = container;
+        this.recordButton = container.querySelector('.record-button');
+        this.vuMeter = new VuMeter(container.querySelector('.vu-meter'));
+        this.shutdownButton = container.querySelector('.shutdown-button');
+
+        this.recording = false;
+        this.connected = false;
+
+        this.audioServer = new AudioServer(baseUrl);
+        // Set device time asynchronously
+        this.audioServer.setTime();
+
+        this.audioServer.getStatus()
+            .then(res => res.ok && res.json()['recording'])
+            .then(this.setRecordingStatus.bind(this))
+            .then(this.setConnected.bind(this, true))
+            .catch(this.setConnected.bind(this, false));
+
+        let levelsSource = this.audioServer.getLevelsEventSource(true);
+        levelsSource.onopen = this.setConnected.bind(this, true);
+        levelsSource.onerror = this.setConnected.bind(this, false);
+        levelsSource.onmessage = event => {
+            const levels = JSON.parse(event.data);
+            this.vuMeter.update(levels[0]);
+        };
+
+        this.recordButton.onclick = () => this.setRecording(!this.recording);
+        this.shutdownButton.onclick = this.shutdown.bind(this);
+    }
+
+    setRecording(recording) {
+        let func;
+        if (recording) {
+            func = this.audioServer.startRecording();
+        } else {
+            func = this.audioServer.stopRecording();
+        }
+        func.then(res => {
+            if (res.ok) {
+                this.setRecordingStatus(recording)
+            }
+        }).catch(this.setConnected.bind(this, false));
+    }
+
+    setRecordingStatus(recording) {
+        this.recording = recording;
+        if (recording) {
+            this.recordButton.classList.remove('typcn-media-record-outline', 'light-red');
+            this.recordButton.classList.add('typcn-media-record', 'red');
+        } else {
+            this.recordButton.classList.add('typcn-media-record-outline', 'light-red');
+            this.recordButton.classList.remove('typcn-media-record', 'red');
+        }
+    }
+
+    setConnected(connected) {
+        this.connected = connected;
+        this.shutdownButton.disabled = !connected;
+    }
+
+    shutdown() {
+        this.audioServer.shutdown().then(res => {
+            if (res.ok) {
+                this.setConnected(false);
+            }
+        });
+    }
+}
+
+class ConfirmDialog {
+    constructor(element) {
+        this.element = element;
+        this.confirmButton = element.querySelector('.confirm-button');
+        this.cancelButton = element.querySelector('.cancel-button');
+
+        this.onconfirm = null;
+        this.oncancel = null;
+
+        dialogPolyfill.registerDialog(element);
+
+        this.confirmButton.onclick = () => {
+            let event = new Event('confirm');
+            if (this.onconfirm != null) {
+                this.onconfirm(event);
+            }
+            this.element.dispatchEvent(event);
+            this.close();
+        };
+
+        this.cancelButton.onclick = () => {
+            let event = new Event('cancel');
+            if (this.oncancel != null) {
+                this.oncancel(event);
+            }
+            this.element.dispatchEvent(event);
+            this.close();
+        };
+    }
+
+    show() {
+        this.element.showModal();
+    }
+
+    close() {
+        this.element.close();
+    }
+}
 
 window.onload = () => {
-    const startRecordingButton = document.getElementById('start-recording-button');
-    const stopRecordingButton = document.getElementById('stop-recording-button');
-    const recordingStatus = document.getElementById('recording-status');
+    let devices = Array.from(document.getElementsByClassName('device')).map(container =>
+        new Device(container, container.dataset.baseUrl));
 
-    const vuMeter = new VuMeter(document.getElementById('vu-meter'));
-    const leftDb = document.getElementById('left-db');
-    const rightDb = document.getElementById('right-db');
+    let recordAllButton = document.getElementById("record-all-button");
+    let stopAllButton = document.getElementById("stop-all-button");
+    let shutdownAllButton = document.getElementById("shutdown-all-button");
+    let shutdownAllConfirmDialog = new ConfirmDialog(document.getElementById("shutdown-all-confirm-dialog"));
 
-    const leftVolumeSlider = document.getElementById('left-volume-slider');
-    const rightVolumeSlider = document.getElementById('right-volume-slider');
-    const volumeLockCheckbox = document.getElementById('volume-lock-checkbox');
+    recordAllButton.onclick = () => devices.forEach(d => d.setRecording(true));
+    stopAllButton.onclick = () => devices.forEach(d => d.setRecording(false));
+    shutdownAllButton.onclick = () => shutdownAllConfirmDialog.show();
 
-    function setRecordingStatus(recording) {
-        if (recording === true) {
-            recordingStatus.innerText = "Recording";
-        } else {
-            recordingStatus.innerText = "Not Recording";
-        }
-    }
-
-    startRecordingButton.onclick = () => audioServer.startRecording().then(res => {
-        if (res.ok) {
-            setRecordingStatus(true);
-        }
-    });
-    stopRecordingButton.onclick = () => audioServer.stopRecording().then(res => {
-        if (res.ok) {
-            setRecordingStatus(false);
-        }
-    });
-
-    audioServer.getStatus()
-        .then(status => status['recording'])
-        .then(setRecordingStatus);
-
-    audioServer.getLevelsEventSource().onmessage = event => {
-        const levels = JSON.parse(event.data);
-        leftDb.innerText = levels[0].toPrecision(4);
-        rightDb.innerText = levels[1].toPrecision(4);
-        vuMeter.update(levels[0], levels[1]);
-    };
-
-    audioServer.getMixer().then((volumes) => {
-        leftVolumeSlider.value = volumes[0];
-        rightVolumeSlider.value = volumes[1];
-    });
-
-    leftVolumeSlider.onchange = rightVolumeSlider.onchange = () => {
-        audioServer.setMixer([
-            parseFloat(leftVolumeSlider.value),
-            parseFloat(rightVolumeSlider.value)
-        ]);
-    };
-
-    // Synchronize sliders when channels are locked
-    leftVolumeSlider.oninput = rightVolumeSlider.oninput = e => {
-        if (volumeLockCheckbox.checked) {
-            if (e.target === leftVolumeSlider) {
-                rightVolumeSlider.value = leftVolumeSlider.value;
-            } else {
-                leftVolumeSlider.value = rightVolumeSlider.value;
-            }
-        }
-    };
-
-    volumeLockCheckbox.onchange = () => {
-        if (volumeLockCheckbox.checked) {
-            const avgValue = (parseFloat(leftVolumeSlider.value) + parseFloat(rightVolumeSlider.value)) / 2;
-            leftVolumeSlider.value = rightVolumeSlider.value = avgValue;
-            audioServer.setMixer([avgValue, avgValue]);
-        }
-    }
+    shutdownAllConfirmDialog.onconfirm = () => devices.forEach(d => d.shutdown());
 };

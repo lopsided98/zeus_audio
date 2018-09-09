@@ -1,4 +1,6 @@
 import json
+import logging
+import subprocess
 
 import flask
 import grpc
@@ -9,9 +11,12 @@ from google.protobuf.timestamp_pb2 import Timestamp
 import audio_server.audio_server_pb2
 import audio_server.audio_server_pb2_grpc
 
+_log = logging.getLogger(__name__)
+
 app = flask.Flask(__name__)
 app.config.update({
-    'AUDIO_SERVER_HOST': 'localhost:34876'
+    'AUDIO_SERVER_HOST': 'localhost:34876',
+    'DEVICES': ['']
 })
 app.config.from_envvar('AUDIO_RECORDER_SETTINGS', silent=True)
 
@@ -52,11 +57,7 @@ def status():
 
 @app.route('/levels')
 def get_levels():
-    average = False
-    if request is not None:
-        request_json = request.get_json()
-        if request_json is not None:
-            average = request_json.get('average', average)
+    average = request.args.get('average', 'false') == 'true'
     res = flask.Response(_levels_stream(average), mimetype="text/event-stream")
     # Disable NGINX response buffering
     res.headers['X-Accel-Buffering'] = 'no'
@@ -82,3 +83,16 @@ def set_time():
     time = request.get_json()
     _audio_server.SetTime(Timestamp(seconds=time['seconds'], nanos=time['nanos']))
     return '', 204
+
+
+@app.route('/shutdown', methods=('POST',))
+def shutdown():
+    _log.info('Shutting down system')
+    try:
+        subprocess.run(("/usr/bin/env", "sudo", "-n", "poweroff"), capture_output=True, check=True)
+        return '', 204
+    except subprocess.CalledProcessError as e:
+        msg = f"Failed to shutdown system: {e.stderr.decode('utf-8').strip()}"
+        _log.error(msg)
+        return msg, 500
+

@@ -1,7 +1,9 @@
-.Blink {
-  animation: blinker 1.5s cubic-bezier(.5, 0, 1, 1) infinite alternate;
+.dim-disabled:disabled {
+    opacity: .5;
+    transition: opacity .15s ease-in;
 }
-@keyframes blinker {
-  from { opacity: 1; }
-  to { opacity: 0; }
+
+/* Don't dim focused element (Tachyons wants to do this for some reason) */
+.dim:not(:hover):not(:active):focus {
+    opacity: 1;
 }

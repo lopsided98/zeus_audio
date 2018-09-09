@@ -2,33 +2,43 @@
 
 {% block head %}
     <script type="module" src="{{ url_for('static', filename='js/recorder.js') }}"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/vu-meter.css') }}">
+
+    {# dialog polyfill#}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dialog-polyfill.css') }}">
+    <script type="module" src="{{ url_for('static', filename='js/dialog-polyfill.js') }}"></script>
+
 {% endblock %}
 
 {% block body %}
-    <p id="recording-status"></p>
-    <div class="flex">
-        <button id="start-recording-button" class="w-100 tc f6 link dim ph3 pv2 ma1 dib white bn bg-dark-green">Start</button>
-        <button id="stop-recording-button" class="w-100 tc f6 link dim ph3 pv2 ma1 dib white bn bg-dark-red">Stop</button>
-    </div>
-    <section>
-        <canvas id="vu-meter" width="50px" height="200px"></canvas>
-        <p>Left: <span id="left-db"></span> dBFS</p>
-        <p>Right: <span id="right-db"></span> dBFS</p>
-    </section>
-    <section>
-        <h3>Volume</h3>
-        <div class="dt w-100">
-            <div class="dt-row mv2">
-                <label for="left-volume-slider" class="dtc pr2 v-mid w-10">Left</label>
-                <input type="range" min="0" max="100" value="0" class="dtc w-100" id="left-volume-slider">
-            </div>
-            <div class="dt-row mv2">
-                <label for="right-volume-slider" class="dtc pr2 v-mid w-10">Right</label>
-                <input type="range" min="0" max="100" value="0" class="dtc w-100" id="right-volume-slider">
-            </div>
+    <dialog id="shutdown-all-confirm-dialog"
+            class="ma3 ml-auto-ns mr-auto-ns fixed bw1 b--gray br3 mw6 bg-dark-gray light-gray">
+        <p class="">
+            Are you sure you want to shutdown all devices?
+        </p>
+        <div class="flex justify-end">
+            <button class="confirm-button black bg-red bn br3 pa2 dim float-right">Shutdown</button>
+            <button class="cancel-button black bg-gray bn br3 pa2 mh2 dim float-right">Cancel</button>
         </div>
-        <label for="volume-lock-checkbox" class="pr2">Lock Channels</label>
-        <input type="checkbox" checked class="" id="volume-lock-checkbox">
-    </section>
+    </dialog>
+    <div class="flex overflow-x-auto ph1 pv2">
+        <section class="flex flex-column items-center ph2 br" data-base-url="{{ device }}">
+            <span>All</span>
+            <button id="record-all-button"
+                    class="f2 bg-transparent bn dim dim-disabled red typcn typcn-media-record"></button>
+            <button id="stop-all-button"
+                    class="f2 bg-transparent bn dim dim-disabled red typcn typcn-media-stop"></button>
+            <div class="flex-auto"></div>
+            <button id="shutdown-all-button"
+                    class="f2 bg-transparent bn dim dim-disabled light-gray typcn typcn-power"></button>
+        </section>
+        {% for device in config.DEVICES %}
+            <section class="device flex flex-column items-center ph2" data-base-url="{{ device }}">
+                <span>{{ loop.index }}</span>
+                <button class="record-button f2 bg-transparent bn dim dim-disabled light-red typcn typcn-media-record-outline"></button>
+                <canvas class="vu-meter mh2 mv1" width="30" height="400"></canvas>
+                <button class="shutdown-button f2 bg-transparent bn dim dim-disabled light-gray typcn typcn-power"
+                        disabled></button>
+            </section>
+        {% endfor %}
+    </div>
 {% endblock %}

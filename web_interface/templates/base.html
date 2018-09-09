@@ -5,17 +5,18 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/tachyons.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/typicons/typicons.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
 
     <title>Audio Recorder</title>
     {% block head %}{% endblock %}
 </head>
-<body class="sans-serif pa3">
+<body class="sans-serif bg-dark-gray light-gray">
 
-<header>
-    <h1><a class="link black" href="/">Audio Recorder</a></h1>
+<header class="ma3">
+    <h1>Audio Recorder</h1>
 </header>
-<main class="mw6">
+<main class="">
     {% block body %}{% endblock %}
 </main>
 
