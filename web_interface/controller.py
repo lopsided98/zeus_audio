@@ -89,10 +89,10 @@ def set_time():
 def shutdown():
     _log.info('Shutting down system')
     try:
-        subprocess.run(("/usr/bin/env", "sudo", "-n", "poweroff"), capture_output=True, check=True)
+        subprocess.run(("/usr/bin/env", "sudo", "-n", "poweroff"), stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                       check=True)
         return '', 204
     except subprocess.CalledProcessError as e:
         msg = f"Failed to shutdown system: {e.stderr.decode('utf-8').strip()}"
         _log.error(msg)
         return msg, 500
-

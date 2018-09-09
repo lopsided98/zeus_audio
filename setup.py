@@ -20,11 +20,11 @@ class BuildPackageProtos(setuptools.Command):
 
 setup(
     name="audio_recorder",
-    version="0.1",
+    version="0.2",
     packages=find_packages(),
     setup_requires=['grpcio-tools'],
     include_package_data=True,
-    install_requires=['flask', 'grpcio', 'numpy', 'pyyaml', 'pyalsaaudio'],
+    install_requires=['flask', 'grpcio', 'numpy', 'pyyaml', 'pyalsaaudio', 'pyserial'],
     cmdclass={
         'build_proto_modules': BuildPackageProtos
     }

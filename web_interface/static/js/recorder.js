@@ -26,7 +26,7 @@ class VuMeter {
     draw(db, timestamp) {
         const width = this.width;
         const height = this.height;
-        const barHeight = height * (1 + db / 60.0);
+        const barHeight = height * (1 + db / 70.0);
         this.ctx.clearRect(0, 0, width, height);
         this.ctx.fillRect(0, height - barHeight, width, barHeight);
     }

@@ -21,6 +21,7 @@
         numpy
         pyyaml
         pyalsaaudio
+        pyserial
       ];
       
       buildPhase = ''
@@ -39,19 +40,20 @@
 
     build = pkgs.python3Packages.buildPythonPackage rec {
       pname = "audio-recorder";
-      version = "0.1";
+      version = "0.2";
       
       src = "${jobs.tarball}/tarballs/audio_recorder-${version}.tar.gz";
       
       nativeBuildInputs = with pkgs.python3Packages; [
         grpcio-tools
       ];
-      buildInputs = with pkgs.python3Packages; [ 
+      propagatedBuildInputs = with pkgs.python3Packages; [
         flask
         grpcio
         numpy
         pyyaml
         pyalsaaudio
+        pyserial
       ];
     };
   };
