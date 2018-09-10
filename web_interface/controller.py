@@ -7,6 +7,7 @@ import grpc
 from flask import request
 from google.protobuf.empty_pb2 import Empty
 from google.protobuf.timestamp_pb2 import Timestamp
+import flask_cors
 
 import audio_server.audio_server_pb2
 import audio_server.audio_server_pb2_grpc
@@ -19,6 +20,9 @@ app.config.update({
     'DEVICES': ['']
 })
 app.config.from_envvar('AUDIO_RECORDER_SETTINGS', silent=True)
+
+# Allow cross-origin requests
+flask_cors.CORS(app)
 
 _channel = grpc.insecure_channel(app.config['AUDIO_SERVER_HOST'])
 _audio_server = audio_server.audio_server_pb2_grpc.AudioServerStub(_channel)
