@@ -11,17 +11,10 @@
       phases = "unpackPhase buildPhase installPhase";
       
       nativeBuildInputs = with pkgs.python3Packages; [
-        pkgs.python3
+        python
         setuptools
         grpcio-tools
-      ];
-      buildInputs = with pkgs.python3Packages; [ 
-        flask
         grpcio
-        numpy
-        pyyaml
-        pyalsaaudio
-        pyserial
       ];
       
       buildPhase = ''
@@ -49,6 +42,7 @@
       ];
       propagatedBuildInputs = with pkgs.python3Packages; [
         flask
+        flask-cors
         grpcio
         numpy
         pyyaml

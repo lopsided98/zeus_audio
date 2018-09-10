@@ -3,23 +3,19 @@
 {% block head %}
     <script type="module" src="{{ url_for('static', filename='js/recorder.js') }}"></script>
 
-    {# dialog polyfill#}
+    {# dialog polyfill #}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dialog-polyfill.css') }}">
     <script type="module" src="{{ url_for('static', filename='js/dialog-polyfill.js') }}"></script>
 
 {% endblock %}
 
 {% block body %}
-    <dialog id="shutdown-all-confirm-dialog"
-            class="ma3 ml-auto-ns mr-auto-ns fixed bw1 b--gray br3 mw6 bg-dark-gray light-gray">
-        <p class="">
-            Are you sure you want to shutdown all devices?
-        </p>
-        <div class="flex justify-end">
-            <button class="confirm-button black bg-red bn br3 pa2 dim float-right">Shutdown</button>
-            <button class="cancel-button black bg-gray bn br3 pa2 mh2 dim float-right">Cancel</button>
-        </div>
-    </dialog>
+    {{ confirm_dialog(id='shutdown-confirm-dialog',
+            body="Are you sure you want to shutdown this device?",
+            confirm_text="Shutdown") }}
+    {{ confirm_dialog(id='shutdown-all-confirm-dialog',
+            body="Are you sure you want to shutdown all devices?",
+            confirm_text="Shutdown") }}
     <div class="flex overflow-x-auto ph1 pv2">
         <section class="flex flex-column items-center ph2 br" data-base-url="{{ device }}">
             <span>All</span>

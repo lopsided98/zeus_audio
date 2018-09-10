@@ -24,7 +24,7 @@ setup(
     packages=find_packages(),
     setup_requires=['grpcio-tools'],
     include_package_data=True,
-    install_requires=['flask', 'grpcio', 'numpy', 'pyyaml', 'pyalsaaudio', 'pyserial'],
+    install_requires=['flask', 'flask-cors', 'grpcio', 'numpy', 'pyyaml', 'pyalsaaudio', 'pyserial'],
     cmdclass={
         'build_proto_modules': BuildPackageProtos
     }

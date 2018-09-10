@@ -21,6 +21,10 @@ app.config.update({
 })
 app.config.from_envvar('AUDIO_RECORDER_SETTINGS', silent=True)
 
+# Don't cache in debug mode
+if app.config['DEBUG']:
+    app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+
 # Allow cross-origin requests
 flask_cors.CORS(app)
 
