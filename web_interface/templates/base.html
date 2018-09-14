@@ -9,7 +9,7 @@
 {% endmacro %}
 
 <!doctype html>
-<html>
+<html class="h-100">
 <head>
     <meta charset="utf-8"/>
 
@@ -21,12 +21,10 @@
     <title>Audio Recorder</title>
     {% block head %}{% endblock %}
 </head>
-<body class="sans-serif bg-dark-gray light-gray">
+<body class="sans-serif bg-dark-gray light-gray h-100 pa3 flex flex-column">
+<h3 class="mb3 mt0">Audio Recorder</h3>
 
-<header class="ma3">
-    <h3>Audio Recorder</h3>
-</header>
-<main class="">
+<main class="h-100 flex-auto">
     {% block body %}{% endblock %}
 </main>
 

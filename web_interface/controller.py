@@ -1,6 +1,8 @@
 import json
 import logging
 import subprocess
+import threading
+import time
 
 import flask
 import grpc
@@ -95,12 +97,15 @@ def set_time():
 
 @app.route('/shutdown', methods=('POST',))
 def shutdown():
-    _log.info('Shutting down system')
-    try:
-        subprocess.run(("/usr/bin/env", "sudo", "-n", "poweroff"), stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                       check=True)
-        return '', 204
-    except subprocess.CalledProcessError as e:
-        msg = f"Failed to shutdown system: {e.stderr.decode('utf-8').strip()}"
-        _log.error(msg)
-        return msg, 500
+    def shutdown_thread():
+        _log.info('Shutting down system')
+        time.sleep(3)
+        try:
+            subprocess.run(("/usr/bin/env", "sudo", "-n", "poweroff"), stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                           check=True)
+        except subprocess.CalledProcessError as e:
+            _log.error("Failed to shutdown system: %s", e.stderr.decode('utf-8').strip())
+
+    _log.info('Shutting down system in 3 seconds')
+    threading.Thread(target=shutdown_thread).start()
+    return '', 204

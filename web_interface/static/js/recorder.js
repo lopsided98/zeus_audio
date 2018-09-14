@@ -6,7 +6,7 @@ import AudioServer from './audio-server.js';
 class VuMeter {
     constructor(element) {
         this.ctx = element.getContext('2d');
-        const gradient = this.ctx.createLinearGradient(0, this.height, 0, 0);
+        const gradient = this.ctx.createLinearGradient(0, this.ctx.canvas.height, 0, 0);
         gradient.addColorStop(0, '#00ff00');
         gradient.addColorStop(0.8, '#00ff00');
         gradient.addColorStop(0.95, '#ffff00');
@@ -16,17 +16,9 @@ class VuMeter {
         this.ctx.fillStyle = gradient;
     }
 
-    get width() {
-        return this.ctx.canvas.clientWidth;
-    }
-
-    get height() {
-        return this.ctx.canvas.clientHeight;
-    }
-
     draw(db, timestamp) {
-        const width = this.width;
-        const height = this.height;
+        const width = this.ctx.canvas.width;
+        const height = this.ctx.canvas.height;
         const barHeight = height * (1 + db / 70.0);
         this.ctx.clearRect(0, 0, width, height);
         this.ctx.fillRect(0, height - barHeight, width, barHeight);

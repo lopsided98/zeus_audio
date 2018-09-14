@@ -16,8 +16,8 @@
     {{ confirm_dialog(id='shutdown-all-confirm-dialog',
             body="Are you sure you want to shutdown all devices?",
             confirm_text="Shutdown") }}
-    <div class="flex overflow-x-auto ph1 pv2">
-        <section class="flex flex-column items-center ph2 br" data-base-url="{{ device }}">
+    <div class="flex overflow-x-auto h-100 mxhi6">
+        <section class="flex flex-column items-center pr2 br" data-base-url="{{ device }}">
             <span>All</span>
             <button id="record-all-button"
                     class="f2 bg-transparent bn dim dim-disabled red typcn typcn-media-record"></button>
@@ -30,9 +30,9 @@
         {% for device in config.DEVICES %}
             <section class="device flex flex-column items-center ph2" data-base-url="{{ device }}">
                 <span>{{ loop.index }}</span>
-                <button class="record-button f2 bg-transparent bn dim dim-disabled light-red typcn typcn-media-record-outline"></button>
-                <canvas class="vu-meter mh2 mv1" width="30" height="400"></canvas>
-                <button class="shutdown-button f2 bg-transparent bn dim dim-disabled light-gray typcn typcn-power"
+                <button class="record-button f2 flex-shrink-0 bg-transparent bn dim dim-disabled light-red typcn typcn-media-record-outline"></button>
+                <canvas class="vu-meter pv1 ph2 flex-auto self-stretch" width="1" height="500" style="object-fit: fill"></canvas>
+                <button class="shutdown-button f2 flex-shrink-0 bg-transparent bn dim dim-disabled light-gray typcn typcn-power"
                         disabled></button>
             </section>
         {% endfor %}
