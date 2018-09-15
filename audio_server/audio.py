@@ -26,6 +26,9 @@ class AudioRecorder:
     def __init__(self, file_prefix, audio_dir, device='default', card_index=0, control='Capture') -> None:
         self._log = logging.getLogger(AudioRecorder.__qualname__)
 
+        self._device = device
+        self._card_index = card_index
+
         self._running = False
 
         self._recording_lock = threading.Lock()
@@ -64,7 +67,23 @@ class AudioRecorder:
             # Ignore error, meaning that there is no mute switch
             pass
 
+        self._try_set_enum("Headphone Mux", 1)
+        self._try_set_enum("Capture Mux", 1)
+
         self._sample_buffer = queue.Queue(maxsize=100)
+
+    def _try_set_enum(self, name, index):
+        """
+        Try to set an enum control, printing a warning if it fails.
+
+        :param name: name of the control
+        :param index: index of the enum value
+        """
+        try:
+            mixer = alsaaudio.Mixer(control=name, device=self._device, cardindex=self._card_index)
+            mixer.setenum(index)
+        except alsaaudio.ALSAAudioError as e:
+            self._log.warning("Failed to set enum control: %s", e)
 
     @property
     def recording(self):
