@@ -1,0 +1,23 @@
+[package]
+name = "audio_server"
+version = "0.3.0"
+authors = ["Ben Wolsieffer <benwolsieffer@gmail.com>"]
+
+[dependencies]
+log = "0.4"
+env_logger = "0.4"
+alsa = { version = "0.2", git = "https://github.com/lopsided98/alsa-rs" }
+grpcio = { version = "0.4", default-features = false, features = ["protobuf-codec"] }
+protobuf = "2"
+futures = "0.1"
+hostname = "0.1"
+serde = "1.0"
+serde_derive = "1.0"
+serde_yaml = "0.8"
+regex = "1.0"
+hound = "3.4"
+crossbeam = "0.5"
+libc = "0.2"
+
+[build-dependencies]
+protoc-grpcio = "0.3"

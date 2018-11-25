@@ -11,8 +11,8 @@ from google.protobuf.empty_pb2 import Empty
 from google.protobuf.timestamp_pb2 import Timestamp
 import flask_cors
 
-import audio_server.audio_server_pb2
-import audio_server.audio_server_pb2_grpc
+import audio_recorder.protos.audio_server_pb2 as audio_server_pb2
+import audio_recorder.protos.audio_server_pb2_grpc as audio_server_pb2_grpc
 
 _log = logging.getLogger(__name__)
 
@@ -31,11 +31,11 @@ if app.config['DEBUG']:
 flask_cors.CORS(app)
 
 _channel = grpc.insecure_channel(app.config['AUDIO_SERVER_HOST'])
-_audio_server = audio_server.audio_server_pb2_grpc.AudioServerStub(_channel)
+_audio_server = audio_server_pb2_grpc.AudioServerStub(_channel)
 
 
 def _levels_stream(average=False):
-    req = audio_server.audio_server_pb2.LevelsRequest(average=average)
+    req = audio_server_pb2.LevelsRequest(average=average)
     for audio_levels in _audio_server.GetLevels(req):
         yield 'data: {}\n\n'.format(json.dumps(tuple(audio_levels.channels)))
 
@@ -82,7 +82,7 @@ def get_mixer():
 
 @app.route('/mixer', methods=('POST',))
 def set_mixer():
-    levels = audio_server.audio_server_pb2.AudioLevels()
+    levels = audio_server_pb2.AudioLevels()
     levels.channels.extend(request.get_json())
     _audio_server.SetMixer(levels)
     return '', 204

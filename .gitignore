@@ -5,3 +5,5 @@ dist/
 .idea/
 *.egg-info/
 audio/
+target/
+result

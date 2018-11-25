@@ -13,18 +13,18 @@ import yaml
 from google.protobuf.empty_pb2 import Empty
 from google.protobuf.timestamp_pb2 import Timestamp
 
-import audio_server.audio
-import audio_server.audio_server_pb2
-import audio_server.audio_server_pb2_grpc
+import audio_recorder.audio_server.audio as audio
+import audio_recorder.protos.audio_server_pb2 as audio_server_pb2
+import audio_recorder.protos.audio_server_pb2_grpc as audio_server_pb2_grpc
 
 _SETTINGS_ENV_VAR = 'AUDIO_SERVER_SETTINGS'
 
 _log = logging.getLogger(__name__)
 
 
-class AudioServer(audio_server.audio_server_pb2_grpc.AudioServerServicer):
+class AudioServer(audio_server_pb2_grpc.AudioServerServicer):
 
-    def __init__(self, audio_recorder: audio_server.audio.AudioRecorder):
+    def __init__(self, audio_recorder: audio.AudioRecorder):
         self._log = logging.getLogger(AudioServer.__qualname__)
         self._audio = audio_recorder
         self._time_set = False
@@ -37,14 +37,14 @@ class AudioServer(audio_server.audio_server_pb2_grpc.AudioServerServicer):
         self._audio.recording = False
         return Empty()
 
-    def GetStatus(self, request, context) -> audio_server.audio_server_pb2.Status:
-        status = audio_server.audio_server_pb2.Status()
+    def GetStatus(self, request, context) -> audio_server_pb2.Status:
+        status = audio_server_pb2.Status()
         status.recording = self._audio.recording
         return status
 
-    def GetLevels(self, request, context) -> audio_server.audio_server_pb2.AudioLevels:
+    def GetLevels(self, request, context) -> audio_server_pb2.AudioLevels:
         while context.is_active():
-            response = audio_server.audio_server_pb2.AudioLevels()
+            response = audio_server_pb2.AudioLevels()
             levels = self._audio.levels
             if request.average:
                 response.channels.extend(levels)
@@ -52,12 +52,12 @@ class AudioServer(audio_server.audio_server_pb2_grpc.AudioServerServicer):
                 response.channels.append(sum(levels) / len(levels))
             yield response
 
-    def GetMixer(self, request, context) -> audio_server.audio_server_pb2.AudioLevels:
-        response = audio_server.audio_server_pb2.AudioLevels()
+    def GetMixer(self, request, context) -> audio_server_pb2.AudioLevels:
+        response = audio_server_pb2.AudioLevels()
         response.channels.extend(self._audio.mixer)
         return response
 
-    def SetMixer(self, request: audio_server.audio_server_pb2.AudioLevels, context) -> Empty:
+    def SetMixer(self, request: audio_server_pb2.AudioLevels, context) -> Empty:
         self._audio.mixer = request.channels
         return Empty()
 
@@ -109,12 +109,12 @@ def main():
 
     logging.config.dictConfig(config['logging'])
 
-    audio_recorder = audio_server.audio.AudioRecorder(file_prefix=config['file_prefix'], audio_dir=config['audio_dir'],
-                                                      device=config['device'], card_index=config['card_index'],
-                                                      control=config['control'])
+    audio_recorder = audio.AudioRecorder(file_prefix=config['file_prefix'], audio_dir=config['audio_dir'],
+                                         device=config['device'], card_index=config['card_index'],
+                                         control=config['control'])
 
     server = grpc.server(concurrent.futures.ThreadPoolExecutor(max_workers=5))
-    audio_server.audio_server_pb2_grpc.add_AudioServerServicer_to_server(AudioServer(audio_recorder), server)
+    audio_server_pb2_grpc.add_AudioServerServicer_to_server(AudioServer(audio_recorder), server)
     server.add_insecure_port('[::]:34876')
 
     server.start()

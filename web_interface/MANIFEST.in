@@ -1,0 +1,2 @@
+graft audio_recorder/web_interface/static
+graft audio_recorder/web_interface/templates
