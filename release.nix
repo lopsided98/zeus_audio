@@ -6,9 +6,9 @@ let
     audio_server = rec {
       tarball = pkgs.stdenv.mkDerivation {
         name = "audio_server-tarball-${version}";
-        inherit version src;
+        inherit version;
         
-        sourceRoot = "AudioRecorder/audio_server";
+        src = "${src}/audio_server";
         
         dontBuild = true;
         
@@ -26,7 +26,6 @@ let
       };
       build = (pkgs.callPackage ./audio_server {}).overrideDerivation (old: {
         src = "${tarball}/tarballs/audio_server-${version}.tar.gz";
-        sourceRoot = null;
       });
     };
   
@@ -35,9 +34,7 @@ let
         name = "audio_recorder-tarball-${version}";
         inherit version;
         
-        inherit src;
-        
-        sourceRoot = "AudioRecorder/web_interface";
+        src = "${src}/web_interface";
         
         nativeBuildInputs = with pkgs.python3Packages; [
           python

@@ -4,8 +4,7 @@ rustPlatform.buildRustPackage rec {
   name = "audio-server-${version}";
   version = "0.3.0";
 
-  src = { outPath = ./..; revCount = 1234; shortRev = "abcdef"; };
-  sourceRoot = "AudioRecorder/audio_server";
+  src = { outPath = ./.; revCount = 1234; shortRev = "abcdef"; };
   
   buildInputs = [
     grpc
