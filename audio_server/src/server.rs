@@ -12,31 +12,48 @@ use grpcio::ServerBuilder;
 use grpcio::ServerStreamingSink;
 use grpcio::UnarySink;
 
+use audio::RecorderController;
+use audio::RecorderState;
 use clock;
 
-use super::audio::AudioRecorder;
 use super::protos::audio_server::{AudioLevels, LevelsRequest, Status};
 use super::protos::audio_server_grpc;
 use super::protos::empty::Empty;
 use super::protos::timestamp::Timestamp;
+use audio::AudioTimestamp;
 
 #[derive(Clone)]
 pub struct AudioServer {
-    audio: Arc<AudioRecorder>,
+    audio: RecorderController,
     // This is not shared between server clones, because only the set_time method needs it
     time_set: bool,
 }
 
 impl AudioServer {
-    pub fn new(audio: Arc<AudioRecorder>) -> Self {
+    pub fn new(audio: RecorderController) -> Self {
         AudioServer {
             audio,
             time_set: false,
         }
     }
 
-    pub fn audio(&self) -> Arc<AudioRecorder> {
-        Arc::clone(&self.audio)
+    pub fn audio_control(&self) -> RecorderController {
+        self.audio.clone()
+    }
+
+    fn handle_errors<F, R: 'static + Debug + Send, S>(future: F, req: R, sink: UnarySink<S>) -> impl Future<Item=(), Error=()>
+        where F: futures::IntoFuture<Item=S>,
+              F::Error: Debug,
+              R: 'static + Debug + Send {
+        future.into_future().then(|res| {
+            match res {
+                Ok(item) => sink.success(item),
+                Err(e) => sink.fail(grpcio::RpcStatus::new(
+                    grpcio::RpcStatusCode::Internal,
+                    Some(format!("{:?}", e)),
+                ))
+            }
+        }).map_err(move |e| error!("failed to reply to {:?}: {:?}", req, e))
     }
 
     fn spawn_success<R: 'static + Debug + Send, S>(msg: S, ctx: RpcContext, req: R, sink: UnarySink<S>) {
@@ -48,66 +65,68 @@ impl AudioServer {
 
 impl audio_server_grpc::AudioServer for AudioServer {
     fn start_recording(&mut self, ctx: RpcContext, req: Empty, sink: UnarySink<Empty>) {
-        self.audio.set_recording(true);
-        Self::spawn_success(Empty::new(), ctx, req, sink);
+        ctx.spawn(Self::handle_errors(self.audio.start_recording(AudioTimestamp::now())
+                                          .map(|_| Empty::new()), req, sink));
     }
 
     fn stop_recording(&mut self, ctx: RpcContext, req: Empty, sink: UnarySink<Empty>) {
-        self.audio.set_recording(false);
-        Self::spawn_success(Empty::new(), ctx, req, sink);
+        ctx.spawn(Self::handle_errors(self.audio.stop_recording()
+                                          .map(|_| Empty::new()), req, sink));
     }
 
     fn get_status(&mut self, ctx: RpcContext, req: Empty, sink: UnarySink<Status>) {
-        let mut status = Status::new();
-        status.recording = self.audio.is_recording();
-        Self::spawn_success(status, ctx, req, sink);
+        ctx.spawn(Self::handle_errors(self.audio.get_state()
+                                          .map(|state| {
+                                              let mut status = Status::new();
+                                              status.recording = match state {
+                                                  RecorderState::Recording => true,
+                                                  _ => false
+                                              };
+                                              status
+                                          }), req, sink));
     }
 
     fn get_levels(&mut self, ctx: RpcContext, req: LevelsRequest, sink: ServerStreamingSink<AudioLevels>) {
-        let audio = Arc::clone(&self.audio);
-        ctx.spawn(sink.send_all(audio.levels_stream()
-            // Levels stream never returns an error, so the error mapping doesn't matter
-            .map_err(|_| grpcio::Error::ShutdownFailed)
-            .map(move |l| {
-                let mut audio_levels = AudioLevels::new();
-                audio_levels.channels = if req.average {
-                    vec![l.iter().sum::<f32>() / l.len() as f32]
-                } else { l };
-                (audio_levels, grpcio::WriteFlags::default())
-            }))
-            .map(|_| ())
-            .map_err(|e| match e {
-                grpcio::Error::RemoteStopped => debug!("Remote stopped levels request"),
-                _ => error!("failed to handle audio levels request: {:?}", e)
-            }));
+        match self.audio.levels_stream() {
+            Ok(levels_stream) => {
+                ctx.spawn(sink.send_all(levels_stream
+                    .map(move |l| {
+                        let mut audio_levels = AudioLevels::new();
+                        audio_levels.channels = if req.average {
+                            vec![l.iter().sum::<f32>() / l.len() as f32]
+                        } else { l };
+                        (audio_levels, grpcio::WriteFlags::default())
+                    })
+                    // Send an arbitrary grpc error because the stream never sends one
+                    .map_err(|_| grpcio::Error::ShutdownFailed))
+                    .map(|_| ())
+                    .map_err(|e| match e {
+                        grpcio::Error::RemoteStopped => debug!("Remote stopped levels request"),
+                        _ => error!("failed to handle audio levels request: {:?}", e)
+                    }));
+            }
+            Err(err) => {
+                error!("Unable to start levels stream: {:?}", err);
+                ctx.spawn(sink.fail(grpcio::RpcStatus::new(
+                    grpcio::RpcStatusCode::Internal,
+                    Some(format!("{:?}", err)),
+                )).map(|_| ()).map_err(|e| error!("Failed to send levels stream failure: {:?}", e)));
+            }
+        };
     }
 
     fn set_mixer(&mut self, ctx: RpcContext, req: AudioLevels, sink: UnarySink<Empty>) {
-        let res = self.audio.set_mixer(&req.channels);
-        ctx.spawn((if res.is_ok() { sink.success(Empty::new()) } else {
-            let err = res.unwrap_err();
-            warn!("Unable to set res volume: {:?}", err);
-            sink.fail(grpcio::RpcStatus::new(
-                grpcio::RpcStatusCode::Internal,
-                Some(format!("{:?}", err)),
-            ))
-        }).map(|_| ()).map_err(move |e| error!("failed to reply to {:?}: {:?}", req, e)))
+        ctx.spawn(Self::handle_errors(self.audio.set_mixer(req.channels.clone())
+                                          .map(|_| Empty::new()), req, sink));
     }
 
     fn get_mixer(&mut self, ctx: RpcContext, req: Empty, sink: UnarySink<AudioLevels>) {
-        let mut levels = AudioLevels::new();
-        let mixer = self.audio.get_mixer();
-        ctx.spawn((if mixer.is_ok() {
-            levels.channels = mixer.unwrap();
-            sink.success(levels)
-        } else {
-            let err = mixer.unwrap_err();
-            warn!("Unable to get mixer volume: {:?}", err);
-            sink.fail(grpcio::RpcStatus::new(
-                grpcio::RpcStatusCode::Internal,
-                Some(format!("{:?}", err)),
-            ))
-        }).map(|_| ()).map_err(move |e| error!("failed to reply to {:?}: {:?}", req, e)))
+        ctx.spawn(Self::handle_errors(self.audio.get_mixer()
+                                          .map(|mixer| {
+                                              let mut levels = AudioLevels::new();
+                                              levels.channels = mixer;
+                                              levels
+                                          }), req, sink));
     }
 
     fn set_time(&mut self, ctx: RpcContext, req: Timestamp, sink: UnarySink<Empty>) {
@@ -128,7 +147,7 @@ impl audio_server_grpc::AudioServer for AudioServer {
     }
 }
 
-pub fn run(audio: Arc<AudioRecorder>) -> grpcio::Result<Server> {
+pub fn run(audio: RecorderController) -> grpcio::Result<Server> {
     let env = Arc::new(Environment::new(1));
     let service = audio_server_grpc::create_audio_server(AudioServer::new(audio));
     let mut server = ServerBuilder::new(env)

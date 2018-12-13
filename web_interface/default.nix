@@ -1,4 +1,4 @@
-{ buildPythonPackage, grpcio-tools, flask, flask-cors, grpcio, pyyaml }:
+{ buildPythonPackage, grpcio-tools, flask, flask-cors, grpcio, pyyaml, numpy, pyalsaaudio, pyserial }:
   
 buildPythonPackage rec {
   pname = "audio_recorder";

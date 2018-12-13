@@ -3,7 +3,7 @@
 let
   version = "0.3.0";
   jobs = {
-    audio_server = rec {
+    audio-server = rec {
       tarball = pkgs.stdenv.mkDerivation {
         name = "audio_server-tarball-${version}";
         inherit version;
@@ -29,7 +29,7 @@ let
       });
     };
   
-    web_interface = rec {
+    web-interface = rec {
       tarball = pkgs.stdenv.mkDerivation {
         name = "audio_recorder-tarball-${version}";
         inherit version;

@@ -1,5 +1,7 @@
 extern crate audio_server;
 extern crate env_logger;
+#[macro_use]
+extern crate failure;
 extern crate hostname;
 #[macro_use]
 extern crate log;
@@ -7,28 +9,17 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 
-use std::fmt;
-use std::sync::Arc;
-use std::thread;
-
 use audio_server::audio::AudioRecorderBuilder;
 use audio_server::server;
 
 const SETTINGS_ENV_VAR: &str = "AUDIO_SERVER_SETTINGS";
 
-#[derive(Debug)]
+#[derive(Fail, Debug)]
 enum ConfigError {
+    #[fail(display = "Invalid environment variable: {}", _0)]
     InvalidEnvVar(std::env::VarError),
+    #[fail(display = "Invalid config: {}", _0)]
     InvalidConfig(serde_yaml::Error),
-}
-
-impl fmt::Display for ConfigError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            ConfigError::InvalidEnvVar(e) => write!(f, "Invalid environment variable: {}", e),
-            ConfigError::InvalidConfig(e) => write!(f, "Invalid config: {}", e),
-        }
-    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -52,7 +43,7 @@ impl Default for Config {
 }
 
 fn main() {
-    env_logger::init().expect("Failed to initialize logging");
+    env_logger::init();
 
     let config: Config = std::env::var(SETTINGS_ENV_VAR)
         .map_err(ConfigError::InvalidEnvVar)
@@ -66,16 +57,14 @@ fn main() {
 
     debug!("{:?}", config);
 
-    let audio = Arc::new(AudioRecorderBuilder::new(config.file_prefix, config.audio_dir)
+    let (audio, audio_control) = AudioRecorderBuilder::new(config.file_prefix, config.audio_dir)
         .device(config.device)
         .control(config.control)
         .build()
-        .expect("Failed to setup audio recorder"));
+        .expect("Failed to setup audio recorder");
 
-    let _s = server::run(audio.clone()).expect("Failed to start server");
+    let _s = server::run(audio_control.clone()).expect("Failed to start server");
     info!("Server started");
 
-    audio.run().expect("Audio error");
-
-    loop { thread::park(); }
+    audio.run();
 }
