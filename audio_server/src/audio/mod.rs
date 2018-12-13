@@ -414,6 +414,14 @@ impl WriteManager {
         }).map(|(mgr, _)| mgr)
     }
 
+    fn write_data_wait(self, buf: Vec<i16>, status: alsa::pcm::Status) -> impl Future<Item=Self, Error=Error> {
+        let audio_timestamp: AudioTimestamp = status.get_htstamp().into();
+        let current_timestamp: AudioTimestamp = SystemTime::now().into();
+        debug!("status: {:?}", status);
+//        debug!("timestamp: {:?}, {:?}", audio_timestamp, current_timestamp);
+        self.write_data_split(buf)
+    }
+
     fn set_state_and_respond<T>(res: Result<WriteManager, Error>,
                                 state: RecorderState,
                                 tx: ControlSender<T>,
@@ -433,9 +441,13 @@ impl WriteManager {
         }
     }
 
-    fn start_recording(self, timestamp: AudioTimestamp, tx: ControlSender<()>) -> impl Future<Item=Self, Error=Error> {
-        self.new_file().then(|res|
-            Self::set_state_and_respond(res, RecorderState::Recording, tx, ()))
+    fn start_recording(mut self, timestamp: AudioTimestamp, tx: ControlSender<()>) -> impl Future<Item=Self, Error=Error> {
+        self.waiting_tx.drain(..).for_each(|tx| {
+            tx.send(Err(ControlError::Cancelled)).ok();
+        });
+        self.state = RecorderState::Waiting(timestamp);
+        self.waiting_tx.push(tx);
+        future::finished(self)
     }
 
     fn stop_recording(mut self, tx: ControlSender<()>) -> impl Future<Item=Self, Error=Error> {
@@ -455,7 +467,7 @@ impl Manager for WriteManager {
         match control {
             RecorderControl::StartRecording(timestamp, tx) => Box::new(self.start_recording(timestamp, tx)),
             RecorderControl::StopRecording(tx) => Box::new(self.stop_recording(tx)),
-            RecorderControl::Data(buf, _) => Box::new(self.write_data_split(buf)),
+            RecorderControl::Data(buf, status) => Box::new(self.write_data_wait(buf, status)),
             RecorderControl::GetState(tx) => {
                 tx.send(Ok(self.state.clone())).ok();
                 Box::new(future::finished(self))
