@@ -2,13 +2,13 @@ use core::fmt::Debug;
 use std::fmt;
 use std::fs;
 use std::fs::File;
-use std::io;
 use std::io::BufWriter;
 use std::path::Path;
 use std::path::PathBuf;
 use std::time::Duration;
 use std::time::SystemTime;
 
+use failure::Fail;
 use futures::Async;
 use futures::AsyncSink;
 use futures::future;
@@ -52,13 +52,13 @@ pub enum Error {
         #[fail(cause)] cause: regex::Error,
     },
     #[fail(display = "{}", _0)]
-    IOError(#[fail(cause)] io::Error),
+    SetupError(#[fail(cause)] failure::Error),
     #[fail(display = "{}", _0)]
-    CaptureError(#[fail(cause)] alsa::Error),
+    CaptureError(#[fail(cause)] failure::Error),
     #[fail(display = "{}", _0)]
     MixerError(String),
     #[fail(display = "{}", _0)]
-    WriteError(#[fail(cause)] wav::Error),
+    WriteError(#[fail(cause)] failure::Error),
     #[fail(display = "Unknown error")]
     Unknown,
 }
@@ -192,7 +192,7 @@ impl MixerManager {
                         (*c).clone(),
                         (v * (range_max - range_min) as f32) as i64 + range_min,
                     ))
-                    .map(|r| r.map_err(Error::CaptureError))
+                    .map(|r| r.map_err(|e| Error::CaptureError(e.into())))
                     .collect()
             })
     }
@@ -211,7 +211,7 @@ impl MixerManager {
                     .map(|r| r.map(|unscaled_volume| (if range_max > range_min {
                         (unscaled_volume - range_min) as f32 / (range_max - range_min) as f32
                     } else { 0f32 }) * 100f32))
-                    .map(|r| r.map_err(Error::CaptureError))
+                    .map(|r| r.map_err(|e| Error::CaptureError(e.into())))
                     .collect()
             })
     }
@@ -332,7 +332,8 @@ impl WriteManager {
         })?;
 
         Ok(fs::read_dir(&audio_dir)
-            .map_err(Error::IOError)?
+            .map_err(|e| Error::WriteError(e
+                .context(format!("Failed to read audio dir: {}", audio_dir.display())).into()))?
             // Skip over unreadable files (it is hard to get errors out of an iterator anyway, so
             // there is not much we can do about this
             .filter_map(Result::ok)
@@ -377,7 +378,7 @@ impl WriteManager {
         let file = std::mem::replace(&mut self.file, None);
         if let Some(file) = file {
             Either::A(ContextPollFn::new(file, |file| file.close())
-                .map_err(Error::WriteError).map(|_| self))
+                .map_err(|e| Error::WriteError(e.into())).map(|_| self))
         } else {
             Either::B(future::finished(self))
         }
@@ -407,8 +408,8 @@ impl WriteManager {
             match res {
                 Ok((mgr, Some(buf))) => Either::A(mgr.new_file()
                     .and_then(|mgr| mgr.write_data(buf)
-                        .map_err(Error::WriteError))),
-                r => Either::B(future::done(r.map_err(Error::WriteError)))
+                        .map_err(|e| Error::WriteError(e.into())))),
+                r => Either::B(future::done(r.map_err(|e| Error::WriteError(e.into()))))
             }
         }).map(|(mgr, _)| mgr)
     }
@@ -637,11 +638,11 @@ impl AudioRecorderBuilder {
             &self.device,
             alsa::Direction::Capture,
             true,
-        ).map_err(Error::CaptureError)?;
+        ).map_err(|e| Error::CaptureError(e.into()))?;
 
         let wav_spec = {
             let (hw_params, _sw_params) =
-                Self::setup_pcm(&pcm).map_err(Error::CaptureError)?;
+                Self::setup_pcm(&pcm).map_err(|e| Error::CaptureError(e.into()))?;
             // These shouldn't fail once a configuration has been chosen
             let channels = hw_params.get_channels().unwrap() as u16;
             let sample_rate = hw_params.get_rate().unwrap();
@@ -653,7 +654,7 @@ impl AudioRecorderBuilder {
             }
         };
 
-        pcm.start().map_err(Error::CaptureError)?;
+        pcm.start().map_err(|e| Error::CaptureError(e.into()))?;
 
 
         // Map set of samples to decibel levels for each channel
@@ -689,8 +690,8 @@ impl AudioRecorderBuilder {
         let tstamp_config = alsa::pcm::AudioTstampConfig::new(2, true);
 
         let recording_stream = PCMStream::from_alsa_pcm(pcm, tstamp_config)
-            .map_err(Error::CaptureError)?
-            .map_err(Error::CaptureError);
+            .map_err(|e| Error::CaptureError(e.into()))?
+            .map_err(|e| Error::CaptureError(e.into()));
 
         let (recording_stream, levels_endpoint_reg) =
             TeeMap::new(recording_stream, levels_map);
@@ -718,7 +719,7 @@ impl AudioRecorderBuilder {
         let (mixer_tx, mixer_rx) = futures::sync::mpsc::unbounded();
 
         let mixer = alsa::Mixer::new(&self.device, false)
-            .map_err(Error::CaptureError)?;
+            .map_err(|e| Error::CaptureError(e.into()))?;
 
         let mixer_manager = MixerManager::new(
             self.control,

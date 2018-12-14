@@ -1,26 +1,17 @@
-extern crate audio_server;
-extern crate env_logger;
-#[macro_use]
-extern crate failure;
-extern crate hostname;
 #[macro_use]
 extern crate log;
-extern crate serde;
 #[macro_use]
 extern crate serde_derive;
+
+use std::fs::File;
+use std::path::Path;
+
+use failure::ResultExt;
 
 use audio_server::audio::AudioRecorderBuilder;
 use audio_server::server;
 
 const SETTINGS_ENV_VAR: &str = "AUDIO_SERVER_SETTINGS";
-
-#[derive(Fail, Debug)]
-enum ConfigError {
-    #[fail(display = "Invalid environment variable: {}", _0)]
-    InvalidEnvVar(std::env::VarError),
-    #[fail(display = "Invalid config: {}", _0)]
-    InvalidConfig(serde_yaml::Error),
-}
 
 #[derive(Debug, Deserialize)]
 #[serde(default)]
@@ -45,15 +36,17 @@ impl Default for Config {
 fn main() {
     env_logger::init();
 
-    let config: Config = std::env::var(SETTINGS_ENV_VAR)
-        .map_err(ConfigError::InvalidEnvVar)
-        .and_then(|s| serde_yaml::from_str(&s).map_err(ConfigError::InvalidConfig))
-        .unwrap_or_else(|err| {
-            if let ConfigError::InvalidConfig(_v) = &err {
+    let config: Config = std::env::var_os(SETTINGS_ENV_VAR)
+        .map(|v| File::open(Path::new(&v))
+            .context("Failed to open config file")
+            .and_then(|f| serde_yaml::from_reader(f)
+                .context("Failed to read config file"))
+            .unwrap_or_else(|err| {
                 warn!("{}", err);
-            }
-            Config::default()
-        });
+                Config::default()
+            }))
+        .unwrap_or_else(Config::default);
+
 
     debug!("{:?}", config);
 
