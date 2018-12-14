@@ -2,6 +2,7 @@
 name = "audio_server"
 version = "0.3.0"
 authors = ["Ben Wolsieffer <benwolsieffer@gmail.com>"]
+edition = "2018"
 
 [dependencies]
 alsa = { git = "https://github.com/lopsided98/alsa-rs" }

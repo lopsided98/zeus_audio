@@ -12,15 +12,15 @@ use grpcio::ServerBuilder;
 use grpcio::ServerStreamingSink;
 use grpcio::UnarySink;
 
-use audio::RecorderController;
-use audio::RecorderState;
-use clock;
+use crate::audio::RecorderController;
+use crate::audio::RecorderState;
+use crate::clock;
 
 use super::protos::audio_server::{AudioLevels, LevelsRequest, Status};
 use super::protos::audio_server_grpc;
 use super::protos::empty::Empty;
 use super::protos::timestamp::Timestamp;
-use audio::AudioTimestamp;
+use crate::audio::AudioTimestamp;
 
 #[derive(Clone)]
 pub struct AudioServer {

@@ -24,11 +24,11 @@ use hound::WavSpec;
 use libc::timespec;
 use regex::Regex;
 
-use audio::tee::Endpoint;
-use audio::tee::EndpointRegistration;
-use audio::tee::TeeMap;
-use audio::tokio::PCMStream;
-use audio::wav::WavSink;
+use crate::audio::tee::Endpoint;
+use crate::audio::tee::EndpointRegistration;
+use crate::audio::tee::TeeMap;
+use crate::audio::tokio::PCMStream;
+use crate::audio::wav::WavSink;
 
 pub mod mio;
 pub mod tokio;
@@ -259,8 +259,8 @@ impl AudioTimestamp {
 impl From<libc::timespec> for AudioTimestamp {
     fn from(t: timespec) -> Self {
         Self {
-            seconds: t.tv_sec,
-            nanos: t.tv_sec,
+            seconds: t.tv_sec as i64,
+            nanos: t.tv_sec as i64,
         }
     }
 }
