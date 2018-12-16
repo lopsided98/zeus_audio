@@ -1,12 +1,8 @@
-use core::fmt::Debug;
-use std::fmt;
 use std::fs;
 use std::fs::File;
 use std::io::BufWriter;
 use std::path::Path;
 use std::path::PathBuf;
-use std::time::Duration;
-use std::time::SystemTime;
 
 use failure::Fail;
 use futures::Async;
@@ -20,7 +16,6 @@ use futures::Stream;
 use futures::sync::mpsc;
 use hound::SampleFormat;
 use hound::WavSpec;
-use libc::timespec;
 use regex::Regex;
 
 use crate::audio::tee::Endpoint;
@@ -31,10 +26,12 @@ use crate::audio::wav::WavSink;
 use crate::manager;
 use crate::manager::Manager;
 use crate::manager::ManagerSink;
+use crate::audio::timestamp::AudioTimestamp;
 
 pub mod mio;
-pub mod tokio;
 pub mod tee;
+pub mod timestamp;
+pub mod tokio;
 pub mod wav;
 
 const FORMAT: alsa::pcm::Format = alsa::pcm::Format::S16LE;
@@ -45,6 +42,9 @@ const PERIODS: u32 = 16;
 const FULL_SCALE: f32 = std::i16::MAX as f32;
 
 const BUFFER_LEN: usize = 2048;
+
+/// Maximum amount of time to wait to start recording
+const MAX_START_WAIT: AudioTimestamp = AudioTimestamp(10_000_000_000);
 
 #[derive(Fail, Debug)]
 pub enum Error {
@@ -67,11 +67,6 @@ pub enum Error {
 
 #[derive(Fail, Debug)]
 pub enum ControlError {
-    #[fail(display = "Control was scheduled for {} but not processed until {}", scheduled_time, processed_time)]
-    DeadlineMissed {
-        scheduled_time: AudioTimestamp,
-        processed_time: AudioTimestamp,
-    },
     #[fail(display = "Control was cancelled")]
     Cancelled,
     #[fail(display = "Control failed: {}", _0)]
@@ -87,19 +82,13 @@ enum MixerControl {
     SetMixer(Vec<f32>, ControlSender<()>),
 }
 
-#[derive(Debug)]
-enum RecorderControl {
-    StartRecording(AudioTimestamp, ControlSender<()>),
-    StopRecording(ControlSender<()>),
-    Data(Vec<i16>, alsa::pcm::Status),
-    GetState(ControlSender<RecorderState>),
-}
-
-pub type LevelsStream = Endpoint<Vec<f32>>;
-
-pub struct AudioRecorder {
-    mixer_future: Box<dyn Future<Item=(), Error=()> + Send>,
-    recording_future: Box<dyn Future<Item=(), Error=Error> + Send>,
+#[derive(Clone, Debug)]
+pub enum StartRecordingResponse {
+    Synced,
+    NotSynced {
+        requested_time: AudioTimestamp,
+        processed_time: AudioTimestamp,
+    },
 }
 
 #[derive(Clone, Debug)]
@@ -107,6 +96,21 @@ pub enum RecorderState {
     Stopped,
     Waiting(AudioTimestamp),
     Recording,
+}
+
+#[derive(Debug)]
+enum RecorderControl {
+    StartRecording(AudioTimestamp, ControlSender<StartRecordingResponse>),
+    StopRecording(ControlSender<()>),
+    Data(Vec<i16>, alsa::pcm::Status),
+    GetState(ControlSender<RecorderState>),
+}
+
+pub type LevelsStream = Endpoint<Vec<f32>>;
+
+pub struct Recorder {
+    mixer_future: Box<dyn Future<Item=(), Error=()> + Send>,
+    recording_future: Box<dyn Future<Item=(), Error=Error> + Send>,
 }
 
 struct ContextPollFn<C, F> {
@@ -212,60 +216,6 @@ impl Manager for MixerManager {
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct AudioTimestamp {
-    pub seconds: i64,
-    pub nanos: i32,
-}
-
-impl AudioTimestamp {
-    pub fn now() -> Self {
-        SystemTime::now().into()
-    }
-
-    pub fn from_millis(millis: i64) -> Self {
-        Self {
-            seconds: millis / 1000,
-            nanos: ((millis % 1000) * 1_000_000) as i32,
-        }
-    }
-}
-
-impl From<libc::timespec> for AudioTimestamp {
-    fn from(t: timespec) -> Self {
-        Self {
-            seconds: t.tv_sec as i64,
-            nanos: t.tv_nsec as i32,
-        }
-    }
-}
-
-impl From<SystemTime> for AudioTimestamp {
-    fn from(t: SystemTime) -> Self {
-        let since_epoch = t.duration_since(std::time::UNIX_EPOCH)
-            // If we get a timestamp before the epoch, something is very wrong
-            // and we should probably crash
-            .expect("Timestamp earlier than epoch");
-        Self {
-            seconds: since_epoch.as_secs() as i64,
-            nanos: since_epoch.subsec_nanos() as i32,
-        }
-    }
-}
-
-impl Into<SystemTime> for AudioTimestamp {
-    fn into(self) -> SystemTime {
-        std::time::UNIX_EPOCH + Duration::new(self.seconds as u64, self.nanos as u32)
-    }
-}
-
-impl fmt::Display for AudioTimestamp {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let system_time: SystemTime = self.clone().into();
-        system_time.fmt(f)
-    }
-}
-
 struct WriteManager {
     audio_dir: PathBuf,
     file_prefix: String,
@@ -273,7 +223,7 @@ struct WriteManager {
     index: u64,
     file: Option<wav::WavSink<BufWriter<File>>>,
     state: RecorderState,
-    waiting_tx: Vec<ControlSender<()>>,
+    waiting_tx: Vec<ControlSender<StartRecordingResponse>>,
 }
 
 impl WriteManager {
@@ -333,7 +283,7 @@ impl WriteManager {
                 ContextPollFn::new(mgr, |mgr| {
                     match tokio_threadpool::blocking(|| {
                         let path = mgr.audio_dir.join(format!("{}_{:04}.wav", mgr.file_prefix, mgr.index));
-                        info!("Created new file: {}", path.display());
+                        info!("Creating new file: {}", path.display());
                         Ok(WavSink::from_hound(hound::WavWriter::create(path, mgr.wav_spec)?))
                     }) {
                         Ok(Async::Ready(Ok(file))) => Ok(Async::Ready(file)),
@@ -359,7 +309,7 @@ impl WriteManager {
         }
     }
 
-    fn write_data(self, buf: Vec<i16>) -> impl Future<Item=(WriteManager, Option<Vec<i16>>), Error=wav::Error> {
+    fn write_data(self, buf: Vec<i16>) -> impl Future<Item=(WriteManager, Option<Vec<i16>>), Error=Error> {
         ContextPollFn::new((self, Some(buf)), |(mgr, buf)| {
             if let Some(file) = &mut mgr.file {
                 match file.start_send(std::mem::replace(buf, None).unwrap()) {
@@ -370,7 +320,7 @@ impl WriteManager {
                     }
                     Ok(AsyncSink::Ready) => Ok(Async::Ready(None)),
                     Err(wav::Error::FileFull(b)) => Ok(Async::Ready(Some(b))),
-                    Err(e) => Err(e)
+                    Err(e) => Err(Error::WriteError(e.into()))
                 }
             } else {
                 Ok(Async::Ready(None))
@@ -382,19 +332,64 @@ impl WriteManager {
         self.write_data(buf).then(|res| {
             match res {
                 Ok((mgr, Some(buf))) => Either::A(mgr.new_file()
-                    .and_then(|mgr| mgr.write_data(buf)
-                        .map_err(|e| Error::WriteError(e.into())))),
-                r => Either::B(future::done(r.map_err(|e| Error::WriteError(e.into()))))
+                    .and_then(|mgr| mgr.write_data(buf))),
+                r => Either::B(future::done(r))
             }
         }).map(|(mgr, _)| mgr)
     }
 
-    fn write_data_wait(self, buf: Vec<i16>, status: alsa::pcm::Status) -> impl Future<Item=Self, Error=Error> {
-        let audio_timestamp: AudioTimestamp = status.get_htstamp().into();
-        let current_timestamp: AudioTimestamp = SystemTime::now().into();
-//        debug!("status: {:?}", status);
-//        debug!("timestamp: {:?}, {:?}", audio_timestamp, current_timestamp);
-        self.write_data_split(buf)
+    fn write_data_sync(self, mut buf: Vec<i16>, status: alsa::pcm::Status) -> impl Future<Item=Self, Error=Error> {
+        let mut new_file = false;
+        let mut start_recording_response: Option<StartRecordingResponse> = None;
+        let mut old_buf: Vec<i16> = vec![];
+        
+        if let RecorderState::Waiting(start_time) = &self.state {
+            let period = 1_000_000_000 / self.wav_spec.sample_rate as u64;
+
+            let buf_time = period * (buf.len() / self.wav_spec.channels as usize) as u64;
+            let end_timestamp: AudioTimestamp = status.get_htstamp().into();
+            // Prevent overflow with erroneous zero timestamp
+            let start_timestamp = if *end_timestamp > buf_time {
+                &end_timestamp - &buf_time
+            } else { AudioTimestamp(0) };
+
+            if **start_time >= *start_timestamp && **start_time < *end_timestamp {
+                let start_index = (((**start_time - *start_timestamp) / period) * self.wav_spec.channels as u64) as usize;
+                new_file = true;
+                start_recording_response = Some(StartRecordingResponse::Synced);
+                // Buffer that will be written to the already open file
+                old_buf = buf.drain(..start_index).collect::<Vec<i16>>();
+            } else if **start_time < *start_timestamp {
+                warn!("Missed start time: {}, buffer start time: {}", start_time, start_timestamp);
+                new_file = true;
+                start_recording_response = Some(StartRecordingResponse::NotSynced {
+                    requested_time: start_time.clone(),
+                    processed_time: start_timestamp,
+                });
+            } else if *(start_time - &end_timestamp) > *MAX_START_WAIT {
+                warn!("Start time ({}) too far into future, starting now", start_time);
+                new_file = true;
+                start_recording_response = Some(StartRecordingResponse::NotSynced {
+                    requested_time: start_time.clone(),
+                    processed_time: end_timestamp,
+                });
+            }
+        }
+        self.write_data_split(old_buf)
+            .and_then(move |mgr| if new_file {
+                Either::A(mgr.new_file())
+            } else {
+                Either::B(future::finished(mgr))
+            })
+            .and_then(move |mut mgr| {
+                if let Some(start_recording_response) = start_recording_response {
+                    mgr.state = RecorderState::Recording;
+                    mgr.waiting_tx.drain(..).for_each(|tx| {
+                        tx.send(Ok(start_recording_response.clone())).ok();
+                    });
+                }
+                Ok(mgr)
+            }).and_then(|mgr| mgr.write_data_split(buf))
     }
 
     fn set_state_and_respond<T>(res: Result<WriteManager, Error>,
@@ -416,7 +411,8 @@ impl WriteManager {
         }
     }
 
-    fn start_recording(mut self, timestamp: AudioTimestamp, tx: ControlSender<()>) -> impl Future<Item=Self, Error=Error> {
+    fn start_recording(mut self, timestamp: AudioTimestamp, tx: ControlSender<StartRecordingResponse>)
+                       -> impl Future<Item=Self, Error=Error> {
         self.waiting_tx.drain(..).for_each(|tx| {
             tx.send(Err(ControlError::Cancelled)).ok();
         });
@@ -442,7 +438,7 @@ impl Manager for WriteManager {
         match control {
             RecorderControl::StartRecording(timestamp, tx) => Box::new(self.start_recording(timestamp, tx)),
             RecorderControl::StopRecording(tx) => Box::new(self.stop_recording(tx)),
-            RecorderControl::Data(buf, status) => Box::new(self.write_data_wait(buf, status)),
+            RecorderControl::Data(buf, status) => Box::new(self.write_data_sync(buf, status)),
             RecorderControl::GetState(tx) => {
                 tx.send(Ok(self.state.clone())).ok();
                 Box::new(future::finished(self))
@@ -451,7 +447,7 @@ impl Manager for WriteManager {
     }
 }
 
-impl AudioRecorder {
+impl Recorder {
     pub fn run(self) {
         let mut runtime = ::tokio::runtime::Runtime::new().unwrap();
 
@@ -546,6 +542,7 @@ impl AudioRecorderBuilder {
 
         // Enable timestamps
         sw_params.set_tstamp_mode(true)?;
+        sw_params.set_tstamp_type(alsa::pcm::TstampType::GetTimeOfDay)?;
 
         pcm.sw_params(&sw_params)?;
 
@@ -555,7 +552,7 @@ impl AudioRecorderBuilder {
         Ok((hw_params, sw_params))
     }
 
-    pub fn build(self) -> Result<(AudioRecorder, RecorderController), Error> {
+    pub fn build(self) -> Result<(Recorder, RecorderController), Error> {
         // Recording
 
         let pcm = alsa::PCM::new(
@@ -654,7 +651,7 @@ impl AudioRecorderBuilder {
         let mixer_future = Box::new(mixer_rx.forward(mixer_sink)
             .map(|_| ()));
 
-        Ok((AudioRecorder {
+        Ok((Recorder {
             mixer_future,
             recording_future,
         }, RecorderController {
@@ -694,7 +691,7 @@ impl RecorderController {
         rx
     }
 
-    pub fn start_recording(&self, time: AudioTimestamp) -> impl Future<Item=(), Error=ControlError> {
+    pub fn start_recording(&self, time: AudioTimestamp) -> impl Future<Item=StartRecordingResponse, Error=ControlError> {
         let (tx, rx) = ControlFuture::channel();
         self.send_recorder_control(RecorderControl::StartRecording(time, tx));
         rx

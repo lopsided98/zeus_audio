@@ -22,6 +22,318 @@ use protobuf::Message as Message_imported_for_functions;
 use protobuf::ProtobufEnum as ProtobufEnum_imported_for_functions;
 
 #[derive(PartialEq,Clone,Default)]
+pub struct StartRecordingRequest {
+    // message fields
+    pub time: u64,
+    // special fields
+    unknown_fields: ::protobuf::UnknownFields,
+    cached_size: ::protobuf::CachedSize,
+}
+
+impl StartRecordingRequest {
+    pub fn new() -> StartRecordingRequest {
+        ::std::default::Default::default()
+    }
+
+    // uint64 time = 1;
+
+    pub fn clear_time(&mut self) {
+        self.time = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_time(&mut self, v: u64) {
+        self.time = v;
+    }
+
+    pub fn get_time(&self) -> u64 {
+        self.time
+    }
+}
+
+impl ::protobuf::Message for StartRecordingRequest {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_uint64()?;
+                    self.time = tmp;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.time != 0 {
+            my_size += ::protobuf::rt::value_size(1, self.time, ::protobuf::wire_format::WireTypeVarint);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream) -> ::protobuf::ProtobufResult<()> {
+        if self.time != 0 {
+            os.write_uint64(1, self.time)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &::std::any::Any {
+        self as &::std::any::Any
+    }
+    fn as_any_mut(&mut self) -> &mut ::std::any::Any {
+        self as &mut ::std::any::Any
+    }
+    fn into_any(self: Box<Self>) -> ::std::boxed::Box<::std::any::Any> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> StartRecordingRequest {
+        StartRecordingRequest::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const ::protobuf::reflect::MessageDescriptor,
+        };
+        unsafe {
+            descriptor.get(|| {
+                let mut fields = ::std::vec::Vec::new();
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint64>(
+                    "time",
+                    |m: &StartRecordingRequest| { &m.time },
+                    |m: &mut StartRecordingRequest| { &mut m.time },
+                ));
+                ::protobuf::reflect::MessageDescriptor::new::<StartRecordingRequest>(
+                    "StartRecordingRequest",
+                    fields,
+                    file_descriptor_proto()
+                )
+            })
+        }
+    }
+
+    fn default_instance() -> &'static StartRecordingRequest {
+        static mut instance: ::protobuf::lazy::Lazy<StartRecordingRequest> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const StartRecordingRequest,
+        };
+        unsafe {
+            instance.get(StartRecordingRequest::new)
+        }
+    }
+}
+
+impl ::protobuf::Clear for StartRecordingRequest {
+    fn clear(&mut self) {
+        self.clear_time();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for StartRecordingRequest {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for StartRecordingRequest {
+    fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
+        ::protobuf::reflect::ProtobufValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
+pub struct StartRecordingResponse {
+    // message fields
+    pub synced: bool,
+    // special fields
+    unknown_fields: ::protobuf::UnknownFields,
+    cached_size: ::protobuf::CachedSize,
+}
+
+impl StartRecordingResponse {
+    pub fn new() -> StartRecordingResponse {
+        ::std::default::Default::default()
+    }
+
+    // bool synced = 1;
+
+    pub fn clear_synced(&mut self) {
+        self.synced = false;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_synced(&mut self, v: bool) {
+        self.synced = v;
+    }
+
+    pub fn get_synced(&self) -> bool {
+        self.synced
+    }
+}
+
+impl ::protobuf::Message for StartRecordingResponse {
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream) -> ::protobuf::ProtobufResult<()> {
+        while !is.eof()? {
+            let (field_number, wire_type) = is.read_tag_unpack()?;
+            match field_number {
+                1 => {
+                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
+                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
+                    }
+                    let tmp = is.read_bool()?;
+                    self.synced = tmp;
+                },
+                _ => {
+                    ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u32 {
+        let mut my_size = 0;
+        if self.synced != false {
+            my_size += 2;
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
+        self.cached_size.set(my_size);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream) -> ::protobuf::ProtobufResult<()> {
+        if self.synced != false {
+            os.write_bool(1, self.synced)?;
+        }
+        os.write_unknown_fields(self.get_unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn get_cached_size(&self) -> u32 {
+        self.cached_size.get()
+    }
+
+    fn get_unknown_fields(&self) -> &::protobuf::UnknownFields {
+        &self.unknown_fields
+    }
+
+    fn mut_unknown_fields(&mut self) -> &mut ::protobuf::UnknownFields {
+        &mut self.unknown_fields
+    }
+
+    fn as_any(&self) -> &::std::any::Any {
+        self as &::std::any::Any
+    }
+    fn as_any_mut(&mut self) -> &mut ::std::any::Any {
+        self as &mut ::std::any::Any
+    }
+    fn into_any(self: Box<Self>) -> ::std::boxed::Box<::std::any::Any> {
+        self
+    }
+
+    fn descriptor(&self) -> &'static ::protobuf::reflect::MessageDescriptor {
+        Self::descriptor_static()
+    }
+
+    fn new() -> StartRecordingResponse {
+        StartRecordingResponse::new()
+    }
+
+    fn descriptor_static() -> &'static ::protobuf::reflect::MessageDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const ::protobuf::reflect::MessageDescriptor,
+        };
+        unsafe {
+            descriptor.get(|| {
+                let mut fields = ::std::vec::Vec::new();
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBool>(
+                    "synced",
+                    |m: &StartRecordingResponse| { &m.synced },
+                    |m: &mut StartRecordingResponse| { &mut m.synced },
+                ));
+                ::protobuf::reflect::MessageDescriptor::new::<StartRecordingResponse>(
+                    "StartRecordingResponse",
+                    fields,
+                    file_descriptor_proto()
+                )
+            })
+        }
+    }
+
+    fn default_instance() -> &'static StartRecordingResponse {
+        static mut instance: ::protobuf::lazy::Lazy<StartRecordingResponse> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const StartRecordingResponse,
+        };
+        unsafe {
+            instance.get(StartRecordingResponse::new)
+        }
+    }
+}
+
+impl ::protobuf::Clear for StartRecordingResponse {
+    fn clear(&mut self) {
+        self.clear_synced();
+        self.unknown_fields.clear();
+    }
+}
+
+impl ::std::fmt::Debug for StartRecordingResponse {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for StartRecordingResponse {
+    fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
+        ::protobuf::reflect::ProtobufValueRef::Message(self)
+    }
+}
+
+#[derive(PartialEq,Clone,Default)]
 pub struct Status {
     // message fields
     pub recorder_state: Status_RecorderState,
@@ -549,23 +861,26 @@ impl ::protobuf::reflect::ProtobufValue for AudioLevels {
 
 static file_descriptor_proto_data: &'static [u8] = b"\
     \n\x12audio_server.proto\x12\x15audio_recorder.protos\x1a\x1bgoogle/prot\
-    obuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x96\x01\n\x06S\
-    tatus\x12R\n\x0erecorder_state\x18\x01\x20\x01(\x0e2+.audio_recorder.pro\
-    tos.Status.RecorderStateR\rrecorderState\"8\n\rRecorderState\x12\x0b\n\
-    \x07STOPPED\x10\0\x12\x0b\n\x07WAITING\x10\x01\x12\r\n\tRECORDING\x10\
-    \x02\")\n\rLevelsRequest\x12\x18\n\x07average\x18\x01\x20\x01(\x08R\x07a\
-    verage\")\n\x0bAudioLevels\x12\x1a\n\x08channels\x18\x01\x20\x03(\x02R\
-    \x08channels2\xcd\x04\n\x0bAudioServer\x12B\n\x0eStartRecording\x12\x16.\
-    google.protobuf.Empty\x1a\x16.google.protobuf.Empty\"\0\x12A\n\rStopReco\
-    rding\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\"\0\
-    \x12D\n\tGetStatus\x12\x16.google.protobuf.Empty\x1a\x1d.audio_recorder.\
-    protos.Status\"\0\x12Y\n\tGetLevels\x12$.audio_recorder.protos.LevelsReq\
-    uest\x1a\".audio_recorder.protos.AudioLevels\"\00\x01\x12H\n\x08SetMixer\
-    \x12\".audio_recorder.protos.AudioLevels\x1a\x16.google.protobuf.Empty\"\
-    \0\x12H\n\x08GetMixer\x12\x16.google.protobuf.Empty\x1a\".audio_recorder\
-    .protos.AudioLevels\"\0\x12?\n\x07SetTime\x12\x1a.google.protobuf.Timest\
-    amp\x1a\x16.google.protobuf.Empty\"\0\x12A\n\rStartTimeSync\x12\x16.goog\
-    le.protobuf.Empty\x1a\x16.google.protobuf.Empty\"\0b\x06proto3\
+    obuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"+\n\x15StartRec\
+    ordingRequest\x12\x12\n\x04time\x18\x01\x20\x01(\x04R\x04time\"0\n\x16St\
+    artRecordingResponse\x12\x16\n\x06synced\x18\x01\x20\x01(\x08R\x06synced\
+    \"\x96\x01\n\x06Status\x12R\n\x0erecorder_state\x18\x01\x20\x01(\x0e2+.a\
+    udio_recorder.protos.Status.RecorderStateR\rrecorderState\"8\n\rRecorder\
+    State\x12\x0b\n\x07STOPPED\x10\0\x12\x0b\n\x07WAITING\x10\x01\x12\r\n\tR\
+    ECORDING\x10\x02\")\n\rLevelsRequest\x12\x18\n\x07average\x18\x01\x20\
+    \x01(\x08R\x07average\")\n\x0bAudioLevels\x12\x1a\n\x08channels\x18\x01\
+    \x20\x03(\x02R\x08channels2\xfa\x04\n\x0bAudioServer\x12o\n\x0eStartReco\
+    rding\x12,.audio_recorder.protos.StartRecordingRequest\x1a-.audio_record\
+    er.protos.StartRecordingResponse\"\0\x12A\n\rStopRecording\x12\x16.googl\
+    e.protobuf.Empty\x1a\x16.google.protobuf.Empty\"\0\x12D\n\tGetStatus\x12\
+    \x16.google.protobuf.Empty\x1a\x1d.audio_recorder.protos.Status\"\0\x12Y\
+    \n\tGetLevels\x12$.audio_recorder.protos.LevelsRequest\x1a\".audio_recor\
+    der.protos.AudioLevels\"\00\x01\x12H\n\x08SetMixer\x12\".audio_recorder.\
+    protos.AudioLevels\x1a\x16.google.protobuf.Empty\"\0\x12H\n\x08GetMixer\
+    \x12\x16.google.protobuf.Empty\x1a\".audio_recorder.protos.AudioLevels\"\
+    \0\x12?\n\x07SetTime\x12\x1a.google.protobuf.Timestamp\x1a\x16.google.pr\
+    otobuf.Empty\"\0\x12A\n\rStartTimeSync\x12\x16.google.protobuf.Empty\x1a\
+    \x16.google.protobuf.Empty\"\0b\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy {

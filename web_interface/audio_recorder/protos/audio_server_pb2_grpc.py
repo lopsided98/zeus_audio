@@ -18,8 +18,8 @@ class AudioServerStub(object):
     """
     self.StartRecording = channel.unary_unary(
         '/audio_recorder.protos.AudioServer/StartRecording',
-        request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-        response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+        request_serializer=audio__recorder_dot_protos_dot_audio__server__pb2.StartRecordingRequest.SerializeToString,
+        response_deserializer=audio__recorder_dot_protos_dot_audio__server__pb2.StartRecordingResponse.FromString,
         )
     self.StopRecording = channel.unary_unary(
         '/audio_recorder.protos.AudioServer/StopRecording',
@@ -123,8 +123,8 @@ def add_AudioServerServicer_to_server(servicer, server):
   rpc_method_handlers = {
       'StartRecording': grpc.unary_unary_rpc_method_handler(
           servicer.StartRecording,
-          request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-          response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+          request_deserializer=audio__recorder_dot_protos_dot_audio__server__pb2.StartRecordingRequest.FromString,
+          response_serializer=audio__recorder_dot_protos_dot_audio__server__pb2.StartRecordingResponse.SerializeToString,
       ),
       'StopRecording': grpc.unary_unary_rpc_method_handler(
           servicer.StopRecording,

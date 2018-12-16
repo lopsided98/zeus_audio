@@ -47,8 +47,12 @@ def root():
 
 @app.route('/start', methods=('POST',))
 def start():
-    _audio_server.StartRecording(Empty())
-    return '', 204
+    body = request.get_json()
+    req = audio_server_pb2.StartRecordingRequest(time=int(body['time'] * 1_000_000_000))
+    response = _audio_server.StartRecording(req)
+    return flask.jsonify({
+        'synced': response.synced
+    })
 
 
 @app.route('/stop', methods=('POST',))

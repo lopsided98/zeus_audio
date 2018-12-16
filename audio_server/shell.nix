@@ -4,14 +4,12 @@ stdenv.mkDerivation {
   buildInputs = [
     rustc
     cargo
-    rustPlatform.rustcSrc
     grpc
     protobuf
     alsaLib
     cmake
     pkgconfig
     which
-    #rust-bindgen
   ];
 
   # Doesn't work in debug builds
@@ -25,6 +23,6 @@ stdenv.mkDerivation {
     name = "rust-toolchain";
     paths = [ rustc cargo ];
   };
-  RUST_SRC = rustPlatform.rustcSrc;
+  RUST_SRC_PATH = rustPlatform.rustcSrc;
 }
 

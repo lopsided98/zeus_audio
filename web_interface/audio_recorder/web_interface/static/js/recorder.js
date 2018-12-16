@@ -62,10 +62,10 @@ class Device {
         this.shutdownButton.onclick = () => shutdownConfirmDialog.show().then(this.shutdown.bind(this));
     }
 
-    setRecording(recording) {
+    setRecording(recording, time = new Date()) {
         let func;
         if (recording) {
-            func = this.audioServer.startRecording();
+            func = this.audioServer.startRecording(time);
         } else {
             func = this.audioServer.stopRecording();
         }
@@ -115,7 +115,12 @@ window.onload = () => {
     const shutdownAllButton = document.getElementById("shutdown-all-button");
     const shutdownAllConfirmDialog = new ConfirmDialog(document.getElementById("shutdown-all-confirm-dialog"));
 
-    recordAllButton.onclick = () => devices.forEach(d => d.setRecording(true));
+    recordAllButton.onclick = () => {
+        let time = new Date();
+        // Try to start in 1 second
+        time.setMilliseconds(time.getMilliseconds() + 1000);
+        devices.forEach(d => d.setRecording(true, time));
+    };
     stopAllButton.onclick = () => devices.forEach(d => d.setRecording(false));
 
     // Wait for all recorders to shutdown except for #1 (which broadcasts the network), then shut it down

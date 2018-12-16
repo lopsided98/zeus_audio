@@ -6,7 +6,7 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
 service AudioServer {
-    rpc StartRecording (google.protobuf.Empty) returns (google.protobuf.Empty) {
+    rpc StartRecording (StartRecordingRequest) returns (StartRecordingResponse) {
     }
     rpc StopRecording (google.protobuf.Empty) returns (google.protobuf.Empty) {
     }
@@ -28,6 +28,14 @@ service AudioServer {
     
     rpc StartTimeSync(google.protobuf.Empty) returns (google.protobuf.Empty) {
     }
+}
+
+message StartRecordingRequest {
+    uint64 time = 1;
+}
+
+message StartRecordingResponse {
+    bool synced = 1;
 }
 
 message Status {

@@ -18,7 +18,7 @@
 #![allow(unused_imports)]
 #![allow(unused_results)]
 
-const METHOD_AUDIO_SERVER_START_RECORDING: ::grpcio::Method<super::empty::Empty, super::empty::Empty> = ::grpcio::Method {
+const METHOD_AUDIO_SERVER_START_RECORDING: ::grpcio::Method<super::audio_server::StartRecordingRequest, super::audio_server::StartRecordingResponse> = ::grpcio::Method {
     ty: ::grpcio::MethodType::Unary,
     name: "/audio_recorder.protos.AudioServer/StartRecording",
     req_mar: ::grpcio::Marshaller { ser: ::grpcio::pb_ser, de: ::grpcio::pb_de },
@@ -86,19 +86,19 @@ impl AudioServerClient {
         }
     }
 
-    pub fn start_recording_opt(&self, req: &super::empty::Empty, opt: ::grpcio::CallOption) -> ::grpcio::Result<super::empty::Empty> {
+    pub fn start_recording_opt(&self, req: &super::audio_server::StartRecordingRequest, opt: ::grpcio::CallOption) -> ::grpcio::Result<super::audio_server::StartRecordingResponse> {
         self.client.unary_call(&METHOD_AUDIO_SERVER_START_RECORDING, req, opt)
     }
 
-    pub fn start_recording(&self, req: &super::empty::Empty) -> ::grpcio::Result<super::empty::Empty> {
+    pub fn start_recording(&self, req: &super::audio_server::StartRecordingRequest) -> ::grpcio::Result<super::audio_server::StartRecordingResponse> {
         self.start_recording_opt(req, ::grpcio::CallOption::default())
     }
 
-    pub fn start_recording_async_opt(&self, req: &super::empty::Empty, opt: ::grpcio::CallOption) -> ::grpcio::Result<::grpcio::ClientUnaryReceiver<super::empty::Empty>> {
+    pub fn start_recording_async_opt(&self, req: &super::audio_server::StartRecordingRequest, opt: ::grpcio::CallOption) -> ::grpcio::Result<::grpcio::ClientUnaryReceiver<super::audio_server::StartRecordingResponse>> {
         self.client.unary_call_async(&METHOD_AUDIO_SERVER_START_RECORDING, req, opt)
     }
 
-    pub fn start_recording_async(&self, req: &super::empty::Empty) -> ::grpcio::Result<::grpcio::ClientUnaryReceiver<super::empty::Empty>> {
+    pub fn start_recording_async(&self, req: &super::audio_server::StartRecordingRequest) -> ::grpcio::Result<::grpcio::ClientUnaryReceiver<super::audio_server::StartRecordingResponse>> {
         self.start_recording_async_opt(req, ::grpcio::CallOption::default())
     }
 
@@ -211,7 +211,7 @@ impl AudioServerClient {
 }
 
 pub trait AudioServer {
-    fn start_recording(&mut self, ctx: ::grpcio::RpcContext, req: super::empty::Empty, sink: ::grpcio::UnarySink<super::empty::Empty>);
+    fn start_recording(&mut self, ctx: ::grpcio::RpcContext, req: super::audio_server::StartRecordingRequest, sink: ::grpcio::UnarySink<super::audio_server::StartRecordingResponse>);
     fn stop_recording(&mut self, ctx: ::grpcio::RpcContext, req: super::empty::Empty, sink: ::grpcio::UnarySink<super::empty::Empty>);
     fn get_status(&mut self, ctx: ::grpcio::RpcContext, req: super::empty::Empty, sink: ::grpcio::UnarySink<super::audio_server::Status>);
     fn get_levels(&mut self, ctx: ::grpcio::RpcContext, req: super::audio_server::LevelsRequest, sink: ::grpcio::ServerStreamingSink<super::audio_server::AudioLevels>);

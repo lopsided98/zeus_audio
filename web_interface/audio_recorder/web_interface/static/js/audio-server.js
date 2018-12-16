@@ -6,8 +6,12 @@ export default class AudioServer {
         this.baseUrl = baseUrl;
     }
 
-    startRecording() {
+    startRecording(date = new Date()) {
         return this.fetch('/start', {
+            body: JSON.stringify({
+                time: date.getTime() / 1000
+            }),
+            headers: {'content-type': 'application/json'},
             method: 'POST'
         });
     }

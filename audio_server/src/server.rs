@@ -20,10 +20,13 @@ use super::protos::audio_server::{AudioLevels, LevelsRequest, Status};
 use super::protos::audio_server_grpc;
 use super::protos::empty::Empty;
 use super::protos::timestamp::Timestamp;
-use crate::audio::AudioTimestamp;
+use crate::audio::timestamp::AudioTimestamp;
 use crate::clock::Clock;
 use std::fmt::Display;
 use crate::protos::audio_server::Status_RecorderState;
+use crate::protos::audio_server::StartRecordingResponse;
+use crate::audio;
+use crate::protos::audio_server::StartRecordingRequest;
 
 #[derive(Clone)]
 pub struct AudioServer {
@@ -64,9 +67,17 @@ impl AudioServer {
 }
 
 impl audio_server_grpc::AudioServer for AudioServer {
-    fn start_recording(&mut self, ctx: RpcContext, req: Empty, sink: UnarySink<Empty>) {
-        ctx.spawn(Self::handle_errors(self.audio.start_recording(AudioTimestamp::now())
-                                          .map(|_| Empty::new()), req, sink));
+    fn start_recording(&mut self, ctx: RpcContext, req: StartRecordingRequest, sink: UnarySink<StartRecordingResponse>) {
+        let time = AudioTimestamp(req.time);
+        ctx.spawn(Self::handle_errors(self.audio.start_recording(time)
+                                          .and_then(|res| {
+                                              let mut response = StartRecordingResponse::new();
+                                              response.synced = match res {
+                                                  audio::StartRecordingResponse::Synced => true,
+                                                  audio::StartRecordingResponse::NotSynced { .. } => false
+                                              };
+                                              Ok(response)
+                                          }), req, sink));
     }
 
     fn stop_recording(&mut self, ctx: RpcContext, req: Empty, sink: UnarySink<Empty>) {
