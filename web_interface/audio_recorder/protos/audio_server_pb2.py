@@ -21,11 +21,37 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='audio_recorder/protos/audio_server.proto',
   package='audio_recorder.protos',
   syntax='proto3',
-  serialized_pb=_b('\n(audio_recorder/protos/audio_server.proto\x12\x15\x61udio_recorder.protos\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x1b\n\x06Status\x12\x11\n\trecording\x18\x01 \x01(\x08\" \n\rLevelsRequest\x12\x0f\n\x07\x61verage\x18\x01 \x01(\x08\"\x1f\n\x0b\x41udioLevels\x12\x10\n\x08\x63hannels\x18\x01 \x03(\x02\x32\x8a\x04\n\x0b\x41udioServer\x12\x42\n\x0eStartRecording\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\"\x00\x12\x41\n\rStopRecording\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\"\x00\x12\x44\n\tGetStatus\x12\x16.google.protobuf.Empty\x1a\x1d.audio_recorder.protos.Status\"\x00\x12Y\n\tGetLevels\x12$.audio_recorder.protos.LevelsRequest\x1a\".audio_recorder.protos.AudioLevels\"\x00\x30\x01\x12H\n\x08SetMixer\x12\".audio_recorder.protos.AudioLevels\x1a\x16.google.protobuf.Empty\"\x00\x12H\n\x08GetMixer\x12\x16.google.protobuf.Empty\x1a\".audio_recorder.protos.AudioLevels\"\x00\x12?\n\x07SetTime\x12\x1a.google.protobuf.Timestamp\x1a\x16.google.protobuf.Empty\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n(audio_recorder/protos/audio_server.proto\x12\x15\x61udio_recorder.protos\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x87\x01\n\x06Status\x12\x43\n\x0erecorder_state\x18\x01 \x01(\x0e\x32+.audio_recorder.protos.Status.RecorderState\"8\n\rRecorderState\x12\x0b\n\x07STOPPED\x10\x00\x12\x0b\n\x07WAITING\x10\x01\x12\r\n\tRECORDING\x10\x02\" \n\rLevelsRequest\x12\x0f\n\x07\x61verage\x18\x01 \x01(\x08\"\x1f\n\x0b\x41udioLevels\x12\x10\n\x08\x63hannels\x18\x01 \x03(\x02\x32\xcd\x04\n\x0b\x41udioServer\x12\x42\n\x0eStartRecording\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\"\x00\x12\x41\n\rStopRecording\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\"\x00\x12\x44\n\tGetStatus\x12\x16.google.protobuf.Empty\x1a\x1d.audio_recorder.protos.Status\"\x00\x12Y\n\tGetLevels\x12$.audio_recorder.protos.LevelsRequest\x1a\".audio_recorder.protos.AudioLevels\"\x00\x30\x01\x12H\n\x08SetMixer\x12\".audio_recorder.protos.AudioLevels\x1a\x16.google.protobuf.Empty\"\x00\x12H\n\x08GetMixer\x12\x16.google.protobuf.Empty\x1a\".audio_recorder.protos.AudioLevels\"\x00\x12?\n\x07SetTime\x12\x1a.google.protobuf.Timestamp\x1a\x16.google.protobuf.Empty\"\x00\x12\x41\n\rStartTimeSync\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\"\x00\x62\x06proto3')
   ,
   dependencies=[google_dot_protobuf_dot_empty__pb2.DESCRIPTOR,google_dot_protobuf_dot_timestamp__pb2.DESCRIPTOR,])
 
 
+
+_STATUS_RECORDERSTATE = _descriptor.EnumDescriptor(
+  name='RecorderState',
+  full_name='audio_recorder.protos.Status.RecorderState',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='STOPPED', index=0, number=0,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='WAITING', index=1, number=1,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='RECORDING', index=2, number=2,
+      options=None,
+      type=None),
+  ],
+  containing_type=None,
+  options=None,
+  serialized_start=209,
+  serialized_end=265,
+)
+_sym_db.RegisterEnumDescriptor(_STATUS_RECORDERSTATE)
 
 
 _STATUS = _descriptor.Descriptor(
@@ -36,9 +62,9 @@ _STATUS = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='recording', full_name='audio_recorder.protos.Status.recording', index=0,
-      number=1, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
+      name='recorder_state', full_name='audio_recorder.protos.Status.recorder_state', index=0,
+      number=1, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
@@ -47,6 +73,7 @@ _STATUS = _descriptor.Descriptor(
   ],
   nested_types=[],
   enum_types=[
+    _STATUS_RECORDERSTATE,
   ],
   options=None,
   is_extendable=False,
@@ -54,8 +81,8 @@ _STATUS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=129,
-  serialized_end=156,
+  serialized_start=130,
+  serialized_end=265,
 )
 
 
@@ -85,8 +112,8 @@ _LEVELSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=158,
-  serialized_end=190,
+  serialized_start=267,
+  serialized_end=299,
 )
 
 
@@ -116,10 +143,12 @@ _AUDIOLEVELS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=192,
-  serialized_end=223,
+  serialized_start=301,
+  serialized_end=332,
 )
 
+_STATUS.fields_by_name['recorder_state'].enum_type = _STATUS_RECORDERSTATE
+_STATUS_RECORDERSTATE.containing_type = _STATUS
 DESCRIPTOR.message_types_by_name['Status'] = _STATUS
 DESCRIPTOR.message_types_by_name['LevelsRequest'] = _LEVELSREQUEST
 DESCRIPTOR.message_types_by_name['AudioLevels'] = _AUDIOLEVELS
@@ -154,8 +183,8 @@ _AUDIOSERVER = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   options=None,
-  serialized_start=226,
-  serialized_end=748,
+  serialized_start=335,
+  serialized_end=924,
   methods=[
   _descriptor.MethodDescriptor(
     name='StartRecording',
@@ -217,6 +246,15 @@ _AUDIOSERVER = _descriptor.ServiceDescriptor(
     index=6,
     containing_service=None,
     input_type=google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP,
+    output_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='StartTimeSync',
+    full_name='audio_recorder.protos.AudioServer.StartTimeSync',
+    index=7,
+    containing_service=None,
+    input_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
     output_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
     options=None,
   ),

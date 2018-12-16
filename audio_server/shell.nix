@@ -19,5 +19,12 @@ stdenv.mkDerivation {
 
   # Set Environment Variables
   RUST_BACKTRACE = 1;
+  
+  
+  RUST_TOOLCHAIN = buildEnv {
+    name = "rust-toolchain";
+    paths = [ rustc cargo ];
+  };
+  RUST_SRC = rustPlatform.rustcSrc;
 }
 

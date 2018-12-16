@@ -5,11 +5,11 @@ import threading
 import time
 
 import flask
+import flask_cors
 import grpc
 from flask import request
 from google.protobuf.empty_pb2 import Empty
 from google.protobuf.timestamp_pb2 import Timestamp
-import flask_cors
 
 import audio_recorder.protos.audio_server_pb2 as audio_server_pb2
 import audio_recorder.protos.audio_server_pb2_grpc as audio_server_pb2_grpc
@@ -61,7 +61,9 @@ def stop():
 def status():
     status = _audio_server.GetStatus(Empty())
     return flask.jsonify({
-        'recording': status.recording
+        # TODO: remove recording attribute
+        'recording': status.recorder_state == audio_server_pb2.Status.RECORDING,
+        'recorder_state': audio_server_pb2.Status.RecorderState.Name(status.recorder_state)
     })
 
 
@@ -92,6 +94,12 @@ def set_mixer():
 def set_time():
     time = request.get_json()
     _audio_server.SetTime(Timestamp(seconds=time['seconds'], nanos=time['nanos']))
+    return '', 204
+
+
+@app.route('/start_time_sync', methods=('POST',))
+def start_time_sync():
+    _audio_server.StartTimeSync(Empty())
     return '', 204
 
 

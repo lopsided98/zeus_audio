@@ -21,19 +21,21 @@ use super::protos::audio_server_grpc;
 use super::protos::empty::Empty;
 use super::protos::timestamp::Timestamp;
 use crate::audio::AudioTimestamp;
+use crate::clock::Clock;
+use std::fmt::Display;
+use crate::protos::audio_server::Status_RecorderState;
 
 #[derive(Clone)]
 pub struct AudioServer {
     audio: RecorderController,
-    // This is not shared between server clones, because only the set_time method needs it
-    time_set: bool,
+    clock: Clock,
 }
 
 impl AudioServer {
-    pub fn new(audio: RecorderController) -> Self {
+    pub fn new(audio: RecorderController, clock: Clock) -> Self {
         AudioServer {
             audio,
-            time_set: false,
+            clock,
         }
     }
 
@@ -41,25 +43,23 @@ impl AudioServer {
         self.audio.clone()
     }
 
-    fn handle_errors<F, R: 'static + Debug + Send, S>(future: F, req: R, sink: UnarySink<S>) -> impl Future<Item=(), Error=()>
-        where F: futures::IntoFuture<Item=S>,
+    fn handle_errors<F, R: 'static + Debug + Send, S, E>(future: F, req: R, sink: UnarySink<S>) -> impl Future<Item=(), Error=()>
+        where F: futures::IntoFuture<Item=S, Error=E>,
               F::Error: Debug,
-              R: 'static + Debug + Send {
+              R: 'static + Debug + Send,
+              E: Display {
         future.into_future().then(|res| {
             match res {
                 Ok(item) => sink.success(item),
-                Err(e) => sink.fail(grpcio::RpcStatus::new(
-                    grpcio::RpcStatusCode::Internal,
-                    Some(format!("{:?}", e)),
-                ))
+                Err(e) => {
+                    error!("{}", e);
+                    sink.fail(grpcio::RpcStatus::new(
+                        grpcio::RpcStatusCode::Internal,
+                        Some(format!("{}", e)),
+                    ))
+                }
             }
         }).map_err(move |e| error!("failed to reply to {:?}: {:?}", req, e))
-    }
-
-    fn spawn_success<R: 'static + Debug + Send, S>(msg: S, ctx: RpcContext, req: R, sink: UnarySink<S>) {
-        ctx.spawn(sink
-            .success(msg)
-            .map_err(move |e| error!("failed to reply to {:?}: {:?}", req, e)));
     }
 }
 
@@ -78,9 +78,10 @@ impl audio_server_grpc::AudioServer for AudioServer {
         ctx.spawn(Self::handle_errors(self.audio.get_state()
                                           .map(|state| {
                                               let mut status = Status::new();
-                                              status.recording = match state {
-                                                  RecorderState::Recording => true,
-                                                  _ => false
+                                              status.recorder_state = match state {
+                                                  RecorderState::Recording => Status_RecorderState::RECORDING,
+                                                  RecorderState::Waiting(_) => Status_RecorderState::WAITING,
+                                                  RecorderState::Stopped => Status_RecorderState::STOPPED,
                                               };
                                               status
                                           }), req, sink));
@@ -130,26 +131,28 @@ impl audio_server_grpc::AudioServer for AudioServer {
     }
 
     fn set_time(&mut self, ctx: RpcContext, req: Timestamp, sink: UnarySink<Empty>) {
-        if !self.time_set {
-            let r = clock::set_time(req.seconds as u64, req.nanos as u32);
-            match r {
-                Ok(_) => {
-                    self.time_set = true;
-                    info!("System time set to: {:?}", std::time::Instant::now());
-                }
-                Err(e) => warn!("Failed to set system time: {}", e)
-            }
-        } else {
-            debug!("System time is already set, ignoring request");
-        }
+        let seconds = req.seconds as i64;
+        let nanos = req.nanos as i32;
+        ctx.spawn(Self::handle_errors(self.clock.set_time(seconds, nanos)
+                                          .or_else(|e| match e {
+                                              clock::Error::TimeAlreadySet => {
+                                                  debug!("{}", e);
+                                                  Ok(())
+                                              }
+                                              _ => Err(e)
+                                          })
+                                          .map(|_| Empty::new()), req, sink));
+    }
 
-        Self::spawn_success(Empty::new(), ctx, req, sink);
+    fn start_time_sync(&mut self, ctx: RpcContext, req: Empty, sink: UnarySink<Empty>) {
+        ctx.spawn(Self::handle_errors(self.clock.start_sync()
+                                          .map(|_| Empty::new()), req, sink));
     }
 }
 
-pub fn run(audio: RecorderController) -> grpcio::Result<Server> {
+pub fn run(audio: RecorderController, clock: Clock) -> grpcio::Result<Server> {
     let env = Arc::new(Environment::new(1));
-    let service = audio_server_grpc::create_audio_server(AudioServer::new(audio));
+    let service = audio_server_grpc::create_audio_server(AudioServer::new(audio, clock));
     let mut server = ServerBuilder::new(env)
         .register_service(service)
         .bind("[::1]", 34876)

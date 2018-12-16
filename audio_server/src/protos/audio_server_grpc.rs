@@ -67,6 +67,13 @@ const METHOD_AUDIO_SERVER_SET_TIME: ::grpcio::Method<super::timestamp::Timestamp
     resp_mar: ::grpcio::Marshaller { ser: ::grpcio::pb_ser, de: ::grpcio::pb_de },
 };
 
+const METHOD_AUDIO_SERVER_START_TIME_SYNC: ::grpcio::Method<super::empty::Empty, super::empty::Empty> = ::grpcio::Method {
+    ty: ::grpcio::MethodType::Unary,
+    name: "/audio_recorder.protos.AudioServer/StartTimeSync",
+    req_mar: ::grpcio::Marshaller { ser: ::grpcio::pb_ser, de: ::grpcio::pb_de },
+    resp_mar: ::grpcio::Marshaller { ser: ::grpcio::pb_ser, de: ::grpcio::pb_de },
+};
+
 #[derive(Clone)]
 pub struct AudioServerClient {
     client: ::grpcio::Client,
@@ -182,6 +189,22 @@ impl AudioServerClient {
     pub fn set_time_async(&self, req: &super::timestamp::Timestamp) -> ::grpcio::Result<::grpcio::ClientUnaryReceiver<super::empty::Empty>> {
         self.set_time_async_opt(req, ::grpcio::CallOption::default())
     }
+
+    pub fn start_time_sync_opt(&self, req: &super::empty::Empty, opt: ::grpcio::CallOption) -> ::grpcio::Result<super::empty::Empty> {
+        self.client.unary_call(&METHOD_AUDIO_SERVER_START_TIME_SYNC, req, opt)
+    }
+
+    pub fn start_time_sync(&self, req: &super::empty::Empty) -> ::grpcio::Result<super::empty::Empty> {
+        self.start_time_sync_opt(req, ::grpcio::CallOption::default())
+    }
+
+    pub fn start_time_sync_async_opt(&self, req: &super::empty::Empty, opt: ::grpcio::CallOption) -> ::grpcio::Result<::grpcio::ClientUnaryReceiver<super::empty::Empty>> {
+        self.client.unary_call_async(&METHOD_AUDIO_SERVER_START_TIME_SYNC, req, opt)
+    }
+
+    pub fn start_time_sync_async(&self, req: &super::empty::Empty) -> ::grpcio::Result<::grpcio::ClientUnaryReceiver<super::empty::Empty>> {
+        self.start_time_sync_async_opt(req, ::grpcio::CallOption::default())
+    }
     pub fn spawn<F>(&self, f: F) where F: ::futures::Future<Item = (), Error = ()> + Send + 'static {
         self.client.spawn(f)
     }
@@ -195,6 +218,7 @@ pub trait AudioServer {
     fn set_mixer(&mut self, ctx: ::grpcio::RpcContext, req: super::audio_server::AudioLevels, sink: ::grpcio::UnarySink<super::empty::Empty>);
     fn get_mixer(&mut self, ctx: ::grpcio::RpcContext, req: super::empty::Empty, sink: ::grpcio::UnarySink<super::audio_server::AudioLevels>);
     fn set_time(&mut self, ctx: ::grpcio::RpcContext, req: super::timestamp::Timestamp, sink: ::grpcio::UnarySink<super::empty::Empty>);
+    fn start_time_sync(&mut self, ctx: ::grpcio::RpcContext, req: super::empty::Empty, sink: ::grpcio::UnarySink<super::empty::Empty>);
 }
 
 pub fn create_audio_server<S: AudioServer + Send + Clone + 'static>(s: S) -> ::grpcio::Service {
@@ -226,6 +250,10 @@ pub fn create_audio_server<S: AudioServer + Send + Clone + 'static>(s: S) -> ::g
     let mut instance = s.clone();
     builder = builder.add_unary_handler(&METHOD_AUDIO_SERVER_SET_TIME, move |ctx, req, resp| {
         instance.set_time(ctx, req, resp)
+    });
+    let mut instance = s.clone();
+    builder = builder.add_unary_handler(&METHOD_AUDIO_SERVER_START_TIME_SYNC, move |ctx, req, resp| {
+        instance.start_time_sync(ctx, req, resp)
     });
     builder.build()
 }

@@ -18,7 +18,6 @@ use futures::Poll;
 use futures::Sink;
 use futures::Stream;
 use futures::sync::mpsc;
-use futures::sync::oneshot;
 use hound::SampleFormat;
 use hound::WavSpec;
 use libc::timespec;
@@ -29,6 +28,9 @@ use crate::audio::tee::EndpointRegistration;
 use crate::audio::tee::TeeMap;
 use crate::audio::tokio::PCMStream;
 use crate::audio::wav::WavSink;
+use crate::manager;
+use crate::manager::Manager;
+use crate::manager::ManagerSink;
 
 pub mod mio;
 pub mod tokio;
@@ -63,36 +65,6 @@ pub enum Error {
     Unknown,
 }
 
-/// Future used to communicate back to a caller that an audio control request
-/// has completed, possibly signalling an error.
-pub struct ControlFuture<T> {
-    rx: oneshot::Receiver<Result<T, ControlError>>
-}
-
-impl<T> ControlFuture<T> {
-    pub fn channel() -> (ControlSender<T>, ControlFuture<T>) {
-        let (tx, rx) = oneshot::channel();
-        (tx, ControlFuture { rx })
-    }
-}
-
-impl<T> Future for ControlFuture<T> {
-    type Item = T;
-    type Error = ControlError;
-
-    fn poll(&mut self) -> Poll<T, ControlError> {
-        match self.rx.poll() {
-            Ok(Async::Ready(Ok(r))) => Ok(Async::Ready(r)),
-            Ok(Async::Ready(Err(e))) => Err(e),
-            Ok(Async::NotReady) => Ok(Async::NotReady),
-            // The audio stream should never drop a sender before completion
-            Err(_) => panic!("Audio stream has been shutdown")
-        }
-    }
-}
-
-type ControlSender<T> = oneshot::Sender<Result<T, ControlError>>;
-
 #[derive(Fail, Debug)]
 pub enum ControlError {
     #[fail(display = "Control was scheduled for {} but not processed until {}", scheduled_time, processed_time)]
@@ -105,6 +77,9 @@ pub enum ControlError {
     #[fail(display = "Control failed: {}", _0)]
     Failed(#[fail(cause)] failure::Error),
 }
+
+type ControlFuture<T> = manager::ControlFuture<T, ControlError>;
+type ControlSender<T> = manager::ControlSender<T, ControlError>;
 
 #[derive(Debug)]
 enum MixerControl {
@@ -240,7 +215,7 @@ impl Manager for MixerManager {
 #[derive(Debug, Clone)]
 pub struct AudioTimestamp {
     pub seconds: i64,
-    pub nanos: i64,
+    pub nanos: i32,
 }
 
 impl AudioTimestamp {
@@ -251,7 +226,7 @@ impl AudioTimestamp {
     pub fn from_millis(millis: i64) -> Self {
         Self {
             seconds: millis / 1000,
-            nanos: (millis % 1000) * 1_000_000,
+            nanos: ((millis % 1000) * 1_000_000) as i32,
         }
     }
 }
@@ -260,7 +235,7 @@ impl From<libc::timespec> for AudioTimestamp {
     fn from(t: timespec) -> Self {
         Self {
             seconds: t.tv_sec as i64,
-            nanos: t.tv_sec as i64,
+            nanos: t.tv_nsec as i32,
         }
     }
 }
@@ -273,7 +248,7 @@ impl From<SystemTime> for AudioTimestamp {
             .expect("Timestamp earlier than epoch");
         Self {
             seconds: since_epoch.as_secs() as i64,
-            nanos: since_epoch.subsec_nanos() as i64,
+            nanos: since_epoch.subsec_nanos() as i32,
         }
     }
 }
@@ -417,7 +392,7 @@ impl WriteManager {
     fn write_data_wait(self, buf: Vec<i16>, status: alsa::pcm::Status) -> impl Future<Item=Self, Error=Error> {
         let audio_timestamp: AudioTimestamp = status.get_htstamp().into();
         let current_timestamp: AudioTimestamp = SystemTime::now().into();
-        debug!("status: {:?}", status);
+//        debug!("status: {:?}", status);
 //        debug!("timestamp: {:?}, {:?}", audio_timestamp, current_timestamp);
         self.write_data_split(buf)
     }
@@ -473,69 +448,6 @@ impl Manager for WriteManager {
                 Box::new(future::finished(self))
             }
         }
-    }
-}
-
-trait Manager {
-    type Item;
-    type Error;
-
-    fn next_future(self, item: Self::Item) -> Box<dyn Future<Item=Self, Error=Self::Error> + Send>;
-}
-
-struct ManagerSink<M: Manager> {
-    mgr: Option<M>,
-    future: Option<Box<dyn Future<Item=M, Error=M::Error> + Send>>,
-}
-
-impl<M: Manager> ManagerSink<M> {
-    pub fn new(mgr: M) -> Self {
-        Self {
-            mgr: Some(mgr),
-            future: None,
-        }
-    }
-}
-
-impl<M: Manager> Sink for ManagerSink<M> {
-    type SinkItem = M::Item;
-    type SinkError = M::Error;
-
-    fn start_send(&mut self, item: M::Item) -> Result<AsyncSink<M::Item>, M::Error> {
-        if self.future.is_none() {
-            let mgr = std::mem::replace(&mut self.mgr, None).unwrap();
-            self.future = Some(mgr.next_future(item));
-            return Ok(AsyncSink::Ready);
-        }
-
-        match self.future.as_mut().unwrap().poll() {
-            Ok(Async::Ready(mgr)) => {
-                self.future = Some(mgr.next_future(item));
-                Ok(AsyncSink::Ready)
-            }
-            Err(e) => Err(e),
-            Ok(Async::NotReady) => Ok(AsyncSink::NotReady(item))
-        }
-    }
-
-    fn poll_complete(&mut self) -> Poll<(), M::Error> {
-        if self.future.is_some() {
-            match self.future.as_mut().unwrap().poll() {
-                Ok(Async::Ready(mgr)) => {
-                    self.mgr = Some(mgr);
-                    self.future = None;
-                    Ok(Async::Ready(()))
-                }
-                Err(e) => Err(e),
-                Ok(Async::NotReady) => Ok(Async::NotReady)
-            }
-        } else {
-            Ok(Async::Ready(()))
-        }
-    }
-
-    fn close(&mut self) -> Poll<(), M::Error> {
-        self.poll_complete()
     }
 }
 

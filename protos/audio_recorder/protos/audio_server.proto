@@ -25,10 +25,18 @@ service AudioServer {
 
     rpc SetTime(google.protobuf.Timestamp) returns (google.protobuf.Empty) {
     }
+    
+    rpc StartTimeSync(google.protobuf.Empty) returns (google.protobuf.Empty) {
+    }
 }
 
 message Status {
-    bool recording = 1;
+    enum RecorderState {
+        STOPPED = 0;
+        WAITING = 1;
+        RECORDING = 2;
+    }
+    RecorderState recorder_state = 1;
 }
 
 message LevelsRequest {

@@ -24,7 +24,7 @@ use protobuf::ProtobufEnum as ProtobufEnum_imported_for_functions;
 #[derive(PartialEq,Clone,Default)]
 pub struct Status {
     // message fields
-    pub recording: bool,
+    pub recorder_state: Status_RecorderState,
     // special fields
     unknown_fields: ::protobuf::UnknownFields,
     cached_size: ::protobuf::CachedSize,
@@ -35,19 +35,19 @@ impl Status {
         ::std::default::Default::default()
     }
 
-    // bool recording = 1;
+    // .audio_recorder.protos.Status.RecorderState recorder_state = 1;
 
-    pub fn clear_recording(&mut self) {
-        self.recording = false;
+    pub fn clear_recorder_state(&mut self) {
+        self.recorder_state = Status_RecorderState::STOPPED;
     }
 
     // Param is passed by value, moved
-    pub fn set_recording(&mut self, v: bool) {
-        self.recording = v;
+    pub fn set_recorder_state(&mut self, v: Status_RecorderState) {
+        self.recorder_state = v;
     }
 
-    pub fn get_recording(&self) -> bool {
-        self.recording
+    pub fn get_recorder_state(&self) -> Status_RecorderState {
+        self.recorder_state
     }
 }
 
@@ -61,11 +61,7 @@ impl ::protobuf::Message for Status {
             let (field_number, wire_type) = is.read_tag_unpack()?;
             match field_number {
                 1 => {
-                    if wire_type != ::protobuf::wire_format::WireTypeVarint {
-                        return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
-                    }
-                    let tmp = is.read_bool()?;
-                    self.recording = tmp;
+                    ::protobuf::rt::read_proto3_enum_with_unknown_fields_into(wire_type, is, &mut self.recorder_state, 1, &mut self.unknown_fields)?
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -79,8 +75,8 @@ impl ::protobuf::Message for Status {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u32 {
         let mut my_size = 0;
-        if self.recording != false {
-            my_size += 2;
+        if self.recorder_state != Status_RecorderState::STOPPED {
+            my_size += ::protobuf::rt::enum_size(1, self.recorder_state);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -88,8 +84,8 @@ impl ::protobuf::Message for Status {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream) -> ::protobuf::ProtobufResult<()> {
-        if self.recording != false {
-            os.write_bool(1, self.recording)?;
+        if self.recorder_state != Status_RecorderState::STOPPED {
+            os.write_enum(1, self.recorder_state.value())?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -133,10 +129,10 @@ impl ::protobuf::Message for Status {
         unsafe {
             descriptor.get(|| {
                 let mut fields = ::std::vec::Vec::new();
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBool>(
-                    "recording",
-                    |m: &Status| { &m.recording },
-                    |m: &mut Status| { &mut m.recording },
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeEnum<Status_RecorderState>>(
+                    "recorder_state",
+                    |m: &Status| { &m.recorder_state },
+                    |m: &mut Status| { &mut m.recorder_state },
                 ));
                 ::protobuf::reflect::MessageDescriptor::new::<Status>(
                     "Status",
@@ -160,7 +156,7 @@ impl ::protobuf::Message for Status {
 
 impl ::protobuf::Clear for Status {
     fn clear(&mut self) {
-        self.clear_recording();
+        self.clear_recorder_state();
         self.unknown_fields.clear();
     }
 }
@@ -174,6 +170,64 @@ impl ::std::fmt::Debug for Status {
 impl ::protobuf::reflect::ProtobufValue for Status {
     fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
         ::protobuf::reflect::ProtobufValueRef::Message(self)
+    }
+}
+
+#[derive(Clone,PartialEq,Eq,Debug,Hash)]
+pub enum Status_RecorderState {
+    STOPPED = 0,
+    WAITING = 1,
+    RECORDING = 2,
+}
+
+impl ::protobuf::ProtobufEnum for Status_RecorderState {
+    fn value(&self) -> i32 {
+        *self as i32
+    }
+
+    fn from_i32(value: i32) -> ::std::option::Option<Status_RecorderState> {
+        match value {
+            0 => ::std::option::Option::Some(Status_RecorderState::STOPPED),
+            1 => ::std::option::Option::Some(Status_RecorderState::WAITING),
+            2 => ::std::option::Option::Some(Status_RecorderState::RECORDING),
+            _ => ::std::option::Option::None
+        }
+    }
+
+    fn values() -> &'static [Self] {
+        static values: &'static [Status_RecorderState] = &[
+            Status_RecorderState::STOPPED,
+            Status_RecorderState::WAITING,
+            Status_RecorderState::RECORDING,
+        ];
+        values
+    }
+
+    fn enum_descriptor_static() -> &'static ::protobuf::reflect::EnumDescriptor {
+        static mut descriptor: ::protobuf::lazy::Lazy<::protobuf::reflect::EnumDescriptor> = ::protobuf::lazy::Lazy {
+            lock: ::protobuf::lazy::ONCE_INIT,
+            ptr: 0 as *const ::protobuf::reflect::EnumDescriptor,
+        };
+        unsafe {
+            descriptor.get(|| {
+                ::protobuf::reflect::EnumDescriptor::new("Status_RecorderState", file_descriptor_proto())
+            })
+        }
+    }
+}
+
+impl ::std::marker::Copy for Status_RecorderState {
+}
+
+impl ::std::default::Default for Status_RecorderState {
+    fn default() -> Self {
+        Status_RecorderState::STOPPED
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for Status_RecorderState {
+    fn as_ref(&self) -> ::protobuf::reflect::ProtobufValueRef {
+        ::protobuf::reflect::ProtobufValueRef::Enum(self.descriptor())
     }
 }
 
@@ -495,20 +549,23 @@ impl ::protobuf::reflect::ProtobufValue for AudioLevels {
 
 static file_descriptor_proto_data: &'static [u8] = b"\
     \n\x12audio_server.proto\x12\x15audio_recorder.protos\x1a\x1bgoogle/prot\
-    obuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"&\n\x06Status\
-    \x12\x1c\n\trecording\x18\x01\x20\x01(\x08R\trecording\")\n\rLevelsReque\
-    st\x12\x18\n\x07average\x18\x01\x20\x01(\x08R\x07average\")\n\x0bAudioLe\
-    vels\x12\x1a\n\x08channels\x18\x01\x20\x03(\x02R\x08channels2\x8a\x04\n\
-    \x0bAudioServer\x12B\n\x0eStartRecording\x12\x16.google.protobuf.Empty\
-    \x1a\x16.google.protobuf.Empty\"\0\x12A\n\rStopRecording\x12\x16.google.\
-    protobuf.Empty\x1a\x16.google.protobuf.Empty\"\0\x12D\n\tGetStatus\x12\
-    \x16.google.protobuf.Empty\x1a\x1d.audio_recorder.protos.Status\"\0\x12Y\
-    \n\tGetLevels\x12$.audio_recorder.protos.LevelsRequest\x1a\".audio_recor\
-    der.protos.AudioLevels\"\00\x01\x12H\n\x08SetMixer\x12\".audio_recorder.\
-    protos.AudioLevels\x1a\x16.google.protobuf.Empty\"\0\x12H\n\x08GetMixer\
-    \x12\x16.google.protobuf.Empty\x1a\".audio_recorder.protos.AudioLevels\"\
-    \0\x12?\n\x07SetTime\x12\x1a.google.protobuf.Timestamp\x1a\x16.google.pr\
-    otobuf.Empty\"\0b\x06proto3\
+    obuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x96\x01\n\x06S\
+    tatus\x12R\n\x0erecorder_state\x18\x01\x20\x01(\x0e2+.audio_recorder.pro\
+    tos.Status.RecorderStateR\rrecorderState\"8\n\rRecorderState\x12\x0b\n\
+    \x07STOPPED\x10\0\x12\x0b\n\x07WAITING\x10\x01\x12\r\n\tRECORDING\x10\
+    \x02\")\n\rLevelsRequest\x12\x18\n\x07average\x18\x01\x20\x01(\x08R\x07a\
+    verage\")\n\x0bAudioLevels\x12\x1a\n\x08channels\x18\x01\x20\x03(\x02R\
+    \x08channels2\xcd\x04\n\x0bAudioServer\x12B\n\x0eStartRecording\x12\x16.\
+    google.protobuf.Empty\x1a\x16.google.protobuf.Empty\"\0\x12A\n\rStopReco\
+    rding\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\"\0\
+    \x12D\n\tGetStatus\x12\x16.google.protobuf.Empty\x1a\x1d.audio_recorder.\
+    protos.Status\"\0\x12Y\n\tGetLevels\x12$.audio_recorder.protos.LevelsReq\
+    uest\x1a\".audio_recorder.protos.AudioLevels\"\00\x01\x12H\n\x08SetMixer\
+    \x12\".audio_recorder.protos.AudioLevels\x1a\x16.google.protobuf.Empty\"\
+    \0\x12H\n\x08GetMixer\x12\x16.google.protobuf.Empty\x1a\".audio_recorder\
+    .protos.AudioLevels\"\0\x12?\n\x07SetTime\x12\x1a.google.protobuf.Timest\
+    amp\x1a\x16.google.protobuf.Empty\"\0\x12A\n\rStartTimeSync\x12\x16.goog\
+    le.protobuf.Empty\x1a\x16.google.protobuf.Empty\"\0b\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy {

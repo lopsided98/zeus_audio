@@ -107,6 +107,8 @@ window.onload = () => {
     const shutdownConfirmDialog = new ConfirmDialog(document.getElementById("shutdown-confirm-dialog"));
     const devices = Array.from(document.getElementsByClassName('device')).map(container =>
         new Device(container, shutdownConfirmDialog, container.dataset.baseUrl));
+    const masterDevice = devices[0];
+    const syncDevices = devices.slice(1);
 
     const recordAllButton = document.getElementById("record-all-button");
     const stopAllButton = document.getElementById("stop-all-button");
@@ -117,7 +119,7 @@ window.onload = () => {
     stopAllButton.onclick = () => devices.forEach(d => d.setRecording(false));
 
     // Wait for all recorders to shutdown except for #1 (which broadcasts the network), then shut it down
-    shutdownAllButton.onclick = () => shutdownAllConfirmDialog.show().then(() => Promise.all(devices.slice(1)
+    shutdownAllButton.onclick = () => shutdownAllConfirmDialog.show().then(() => Promise.all(syncDevices
         .map(d => d.shutdown().catch(() => {
-        }))).then(() => devices[0].shutdown()));
+        }))).then(() => masterDevice.shutdown()));
 };

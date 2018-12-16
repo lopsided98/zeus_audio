@@ -52,6 +52,12 @@ export default class AudioServer {
         });
     }
 
+    startTimeSync() {
+        return this.fetch('/start_time_sync', {
+            method: 'POST'
+        });
+    }
+
     shutdown() {
         return this.fetch('/shutdown', {
             method: 'POST'
