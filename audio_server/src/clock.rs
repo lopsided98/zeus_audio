@@ -38,7 +38,7 @@ impl Clock {
     }
 
     fn chronyc_command() -> Command {
-        Command::new("echo")
+        Command::new("chronyc")
     }
 
     pub fn set_time(&mut self, seconds: i64, nanos: i32) -> Result<(), Error> {
@@ -65,17 +65,15 @@ impl Clock {
         if self.master {
             Either::A(Err(Error::Master).into_future())
         } else {
-            Either::B(Command::new("echo")
+            Either::B(Command::new("sudo")
                 .arg("-n") // Non-interactive mode
                 .arg("systemctl")
                 .arg("start")
                 .arg("chronyd")
                 .output_async().map_err(|e| Error::StartSyncFailed(e.into()))
                 .and_then(|output| if output.status.success() {
-                    debug!("ok systemctl");
                     Ok(())
                 } else {
-                    debug!("err systemctl");
                     let stderr = std::str::from_utf8(&output.stderr)
                         .map_err(|e| Error::StartSyncFailed(e.into()))?;
                     Err(Error::StartSyncFailed(format_err!("Failed to start chronyd: {}", stderr)))
@@ -85,7 +83,7 @@ impl Clock {
                     .arg("60") // Retry count
                     .arg("0")
                     .arg("0")
-                    .arg("0.5") // Check interval
+                    .arg("0.5") // Check interval (seconds)
                     .output_async().map_err(|e| Error::StartSyncFailed(e.into())))
                 .and_then(|output| if output.status.success() {
                     Ok(())

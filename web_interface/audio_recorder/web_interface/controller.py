@@ -65,8 +65,6 @@ def stop():
 def status():
     status = _audio_server.GetStatus(Empty())
     return flask.jsonify({
-        # TODO: remove recording attribute
-        'recording': status.recorder_state == audio_server_pb2.Status.RECORDING,
         'recorder_state': audio_server_pb2.Status.RecorderState.Name(status.recorder_state)
     })
 

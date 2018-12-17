@@ -68,7 +68,6 @@ fn main() -> Result<(), failure::Error> {
         env_logger::init();
     }
 
-
     debug!("{:?}", config);
 
     let (audio, audio_control) = AudioRecorderBuilder::new(config.file_prefix, config.audio_dir)

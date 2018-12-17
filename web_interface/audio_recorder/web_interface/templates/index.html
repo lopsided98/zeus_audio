@@ -31,6 +31,7 @@
             <section class="device flex flex-column items-center ph2" data-base-url="{{ device }}">
                 <span>{{ loop.index }}</span>
                 <button class="record-button f2 flex-shrink-0 bg-transparent bn dim dim-disabled light-red typcn typcn-media-record-outline"></button>
+                <span class="time-state-text"></span>
                 <canvas class="vu-meter pv1 ph2 flex-auto self-stretch" width="1" height="500" style="object-fit: fill"></canvas>
                 <button class="shutdown-button f2 flex-shrink-0 bg-transparent bn dim dim-disabled light-gray typcn typcn-power"
                         disabled></button>

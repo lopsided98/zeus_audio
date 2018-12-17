@@ -32,6 +32,7 @@ use crate::protos::audio_server::StartRecordingRequest;
 pub struct AudioServer {
     audio: RecorderController,
     clock: Clock,
+    runtime: Arc<tokio::runtime::Runtime>,
 }
 
 impl AudioServer {
@@ -39,6 +40,7 @@ impl AudioServer {
         AudioServer {
             audio,
             clock,
+            runtime: Arc::new(tokio::runtime::Runtime::new().unwrap()),
         }
     }
 
@@ -156,8 +158,9 @@ impl audio_server_grpc::AudioServer for AudioServer {
     }
 
     fn start_time_sync(&mut self, ctx: RpcContext, req: Empty, sink: UnarySink<Empty>) {
-        ctx.spawn(Self::handle_errors(self.clock.start_sync()
-                                          .map(|_| Empty::new()), req, sink));
+        self.runtime.executor().clone()
+            .spawn(Self::handle_errors(self.clock.start_sync()
+                                           .map(|_| Empty::new()), req, sink));
     }
 }
 
