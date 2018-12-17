@@ -350,6 +350,7 @@ impl WriteManager {
 
             if **start_time >= *start_timestamp && **start_time < *end_timestamp {
                 let start_index = (((**start_time - *start_timestamp) / period) * self.wav_spec.channels as u64) as usize;
+                debug!("Started synchronized recording: time: {}, split point: {}", start_time, start_index);
                 new_file = true;
                 start_recording_response = Some(StartRecordingResponse::Synced);
                 // Buffer that will be written to the already open file
