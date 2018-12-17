@@ -28,7 +28,20 @@ impl PCM {
         })
     }
 
-    pub fn poll_read(&mut self, buf: &mut [i16]) -> Poll<(usize, AudioTimestamp), alsa::Error> {
+    fn read_timestamp(&self, pcm: &alsa::PCM, buf: &mut [i16]) -> Result<(usize, AudioTimestamp), alsa::Error> {
+        let now = AudioTimestamp::now();
+        let mut delay = pcm.delay()?;
+        pcm.io_i16().unwrap().readi(buf).map(|n| {
+            // This shouldn't happen, but prevent an overflow if it does
+            if delay < 0 {
+                delay = 0;
+            }
+            let timestamp = &now - self.period * delay as u64;
+            (n, timestamp)
+        })
+    }
+
+    pub fn poll_read(&self, buf: &mut [i16]) -> Poll<(usize, AudioTimestamp), alsa::Error> {
         fn map_alsa_err(msg: &'static str, e: io::Error) -> alsa::Error {
             match e.raw_os_error() {
                 Some(e) => alsa::Error::new(msg, e),
@@ -37,50 +50,31 @@ impl PCM {
             }
         }
 
-        let poll = &mut self.poll;
+        let poll = &self.poll;
         try_ready!(poll.poll_read_ready(mio::Ready::readable())
             .map_err(|e| map_alsa_err("Failed to poll ALSA", e)));
 
         let pcm = poll.get_ref().get_ref();
 
-        let timestamp;
-
-        let res = {
-            let mut now;
-            let mut delay;
-
-            let mut res;
-            loop {
-                now = AudioTimestamp::now();
-                res = {
-                    delay = pcm.delay()?;
-                    pcm.io_i16().unwrap().readi(buf)
+        let res = loop {
+            let res = self.read_timestamp(pcm, buf);
+            if let Err(e) = res {
+                match pcm.state() {
+                    alsa::pcm::State::XRun => warn!("ALSA buffer overrun"),
+                    _ => ()
                 };
-                if let Err(e) = res {
-                    match pcm.state() {
-                        alsa::pcm::State::XRun => warn!("ALSA buffer overrun"),
-                        _ => ()
-                    };
-                    // Retry if the error could be recovered
-                    if pcm.try_recover(e, false).is_err() {
-                        break;
-                    }
-                } else {
-                    break;
+                // Retry if the error could be recovered
+                if pcm.try_recover(e, false).is_err() {
+                    debug!("Failed to recover ALSA error");
+                    break res;
                 }
+            } else {
+                break res;
             }
-
-            // This shouldn't happen, but prevent an overflow if it does
-            if delay < 0 {
-                delay = 0;
-            }
-            timestamp = &now - self.period * delay as u64;
-
-            res
         };
 
         match res {
-            Ok(n) => {
+            Ok((n, timestamp)) => {
                 poll.clear_read_ready(mio::Ready::readable())
                     .map_err(|e| map_alsa_err("Failed to clear mio ready", e))?;
                 Ok(Async::Ready((n * self.channels, timestamp)))

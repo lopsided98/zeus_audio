@@ -43,6 +43,7 @@ message Status {
         STOPPED = 0;
         WAITING = 1;
         RECORDING = 2;
+        RECORDING_SYNCED = 3;
     }
     RecorderState recorder_state = 1;
 }
