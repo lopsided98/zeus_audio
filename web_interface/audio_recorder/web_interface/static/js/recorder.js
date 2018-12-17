@@ -33,6 +33,7 @@ const RecordingState = Object.freeze({
     STOPPED: 1,
     WAITING: 2,
     RECORDING: 3,
+    RECORDING_SYNCED: 4,
 });
 
 const TimeState = Object.freeze({
@@ -77,6 +78,7 @@ class Device {
                     recording = true;
                     break;
                 case RecordingState.RECORDING:
+                case RecordingState.RECORDING_SYNCED:
                 case RecordingState.WAITING:
                     recording = false;
             }
@@ -122,19 +124,23 @@ class Device {
             case TimeState.SYNCED:
                 switch (this.recordingState) {
                     case RecordingState.STOPPED:
-                        this.timeStateText.innerHTML = "S";
+                        this.timeStateText.innerHTML = "R";
                         break;
                     case RecordingState.WAITING:
                         this.timeStateText.innerHTML = "W";
                         break;
                     case RecordingState.RECORDING:
-                        this.timeStateText.innerHTML = "OK";
+                        this.timeStateText.innerHTML = "NS";
+                        break;
+                    case RecordingState.RECORDING_SYNCED:
+                        this.timeStateText.innerHTML = "S";
                         break;
                 }
         }
 
         switch (this.recordingState) {
             case RecordingState.RECORDING:
+            case RecordingState.RECORDING_SYNCED:
                 this.recordButton.classList.remove('typcn-media-record-outline', 'light-red');
                 this.recordButton.classList.add('typcn-media-record', 'red');
                 break;

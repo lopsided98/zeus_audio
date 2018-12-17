@@ -95,7 +95,7 @@ pub enum StartRecordingResponse {
 pub enum RecorderState {
     Stopped,
     Waiting(AudioTimestamp),
-    Recording,
+    Recording(bool),
 }
 
 #[derive(Debug)]
@@ -379,7 +379,10 @@ impl WriteManager {
             })
             .and_then(move |mut mgr| {
                 if let Some(start_recording_response) = start_recording_response {
-                    mgr.state = RecorderState::Recording;
+                    mgr.state = RecorderState::Recording(match start_recording_response {
+                        StartRecordingResponse::Synced => true,
+                        StartRecordingResponse::NotSynced { .. } => false
+                    });
                     mgr.waiting_tx.drain(..).for_each(|tx| {
                         tx.send(Ok(start_recording_response.clone())).ok();
                     });

@@ -92,7 +92,8 @@ impl audio_server_grpc::AudioServer for AudioServer {
                                           .map(|state| {
                                               let mut status = Status::new();
                                               status.recorder_state = match state {
-                                                  RecorderState::Recording => Status_RecorderState::RECORDING,
+                                                  RecorderState::Recording(false) => Status_RecorderState::RECORDING,
+                                                  RecorderState::Recording(true) => Status_RecorderState::RECORDING_SYNCED,
                                                   RecorderState::Waiting(_) => Status_RecorderState::WAITING,
                                                   RecorderState::Stopped => Status_RecorderState::STOPPED,
                                               };
