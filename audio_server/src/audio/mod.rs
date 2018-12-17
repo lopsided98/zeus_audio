@@ -102,7 +102,7 @@ pub enum RecorderState {
 enum RecorderControl {
     StartRecording(AudioTimestamp, ControlSender<StartRecordingResponse>),
     StopRecording(ControlSender<()>),
-    Data(Vec<i16>, alsa::pcm::Status),
+    Data(Vec<i16>, AudioTimestamp),
     GetState(ControlSender<RecorderState>),
 }
 
@@ -338,20 +338,15 @@ impl WriteManager {
         }).map(|(mgr, _)| mgr)
     }
 
-    fn write_data_sync(self, mut buf: Vec<i16>, status: alsa::pcm::Status) -> impl Future<Item=Self, Error=Error> {
+    fn write_data_sync(self, mut buf: Vec<i16>, start_timestamp: AudioTimestamp) -> impl Future<Item=Self, Error=Error> {
         let mut new_file = false;
         let mut start_recording_response: Option<StartRecordingResponse> = None;
         let mut old_buf: Vec<i16> = vec![];
-        
+
         if let RecorderState::Waiting(start_time) = &self.state {
             let period = 1_000_000_000 / self.wav_spec.sample_rate as u64;
-
             let buf_time = period * (buf.len() / self.wav_spec.channels as usize) as u64;
-            let end_timestamp: AudioTimestamp = status.get_htstamp().into();
-            // Prevent overflow with erroneous zero timestamp
-            let start_timestamp = if *end_timestamp > buf_time {
-                &end_timestamp - &buf_time
-            } else { AudioTimestamp(0) };
+            let end_timestamp = &start_timestamp + buf_time;
 
             if **start_time >= *start_timestamp && **start_time < *end_timestamp {
                 let start_index = (((**start_time - *start_timestamp) / period) * self.wav_spec.channels as u64) as usize;
@@ -581,7 +576,7 @@ impl AudioRecorderBuilder {
         // Map set of samples to decibel levels for each channel
         let levels_map = {
             let channels = wav_spec.channels as usize;
-            move |(buf, _): &(Vec<i16>, alsa::pcm::Status)| {
+            move |(buf, _): &(Vec<i16>, AudioTimestamp)| {
                 let frames: usize = buf.len() / channels;
                 let mut sum_squares = vec![0f32; channels];
                 let mut levels = vec![0f32; channels];
@@ -608,9 +603,7 @@ impl AudioRecorderBuilder {
 
         let (recorder_tx, recorder_rx) = futures::sync::mpsc::unbounded();
 
-        let tstamp_config = alsa::pcm::AudioTstampConfig::new(2, true);
-
-        let recording_stream = PCMStream::from_alsa_pcm(pcm, tstamp_config)
+        let recording_stream = PCMStream::from_alsa_pcm(pcm)
             .map_err(|e| Error::CaptureError(e.into()))?
             .map_err(|e| Error::CaptureError(e.into()));
 

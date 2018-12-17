@@ -25,11 +25,27 @@ impl ops::Sub for &AudioTimestamp {
     }
 }
 
-impl ops::Sub<&u64> for &AudioTimestamp {
+impl ops::Sub<u64> for &AudioTimestamp {
     type Output = AudioTimestamp;
 
-    fn sub(self, rhs: &u64) -> AudioTimestamp {
+    fn sub(self, rhs: u64) -> AudioTimestamp {
         (**self - rhs).into()
+    }
+}
+
+impl ops::Add for &AudioTimestamp {
+    type Output = AudioTimestamp;
+
+    fn add(self, rhs: Self) -> AudioTimestamp {
+        (**self + **rhs).into()
+    }
+}
+
+impl ops::Add<u64> for &AudioTimestamp {
+    type Output = AudioTimestamp;
+
+    fn add(self, rhs: u64) -> AudioTimestamp {
+        (**self + rhs).into()
     }
 }
 

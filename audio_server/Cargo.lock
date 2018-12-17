@@ -9,7 +9,7 @@ dependencies = [
 [[package]]
 name = "alsa"
 version = "0.2.0"
-source = "git+https://github.com/lopsided98/alsa-rs#f9ac5cbb75cbeaeae9080a95ee8cdce2e0e571e7"
+source = "git+https://github.com/lopsided98/alsa-rs#fba9af35998a8e663c172d535757dde5a17d5576"
 dependencies = [
  "alsa-sys 0.1.2 (git+https://github.com/lopsided98/alsa-sys.git)",
  "bitflags 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -20,7 +20,7 @@ dependencies = [
 [[package]]
 name = "alsa-sys"
 version = "0.1.2"
-source = "git+https://github.com/lopsided98/alsa-sys.git#d2110a341137640fd1b71569ce5ac881fd5d58c7"
+source = "git+https://github.com/lopsided98/alsa-sys.git#8e1db5c61e38f8690cd11cff8a61e6983f586f58"
 dependencies = [
  "libc 0.2.45 (registry+https://github.com/rust-lang/crates.io-index)",
  "pkg-config 0.3.14 (registry+https://github.com/rust-lang/crates.io-index)",
