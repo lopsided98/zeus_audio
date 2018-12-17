@@ -18,5 +18,5 @@ rustPlatform.buildRustPackage rec {
   # Something is broken with running tests
   doCheck = false;
 
-  cargoSha256 = "0hn9593y7b3n0cavnhmar8jq2y8nsplm86yg2r5njrawsy5k57gh";
+  cargoSha256 = "0vxxs5mc5120j8fiqwiz90832fl0w67rnm2qix4mn6kaag7anfjr";
 }

@@ -157,7 +157,7 @@ impl audio_server_grpc::AudioServer for AudioServer {
                                           .map(|_| Empty::new()), req, sink));
     }
 
-    fn start_time_sync(&mut self, ctx: RpcContext, req: Empty, sink: UnarySink<Empty>) {
+    fn start_time_sync(&mut self, _ctx: RpcContext, req: Empty, sink: UnarySink<Empty>) {
         self.runtime.executor().clone()
             .spawn(Self::handle_errors(self.clock.start_sync()
                                            .map(|_| Empty::new()), req, sink));

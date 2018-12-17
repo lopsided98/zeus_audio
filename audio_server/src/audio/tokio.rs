@@ -46,21 +46,36 @@ impl PCM {
         let timestamp;
 
         let res = {
-            let now = AudioTimestamp::now();
-            let mut delay = pcm.delay()?;
+            let mut now;
+            let mut delay;
+
+            let mut res;
+            loop {
+                now = AudioTimestamp::now();
+                res = {
+                    delay = pcm.delay()?;
+                    pcm.io_i16().unwrap().readi(buf)
+                };
+                if let Err(e) = res {
+                    match pcm.state() {
+                        alsa::pcm::State::XRun => warn!("ALSA buffer overrun"),
+                        _ => ()
+                    };
+                    // Retry if the error could be recovered
+                    if pcm.try_recover(e, false).is_err() {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+
+            // This shouldn't happen, but prevent an overflow if it does
             if delay < 0 {
                 delay = 0;
             }
             timestamp = &now - self.period * delay as u64;
 
-            let mut res;
-            loop {
-                res = pcm.io_i16().unwrap().readi(buf);
-                // Retry if the error could be recovered
-                if res.is_ok() || pcm.try_recover(res.unwrap_err(), false).is_err() {
-                    break;
-                }
-            }
             res
         };
 
