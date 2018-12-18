@@ -38,7 +38,9 @@ impl Clock {
     }
 
     fn chronyc_command() -> Command {
-        Command::new("chronyc")
+        let mut c = Command::new("sudo");
+        c.arg("-n").arg("-u").arg("chrony").arg("chronyc");
+        c
     }
 
     pub fn set_time(&mut self, seconds: i64, nanos: i32) -> Result<(), Error> {
@@ -65,19 +67,31 @@ impl Clock {
         if self.master {
             Either::A(Err(Error::Master).into_future())
         } else {
-            Either::B(Command::new("sudo")
-                .arg("-n") // Non-interactive mode
-                .arg("systemctl")
-                .arg("start")
+            Either::B(Command::new("systemctl")
+                .arg("is-active")
+                .arg("--quiet")
                 .arg("chronyd")
-                .output_async().map_err(|e| Error::StartSyncFailed(e.into()))
-                .and_then(|output| if output.status.success() {
-                    Ok(())
-                } else {
-                    let stderr = std::str::from_utf8(&output.stderr)
-                        .map_err(|e| Error::StartSyncFailed(e.into()))?;
-                    Err(Error::StartSyncFailed(format_err!("Failed to start chronyd: {}", stderr)))
-                })
+                .status_async().map_err(|e| Error::StartSyncFailed(e.into()))
+                .into_future()
+                .and_then(|s| s.map_err(|e| Error::StartSyncFailed(e.into()))
+                    .and_then(|status| if status.success() {
+                        Err(Error::TimeAlreadySet)
+                    } else {
+                        Ok(())
+                    }))
+                .and_then(|_| Command::new("sudo")
+                    .arg("-n") // Non-interactive mode
+                    .arg("systemctl")
+                    .arg("start")
+                    .arg("chronyd")
+                    .output_async().map_err(|e| Error::StartSyncFailed(e.into()))
+                    .and_then(|output| if output.status.success() {
+                        Ok(())
+                    } else {
+                        let stderr = std::str::from_utf8(&output.stderr)
+                            .map_err(|e| Error::StartSyncFailed(e.into()))?;
+                        Err(Error::StartSyncFailed(format_err!("Failed to start chronyd: {}", stderr)))
+                    }))
                 .and_then(|_| Self::chronyc_command()
                     .arg("-m")
                     .arg("burst 10/15")

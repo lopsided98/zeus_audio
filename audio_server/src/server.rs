@@ -163,6 +163,13 @@ impl audio_server_grpc::AudioServer for AudioServer {
     fn start_time_sync(&mut self, _ctx: RpcContext, req: Empty, sink: UnarySink<Empty>) {
         self.runtime.executor().clone()
             .spawn(Self::handle_errors(self.clock.start_sync()
+                                           .or_else(|e| match e {
+                                               clock::Error::TimeAlreadySet => {
+                                                   debug!("{}", e);
+                                                   Ok(())
+                                               }
+                                               _ => Err(e)
+                                           })
                                            .map(|_| Empty::new()), req, sink));
     }
 }
