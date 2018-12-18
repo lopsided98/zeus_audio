@@ -66,38 +66,30 @@ impl Clock {
     pub fn start_sync(&self) -> impl Future<Item=(), Error=Error> {
         if self.master {
             Either::A(Err(Error::Master).into_future())
+        } else if self.time_set.load(Ordering::Relaxed) {
+            Either::A(Err(Error::TimeAlreadySet).into_future())
         } else {
-            Either::B(Command::new("systemctl")
-                .arg("is-active")
-                .arg("--quiet")
+            let time_set = self.time_set.clone();
+            Either::B(Command::new("sudo")
+                .arg("-n") // Non-interactive mode
+                .arg("systemctl")
+                .arg("start")
                 .arg("chronyd")
-                .status_async().map_err(|e| Error::StartSyncFailed(e.into()))
-                .into_future()
-                .and_then(|s| s.map_err(|e| Error::StartSyncFailed(e.into()))
-                    .and_then(|status| if status.success() {
-                        Err(Error::TimeAlreadySet)
-                    } else {
-                        Ok(())
-                    }))
-                .and_then(|_| Command::new("sudo")
-                    .arg("-n") // Non-interactive mode
-                    .arg("systemctl")
-                    .arg("start")
-                    .arg("chronyd")
-                    .output_async().map_err(|e| Error::StartSyncFailed(e.into()))
-                    .and_then(|output| if output.status.success() {
-                        Ok(())
-                    } else {
-                        let stderr = std::str::from_utf8(&output.stderr)
-                            .map_err(|e| Error::StartSyncFailed(e.into()))?;
-                        Err(Error::StartSyncFailed(format_err!("Failed to start chronyd: {}", stderr)))
-                    }))
+                .output_async().map_err(|e| Error::StartSyncFailed(e.into()))
+                .and_then(|output| if output.status.success() {
+                    Ok(())
+                } else {
+                    let stderr = std::str::from_utf8(&output.stderr)
+                        .map_err(|e| Error::StartSyncFailed(e.into()))?;
+                    Err(Error::StartSyncFailed(format_err!("Failed to start chronyd: {}", stderr)))
+                })
                 .and_then(|_| Self::chronyc_command()
                     .arg("-m")
                     .arg("burst 10/15")
                     .arg("waitsync 30 0 0 0.5")
                     .output_async().map_err(|e| Error::StartSyncFailed(e.into())))
-                .and_then(|output| if output.status.success() {
+                .and_then(move |output| if output.status.success() {
+                    time_set.store(true, Ordering::Relaxed);
                     Ok(())
                 } else {
                     let stdout = std::str::from_utf8(&output.stdout)
