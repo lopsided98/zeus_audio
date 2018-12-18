@@ -488,9 +488,10 @@ impl ::protobuf::reflect::ProtobufValue for Status {
 #[derive(Clone,PartialEq,Eq,Debug,Hash)]
 pub enum Status_RecorderState {
     STOPPED = 0,
-    WAITING = 1,
+    STOPPED_WAITING = 1,
     RECORDING = 2,
     RECORDING_SYNCED = 3,
+    RECORDING_WAITING = 4,
 }
 
 impl ::protobuf::ProtobufEnum for Status_RecorderState {
@@ -501,9 +502,10 @@ impl ::protobuf::ProtobufEnum for Status_RecorderState {
     fn from_i32(value: i32) -> ::std::option::Option<Status_RecorderState> {
         match value {
             0 => ::std::option::Option::Some(Status_RecorderState::STOPPED),
-            1 => ::std::option::Option::Some(Status_RecorderState::WAITING),
+            1 => ::std::option::Option::Some(Status_RecorderState::STOPPED_WAITING),
             2 => ::std::option::Option::Some(Status_RecorderState::RECORDING),
             3 => ::std::option::Option::Some(Status_RecorderState::RECORDING_SYNCED),
+            4 => ::std::option::Option::Some(Status_RecorderState::RECORDING_WAITING),
             _ => ::std::option::Option::None
         }
     }
@@ -511,9 +513,10 @@ impl ::protobuf::ProtobufEnum for Status_RecorderState {
     fn values() -> &'static [Self] {
         static values: &'static [Status_RecorderState] = &[
             Status_RecorderState::STOPPED,
-            Status_RecorderState::WAITING,
+            Status_RecorderState::STOPPED_WAITING,
             Status_RecorderState::RECORDING,
             Status_RecorderState::RECORDING_SYNCED,
+            Status_RecorderState::RECORDING_WAITING,
         ];
         values
     }
@@ -867,24 +870,24 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     obuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"+\n\x15StartRec\
     ordingRequest\x12\x12\n\x04time\x18\x01\x20\x01(\x04R\x04time\"0\n\x16St\
     artRecordingResponse\x12\x16\n\x06synced\x18\x01\x20\x01(\x08R\x06synced\
-    \"\xac\x01\n\x06Status\x12R\n\x0erecorder_state\x18\x01\x20\x01(\x0e2+.a\
-    udio_recorder.protos.Status.RecorderStateR\rrecorderState\"N\n\rRecorder\
-    State\x12\x0b\n\x07STOPPED\x10\0\x12\x0b\n\x07WAITING\x10\x01\x12\r\n\tR\
-    ECORDING\x10\x02\x12\x14\n\x10RECORDING_SYNCED\x10\x03\")\n\rLevelsReque\
-    st\x12\x18\n\x07average\x18\x01\x20\x01(\x08R\x07average\")\n\x0bAudioLe\
-    vels\x12\x1a\n\x08channels\x18\x01\x20\x03(\x02R\x08channels2\xfa\x04\n\
-    \x0bAudioServer\x12o\n\x0eStartRecording\x12,.audio_recorder.protos.Star\
-    tRecordingRequest\x1a-.audio_recorder.protos.StartRecordingResponse\"\0\
-    \x12A\n\rStopRecording\x12\x16.google.protobuf.Empty\x1a\x16.google.prot\
-    obuf.Empty\"\0\x12D\n\tGetStatus\x12\x16.google.protobuf.Empty\x1a\x1d.a\
-    udio_recorder.protos.Status\"\0\x12Y\n\tGetLevels\x12$.audio_recorder.pr\
-    otos.LevelsRequest\x1a\".audio_recorder.protos.AudioLevels\"\00\x01\x12H\
-    \n\x08SetMixer\x12\".audio_recorder.protos.AudioLevels\x1a\x16.google.pr\
-    otobuf.Empty\"\0\x12H\n\x08GetMixer\x12\x16.google.protobuf.Empty\x1a\".\
-    audio_recorder.protos.AudioLevels\"\0\x12?\n\x07SetTime\x12\x1a.google.p\
-    rotobuf.Timestamp\x1a\x16.google.protobuf.Empty\"\0\x12A\n\rStartTimeSyn\
-    c\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\"\0b\x06pr\
-    oto3\
+    \"\xcb\x01\n\x06Status\x12R\n\x0erecorder_state\x18\x01\x20\x01(\x0e2+.a\
+    udio_recorder.protos.Status.RecorderStateR\rrecorderState\"m\n\rRecorder\
+    State\x12\x0b\n\x07STOPPED\x10\0\x12\x13\n\x0fSTOPPED_WAITING\x10\x01\
+    \x12\r\n\tRECORDING\x10\x02\x12\x14\n\x10RECORDING_SYNCED\x10\x03\x12\
+    \x15\n\x11RECORDING_WAITING\x10\x04\")\n\rLevelsRequest\x12\x18\n\x07ave\
+    rage\x18\x01\x20\x01(\x08R\x07average\")\n\x0bAudioLevels\x12\x1a\n\x08c\
+    hannels\x18\x01\x20\x03(\x02R\x08channels2\xfa\x04\n\x0bAudioServer\x12o\
+    \n\x0eStartRecording\x12,.audio_recorder.protos.StartRecordingRequest\
+    \x1a-.audio_recorder.protos.StartRecordingResponse\"\0\x12A\n\rStopRecor\
+    ding\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\"\0\x12\
+    D\n\tGetStatus\x12\x16.google.protobuf.Empty\x1a\x1d.audio_recorder.prot\
+    os.Status\"\0\x12Y\n\tGetLevels\x12$.audio_recorder.protos.LevelsRequest\
+    \x1a\".audio_recorder.protos.AudioLevels\"\00\x01\x12H\n\x08SetMixer\x12\
+    \".audio_recorder.protos.AudioLevels\x1a\x16.google.protobuf.Empty\"\0\
+    \x12H\n\x08GetMixer\x12\x16.google.protobuf.Empty\x1a\".audio_recorder.p\
+    rotos.AudioLevels\"\0\x12?\n\x07SetTime\x12\x1a.google.protobuf.Timestam\
+    p\x1a\x16.google.protobuf.Empty\"\0\x12A\n\rStartTimeSync\x12\x16.google\
+    .protobuf.Empty\x1a\x16.google.protobuf.Empty\"\0b\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy {

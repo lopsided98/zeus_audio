@@ -41,9 +41,10 @@ message StartRecordingResponse {
 message Status {
     enum RecorderState {
         STOPPED = 0;
-        WAITING = 1;
+        STOPPED_WAITING = 1;
         RECORDING = 2;
         RECORDING_SYNCED = 3;
+        RECORDING_WAITING = 4;
     }
     RecorderState recorder_state = 1;
 }

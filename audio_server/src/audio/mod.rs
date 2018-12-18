@@ -94,7 +94,10 @@ pub enum StartRecordingResponse {
 #[derive(Clone, Debug)]
 pub enum RecorderState {
     Stopped,
-    Waiting(AudioTimestamp),
+    Waiting {
+        timestamp: AudioTimestamp,
+        recording: bool, // Whether we were already recording
+    },
     Recording(bool),
 }
 
@@ -343,7 +346,7 @@ impl WriteManager {
         let mut start_recording_response: Option<StartRecordingResponse> = None;
         let mut old_buf: Vec<i16> = vec![];
 
-        if let RecorderState::Waiting(start_time) = &self.state {
+        if let RecorderState::Waiting { timestamp: start_time, .. } = &self.state {
             let period = 1_000_000_000 / self.wav_spec.sample_rate as u64;
             let buf_time = period * (buf.len() / self.wav_spec.channels as usize) as u64;
             let end_timestamp = &start_timestamp + buf_time;
@@ -415,7 +418,14 @@ impl WriteManager {
         self.waiting_tx.drain(..).for_each(|tx| {
             tx.send(Err(ControlError::Cancelled)).ok();
         });
-        self.state = RecorderState::Waiting(timestamp);
+
+        self.state = RecorderState::Waiting {
+            timestamp,
+            recording: match self.state {
+                RecorderState::Recording(_) => true,
+                _ => false
+            },
+        };
         self.waiting_tx.push(tx);
         future::finished(self)
     }

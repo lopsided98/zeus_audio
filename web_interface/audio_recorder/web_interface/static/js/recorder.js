@@ -31,9 +31,10 @@ class VuMeter {
 
 const RecordingState = Object.freeze({
     STOPPED: 1,
-    WAITING: 2,
+    STOPPED_WAITING: 2,
     RECORDING: 3,
     RECORDING_SYNCED: 4,
+    RECORDING_WAITING: 5,
 });
 
 const TimeState = Object.freeze({
@@ -71,27 +72,26 @@ class Device {
             this.vuMeter.update(levels[0]);
         };
 
-        this.recordButton.onclick = () => {
-            let recording;
-            switch (this.recordingState) {
-                case RecordingState.STOPPED:
-                    recording = true;
-                    break;
-                case RecordingState.RECORDING:
-                case RecordingState.RECORDING_SYNCED:
-                case RecordingState.WAITING:
-                    recording = false;
-            }
-            this.setRecording(recording);
-        };
+        this.recordButton.onclick = () => this.setRecording(!this.isRecording());
         this.shutdownButton.onclick = () => shutdownConfirmDialog.show().then(this.shutdown.bind(this));
+    }
+
+
+    isRecording() {
+        return this.recordingState === RecordingState.RECORDING ||
+            this.recordingState === RecordingState.RECORDING_SYNCED ||
+            this.recordingState === RecordingState.RECORDING_WAITING
     }
 
     setRecording(recording, time = new Date()) {
         let func;
         if (recording) {
             func = this.audioServer.startRecording(time);
-            this.setRecordingState(RecordingState.WAITING);
+            if (this.isRecording()) {
+                this.setRecordingState(RecordingState.RECORDING_WAITING);
+            } else {
+                this.setRecordingState(RecordingState.STOPPED_WAITING);
+            }
         } else {
             func = this.audioServer.stopRecording();
         }
@@ -107,6 +107,8 @@ class Device {
                 } else {
                     this.setRecordingState(RecordingState.STOPPED);
                 }
+            } else {
+                this.setRecordingState(RecordingState.STOPPED);
             }
         }).catch(this.setConnected.bind(this, false));
     }
@@ -131,7 +133,8 @@ class Device {
                     case RecordingState.STOPPED:
                         this.timeStateText.innerHTML = "R";
                         break;
-                    case RecordingState.WAITING:
+                    case RecordingState.RECORDING_WAITING:
+                    case RecordingState.STOPPED_WAITING:
                         this.timeStateText.innerHTML = "W";
                         break;
                     case RecordingState.RECORDING:
@@ -143,22 +146,21 @@ class Device {
                 }
         }
 
-        switch (this.recordingState) {
-            case RecordingState.RECORDING:
-            case RecordingState.RECORDING_SYNCED:
-            case RecordingState.WAITING:
-                this.recordButton.classList.remove('typcn-media-record-outline', 'light-red');
-                this.recordButton.classList.add('typcn-media-record', 'red');
-                break;
-            case RecordingState.STOPPED:
-                this.recordButton.classList.add('typcn-media-record-outline', 'light-red');
-                this.recordButton.classList.remove('typcn-media-record', 'red');
+        if (this.isRecording()) {
+            this.recordButton.classList.remove('typcn-media-record-outline', 'light-red');
+            this.recordButton.classList.add('typcn-media-record', 'red');
+        } else {
+            this.recordButton.classList.add('typcn-media-record-outline', 'light-red');
+            this.recordButton.classList.remove('typcn-media-record', 'red');
         }
     }
 
     setConnected(connected) {
         this.connected = connected;
         this.shutdownButton.disabled = !connected;
+        if (!connected) {
+            this.setRecordingState(RecordingState.STOPPED);
+        }
     }
 
     setTime(date = new Date()) {

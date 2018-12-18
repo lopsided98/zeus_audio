@@ -91,10 +91,12 @@ impl audio_server_grpc::AudioServer for AudioServer {
         ctx.spawn(Self::handle_errors(self.audio.get_state()
                                           .map(|state| {
                                               let mut status = Status::new();
+                                              // Translate between internal state and API state
                                               status.recorder_state = match state {
                                                   RecorderState::Recording(false) => Status_RecorderState::RECORDING,
                                                   RecorderState::Recording(true) => Status_RecorderState::RECORDING_SYNCED,
-                                                  RecorderState::Waiting(_) => Status_RecorderState::WAITING,
+                                                  RecorderState::Waiting { recording: true, .. } => Status_RecorderState::RECORDING_WAITING,
+                                                  RecorderState::Waiting { recording: false, .. } => Status_RecorderState::STOPPED_WAITING,
                                                   RecorderState::Stopped => Status_RecorderState::STOPPED,
                                               };
                                               status
