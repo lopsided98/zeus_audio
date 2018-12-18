@@ -24,7 +24,7 @@ let
           done
         '';
       };
-      build = (pkgs.callPackage ./audio_server {}).overrideDerivation (old: {
+      build = (pkgs.callPackage ./audio_server {}).overrideAttrs (old: {
         src = "${tarball}/tarballs/audio_server-${version}.tar.gz";
       });
     };
@@ -56,7 +56,7 @@ let
           done
         '';
       };
-      build = (pkgs.python3Packages.callPackage ./web_interface {}).overrideDerivation (old: {
+      build = (pkgs.python3Packages.callPackage ./web_interface {}).overrideAttrs (old: {
         src = "${tarball}/tarballs/audio_recorder-${version}.tar.gz";
       });
     };
