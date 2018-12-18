@@ -98,15 +98,17 @@ class Device {
         func.then(res => {
             if (res.ok) {
                 if (recording) {
-                    const body = res.json();
-                    if (body['synced']) {
-                        this.setRecordingState(RecordingState.RECORDING_SYNCED);
-                    } else {
-                        this.setRecordingState(RecordingState.RECORDING);
-                    }
+                    res.json().then(body => {
+                        if (body['synced']) {
+                            this.setRecordingState(RecordingState.RECORDING_SYNCED);
+                        } else {
+                            this.setRecordingState(RecordingState.RECORDING);
+                        }
+                    });
                 } else {
                     this.setRecordingState(RecordingState.STOPPED);
                 }
+
             } else {
                 this.setRecordingState(RecordingState.STOPPED);
             }
