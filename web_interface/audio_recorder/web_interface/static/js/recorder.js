@@ -83,7 +83,7 @@ class Device {
             this.recordingState === RecordingState.RECORDING_WAITING
     }
 
-    setRecording(recording, time = new Date()) {
+    setRecording(recording, time = new Date(0)) {
         let func;
         if (recording) {
             func = this.audioServer.startRecording(time);

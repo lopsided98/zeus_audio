@@ -79,11 +79,9 @@ impl Clock {
                     Err(Error::StartSyncFailed(format_err!("Failed to start chronyd: {}", stderr)))
                 })
                 .and_then(|_| Self::chronyc_command()
-                    .arg("waitsync")
-                    .arg("60") // Retry count
-                    .arg("0")
-                    .arg("0")
-                    .arg("0.5") // Check interval (seconds)
+                    .arg("-m")
+                    .arg("burst 10/15")
+                    .arg("waitsync 30 0 0 0.5")
                     .output_async().map_err(|e| Error::StartSyncFailed(e.into())))
                 .and_then(|output| if output.status.success() {
                     Ok(())
