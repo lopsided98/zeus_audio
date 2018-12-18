@@ -146,11 +146,11 @@ class Device {
         switch (this.recordingState) {
             case RecordingState.RECORDING:
             case RecordingState.RECORDING_SYNCED:
+            case RecordingState.WAITING:
                 this.recordButton.classList.remove('typcn-media-record-outline', 'light-red');
                 this.recordButton.classList.add('typcn-media-record', 'red');
                 break;
             case RecordingState.STOPPED:
-            case RecordingState.WAITING:
                 this.recordButton.classList.add('typcn-media-record-outline', 'light-red');
                 this.recordButton.classList.remove('typcn-media-record', 'red');
         }
