@@ -58,7 +58,7 @@ pub enum Error {
     #[fail(display = "{}", _0)]
     CaptureError(#[fail(cause)] failure::Error),
     #[fail(display = "{}", _0)]
-    MixerError(String),
+    MixerError(#[fail(cause)] failure::Error),
     #[fail(display = "{}", _0)]
     WriteError(#[fail(cause)] failure::Error),
     #[fail(display = "Unknown error")]
@@ -145,6 +145,11 @@ impl<C, T, E, F> Future for ContextPollFn<C, F>
     }
 }
 
+#[derive(Debug)]
+pub struct MixerEnum {
+    pub control: String,
+    pub value: String,
+}
 
 struct MixerManager {
     control: String,
@@ -152,50 +157,85 @@ struct MixerManager {
 }
 
 impl MixerManager {
-    pub fn new(control: String, mixer: alsa::mixer::Mixer) -> Self {
-        Self {
+    pub fn new(control: String, enums: &[MixerEnum], mixer: alsa::mixer::Mixer) -> Self {
+        let m = Self {
             control,
             mixer,
+        };
+        for e in enums {
+            m.set_enum(e).unwrap_or_else(|e| {
+                warn!("Failed to set enum: {}", e)
+            });
         }
+        m
+    }
+
+    fn get_selem(&self, name: &str) -> Result<alsa::mixer::Selem, Error> {
+        self.mixer.find_selem(&alsa::mixer::SelemId::new(name, 0))
+            .ok_or(Error::MixerError(format_err!(
+                "Mixer control '{}' does not exist",
+                &name
+            )))
+    }
+
+    fn set_enum(&self, e: &MixerEnum) -> Result<(), Error> {
+        self.get_selem(&e.control)
+            .and_then(|s| if s.is_enumerated() {
+                Ok(s)
+            } else {
+                Err(Error::MixerError(format_err!(
+                    "Mixer control '{}' is not enumerated",
+                    &e.control
+                )))
+            })
+            .and_then(|s| {
+                let vals = s.iter_enum()
+                    .map_err(|err| Error::MixerError(err.into()))?;
+                for (i, val) in vals.enumerate() {
+                    let val = val.map_err(|err| Error::MixerError(err.into()))?;
+                    if val == e.value {
+                        alsa::mixer::SelemChannelId::iter()
+                            .filter(|c| s.has_capture_channel((*c).clone()) ||
+                                s.has_playback_channel((*c).clone()))
+                            .map(|c| s.set_enum_item((*c).clone(), i as u32))
+                            .collect::<Result<_, _>>()
+                            .map_err(|e| Error::MixerError(e.into()))?;
+                        debug!("Set enum control '{}' to '{}'", &e.control, &e.value);
+                        return Ok(());
+                    }
+                }
+                Err(Error::MixerError(format_err!("Enum value '{}' for control '{}' does not exist",
+                    &e.value, &e.control)))
+            })
     }
 
     fn set_mixer(&self, values: &[f32]) -> Result<(), Error> {
-        self.mixer.find_selem(&alsa::mixer::SelemId::new(&self.control, 0))
-            .ok_or(Error::MixerError(format!(
-                "Mixer control {} does not exist",
-                &self.control
-            ).to_owned()))
-            .and_then(|s| {
-                let (range_min, range_max) = s.get_capture_volume_range();
-                alsa::mixer::SelemChannelId::iter()
-                    .filter(|c| s.has_capture_channel((*c).clone()))
-                    .zip(values.iter())
-                    .map(|(c, v)| s.set_capture_volume(
-                        (*c).clone(),
-                        (v * (range_max - range_min) as f32) as i64 + range_min,
-                    ))
-                    .map(|r| r.map_err(|e| Error::CaptureError(e.into())))
-                    .collect()
-            })
+        self.get_selem(&self.control).and_then(|s| {
+            let (range_min, range_max) = s.get_capture_volume_range();
+            alsa::mixer::SelemChannelId::iter()
+                .filter(|c| s.has_capture_channel((*c).clone()))
+                .zip(values.iter())
+                .map(|(c, v)| s.set_capture_volume(
+                    (*c).clone(),
+                    (v * (range_max - range_min) as f32) as i64 + range_min,
+                ))
+                .map(|r| r.map_err(|e| Error::MixerError(e.into())))
+                .collect()
+        })
     }
 
     fn get_mixer(&self) -> Result<Vec<f32>, Error> {
-        self.mixer.find_selem(&alsa::mixer::SelemId::new(&self.control, 0))
-            .ok_or(Error::MixerError(format!(
-                "Mixer control {} does not exist",
-                &self.control
-            ).to_owned()))
-            .and_then(|s| {
-                let (range_min, range_max) = s.get_capture_volume_range();
-                alsa::mixer::SelemChannelId::iter()
-                    .filter(|c| s.has_capture_channel((*c).clone()))
-                    .map(|c| s.get_capture_volume((*c).clone()))
-                    .map(|r| r.map(|unscaled_volume| (if range_max > range_min {
-                        (unscaled_volume - range_min) as f32 / (range_max - range_min) as f32
-                    } else { 0f32 }) * 100f32))
-                    .map(|r| r.map_err(|e| Error::CaptureError(e.into())))
-                    .collect()
-            })
+        self.get_selem(&self.control).and_then(|s| {
+            let (range_min, range_max) = s.get_capture_volume_range();
+            alsa::mixer::SelemChannelId::iter()
+                .filter(|c| s.has_capture_channel((*c).clone()))
+                .map(|c| s.get_capture_volume((*c).clone()))
+                .map(|r| r.map(|unscaled_volume| (if range_max > range_min {
+                    (unscaled_volume - range_min) as f32 / (range_max - range_min) as f32
+                } else { 0f32 }) * 100f32))
+                .map(|r| r.map_err(|e| Error::CaptureError(e.into())))
+                .collect()
+        })
     }
 
     pub fn process_control(&self, control: MixerControl) {
@@ -475,7 +515,8 @@ pub struct AudioRecorderBuilder {
     file_prefix: String,
     audio_dir: PathBuf,
     device: String,
-    control: String,
+    mixer_control: String,
+    mixer_enums: Vec<MixerEnum>,
 }
 
 impl AudioRecorderBuilder {
@@ -484,7 +525,8 @@ impl AudioRecorderBuilder {
             file_prefix: file_prefix.into(),
             audio_dir: audio_dir.into(),
             device: "default".into(),
-            control: "Capture".into(),
+            mixer_control: "Capture".into(),
+            mixer_enums: vec![],
         }
     }
 
@@ -493,8 +535,13 @@ impl AudioRecorderBuilder {
         self
     }
 
-    pub fn control<C: Into<String>>(mut self, control: C) -> Self {
-        self.control = control.into();
+    pub fn mixer_control<C: Into<String>>(mut self, control: C) -> Self {
+        self.mixer_control = control.into();
+        self
+    }
+
+    pub fn mixer_enums<V: Into<Vec<MixerEnum>>>(mut self, enums: V) -> Self {
+        self.mixer_enums = enums.into();
         self
     }
 
@@ -650,7 +697,8 @@ impl AudioRecorderBuilder {
             .map_err(|e| Error::CaptureError(e.into()))?;
 
         let mixer_manager = MixerManager::new(
-            self.control,
+            self.mixer_control,
+            &self.mixer_enums,
             mixer,
         );
 

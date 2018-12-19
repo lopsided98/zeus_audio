@@ -211,7 +211,7 @@ window.onload = () => {
     recordAllButton.onclick = () => {
         let time = new Date();
         // Try to start in 1 second
-        time.setMilliseconds(time.getMilliseconds() + 1000);
+        time.setMilliseconds(time.getMilliseconds() + 1500);
         devices.forEach(d => d.setRecording(true, time));
     };
     stopAllButton.onclick = () => devices.forEach(d => d.setRecording(false));

@@ -12,8 +12,24 @@ use failure::ResultExt;
 use audio_server::audio::AudioRecorderBuilder;
 use audio_server::clock::Clock;
 use audio_server::server;
+use audio_server::audio::MixerEnum;
 
 const SETTINGS_ENV_VAR: &str = "AUDIO_SERVER_SETTINGS";
+
+#[derive(Debug, Deserialize)]
+struct MixerEnumConfig {
+    control: String,
+    value: String,
+}
+
+impl Into<MixerEnum> for MixerEnumConfig {
+    fn into(self) -> MixerEnum {
+        MixerEnum {
+            control: self.control,
+            value: self.value,
+        }
+    }
+}
 
 #[derive(Debug, Deserialize)]
 #[serde(default)]
@@ -22,8 +38,9 @@ struct Config {
     file_prefix: String,
     audio_dir: String,
     device: String,
-    control: String,
     clock_master: bool,
+    mixer_control: String,
+    mixer_enums: Vec<MixerEnumConfig>,
 }
 
 impl Default for Config {
@@ -33,8 +50,9 @@ impl Default for Config {
             file_prefix: hostname::get_hostname().expect("Unable to get hostname"),
             audio_dir: "./audio".into(),
             device: "default".into(),
-            control: "Capture".into(),
             clock_master: false,
+            mixer_control: "Capture".into(),
+            mixer_enums: vec![],
         }
     }
 }
@@ -72,7 +90,11 @@ fn main() -> Result<(), failure::Error> {
 
     let (audio, audio_control) = AudioRecorderBuilder::new(config.file_prefix, config.audio_dir)
         .device(config.device)
-        .control(config.control)
+        .mixer_control(config.mixer_control)
+        .mixer_enums(config.mixer_enums.into_iter().map(|c| MixerEnum {
+            control: c.control,
+            value: c.value,
+        }).collect::<Vec<_>>())
         .build()?;
 
     let clock = Clock::new(config.clock_master);
