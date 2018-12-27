@@ -50,7 +50,7 @@ impl<W: Write + Seek> WavSink<W> {
         Self {
             hound: Some(hound),
             // 2 GB, because many programs use a signed 32-bit integer
-            max_file_samples: std::i32::MAX as usize / bytes_per_sample,
+            max_file_samples: (std::i32::MAX as usize - 1) / bytes_per_sample,
         }
     }
 
