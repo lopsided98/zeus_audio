@@ -6,6 +6,9 @@ use hound::WavSpec;
 use futures::Sink;
 use futures::AsyncSink;
 
+// 2 GB (rounded down), because many programs use a signed 32-bit integer
+const MAX_FILE_BYTES: usize = 2147483644;
+
 #[derive(Fail, Debug)]
 pub enum Error {
     #[fail(display = "File reached maximum size")]
@@ -47,10 +50,12 @@ impl<W: Write + Seek> WavSink<W> {
     pub fn from_hound(hound: hound::WavWriter<W>) -> Self {
         let spec = hound.spec();
         let bytes_per_sample = ((spec.bits_per_sample + 7) / 8) as usize;
+        assert_eq!(MAX_FILE_BYTES % bytes_per_sample, 0);
+        let max_file_samples = MAX_FILE_BYTES / bytes_per_sample;
+        assert_eq!(max_file_samples % spec.channels as usize, 0);
         Self {
             hound: Some(hound),
-            // 2 GB, because many programs use a signed 32-bit integer
-            max_file_samples: (std::i32::MAX as usize - 1) / bytes_per_sample,
+            max_file_samples,
         }
     }
 
