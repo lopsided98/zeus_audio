@@ -17,7 +17,7 @@
             body="Are you sure you want to shutdown all devices?",
             confirm_text="Shutdown") }}
     <div class="flex overflow-x-auto h-100 mxhi6">
-        <section class="flex flex-column items-center pr2 br" data-base-url="{{ device }}">
+        <section class="flex flex-column items-center pr1 br mr1" data-base-url="{{ device }}">
             <span>All</span>
             <button id="record-all-button"
                     class="f2 bg-transparent bn dim dim-disabled red typcn typcn-media-record"></button>
@@ -28,7 +28,7 @@
                     class="f2 bg-transparent bn dim dim-disabled light-gray typcn typcn-power"></button>
         </section>
         {% for device in config.DEVICES %}
-            <section class="device flex flex-column items-center ph2" data-base-url="{{ device }}">
+            <section class="device flex flex-column items-center ph1" data-base-url="{{ device }}">
                 <span>{{ loop.index }}</span>
                 <button class="record-button f2 flex-shrink-0 bg-transparent bn dim dim-disabled light-red typcn typcn-media-record-outline"></button>
                 <span class="time-state-text"></span>
