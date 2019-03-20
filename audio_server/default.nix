@@ -12,8 +12,5 @@
       nativeBuildInputs = [ perl cmake ];
       buildInputs = [ grpc ];
     };
-    audio_server = oldAttrs: {
-      extraRustcOpts = [ "--edition=2018" ];
-    };
   };
 })

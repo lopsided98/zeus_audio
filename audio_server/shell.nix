@@ -10,6 +10,8 @@ stdenv.mkDerivation {
     cmake
     pkgconfig
     which
+    carnix
+    nix-prefetch-git
   ];
 
   # Doesn't work in debug builds
