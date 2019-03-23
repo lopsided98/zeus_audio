@@ -133,7 +133,7 @@ class Device {
             case TimeState.SYNCED:
                 switch (this.recordingState) {
                     case RecordingState.STOPPED:
-                        this.timeStateText.innerHTML = "R";
+                        this.timeStateText.innerHTML = "S";
                         break;
                     case RecordingState.RECORDING_WAITING:
                     case RecordingState.STOPPED_WAITING:
@@ -143,7 +143,7 @@ class Device {
                         this.timeStateText.innerHTML = "NS";
                         break;
                     case RecordingState.RECORDING_SYNCED:
-                        this.timeStateText.innerHTML = "S";
+                        this.timeStateText.innerHTML = "R";
                         break;
                 }
         }
