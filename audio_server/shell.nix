@@ -1,11 +1,12 @@
 with import <nixpkgs> { };
-stdenv.mkDerivation {
+mkShell {
   name = "audio-server-env";
   buildInputs = [
     rustc
     cargo
     grpc
     protobuf
+    zlib
     alsaLib
     cmake
     pkgconfig
@@ -15,16 +16,14 @@ stdenv.mkDerivation {
   ];
 
   # Doesn't work in debug builds
-  hardeningDisable = ["fortify"];
+  hardeningDisable = [ "fortify" ];
 
-  # Set Environment Variables
   RUST_BACKTRACE = 1;
-  
-  
-  RUST_TOOLCHAIN = buildEnv {
+
+  RUST_TOOLCHAIN = "${buildEnv {
     name = "rust-toolchain";
     paths = [ rustc cargo ];
-  };
+  }}/bin";
   RUST_SRC_PATH = rustPlatform.rustcSrc;
 }
 

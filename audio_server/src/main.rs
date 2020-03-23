@@ -1,4 +1,3 @@
-#[macro_use]
 extern crate log;
 #[macro_use]
 extern crate serde_derive;
@@ -47,7 +46,10 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             systemd_logging: false,
-            file_prefix: hostname::get_hostname().expect("Unable to get hostname"),
+            file_prefix: hostname::get()
+                .expect("Unable to get hostname")
+                .to_string_lossy()
+                .to_string(),
             audio_dir: "./audio".into(),
             device: "default".into(),
             clock_master: false,
@@ -57,14 +59,15 @@ impl Default for Config {
     }
 }
 
-fn main() -> Result<(), failure::Error> {
+#[tokio::main(threaded_scheduler)]
+async fn main() -> Result<(), failure::Error> {
     let config: Config = std::env::var_os(SETTINGS_ENV_VAR)
         .map(|v| File::open(Path::new(&v))
             .context("Failed to open config file")
             .and_then(|f| serde_yaml::from_reader(f)
                 .context("Failed to read config file"))
             .unwrap_or_else(|err| {
-                warn!("{}", err);
+                log::warn!("{}", err);
                 Config::default()
             }))
         .unwrap_or_else(Config::default);
@@ -86,7 +89,7 @@ fn main() -> Result<(), failure::Error> {
         env_logger::init();
     }
 
-    debug!("{:?}", config);
+    log::debug!("{:?}", config);
 
     let (audio, audio_control) = AudioRecorderBuilder::new(config.file_prefix, config.audio_dir)
         .device(config.device)
@@ -99,10 +102,11 @@ fn main() -> Result<(), failure::Error> {
 
     let clock = Clock::new(config.clock_master);
 
+    // Store result to avoid dropping it
     let _s = server::run(audio_control, clock)?;
-    info!("Server started");
+    log::info!("Server started");
 
-    audio.run();
+    tokio::spawn(audio.run()).await??;
 
     Ok(())
 }

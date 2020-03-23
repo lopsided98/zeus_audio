@@ -3,17 +3,18 @@ use std::fs::File;
 use std::io::BufWriter;
 use std::path::Path;
 use std::path::PathBuf;
+use std::pin::Pin;
 
 use failure::Fail;
-use futures::Async;
-use futures::AsyncSink;
+use futures::channel::mpsc;
+use futures::channel::oneshot;
 use futures::future;
-use futures::future::Either;
-use futures::future::Future;
-use futures::Poll;
-use futures::Sink;
-use futures::Stream;
-use futures::sync::mpsc;
+use futures::Future;
+use futures::FutureExt;
+use futures::SinkExt;
+use futures::StreamExt;
+use futures::TryFutureExt;
+use futures::TryStreamExt;
 use hound::SampleFormat;
 use hound::WavSpec;
 use regex::Regex;
@@ -21,12 +22,11 @@ use regex::Regex;
 use crate::audio::tee::Endpoint;
 use crate::audio::tee::EndpointRegistration;
 use crate::audio::tee::TeeMap;
+use crate::audio::timestamp::AudioTimestamp;
 use crate::audio::tokio::PCMStream;
 use crate::audio::wav::WavSink;
-use crate::manager;
 use crate::manager::Manager;
 use crate::manager::ManagerSink;
-use crate::audio::timestamp::AudioTimestamp;
 
 pub mod mio;
 pub mod tee;
@@ -73,8 +73,9 @@ pub enum ControlError {
     Failed(#[fail(cause)] failure::Error),
 }
 
-type ControlFuture<T> = manager::ControlFuture<T, ControlError>;
-type ControlSender<T> = manager::ControlSender<T, ControlError>;
+type ControlResult<T> = Result<T, ControlError>;
+type ControlSender<T> = oneshot::Sender<ControlResult<T>>;
+type ControlReceiver<T> = oneshot::Receiver<ControlResult<T>>;
 
 #[derive(Debug)]
 enum MixerControl {
@@ -112,37 +113,8 @@ enum RecorderControl {
 pub type LevelsStream = Endpoint<Vec<f32>>;
 
 pub struct Recorder {
-    mixer_future: Box<dyn Future<Item=(), Error=()> + Send>,
-    recording_future: Box<dyn Future<Item=(), Error=Error> + Send>,
-}
-
-struct ContextPollFn<C, F> {
-    ctx: Option<C>,
-    inner: F,
-}
-
-impl<C, T, E, F> ContextPollFn<C, F>
-    where F: FnMut(&mut C) -> Poll<T, E> {
-    pub fn new(ctx: C, inner: F) -> ContextPollFn<C, F> {
-        ContextPollFn { ctx: Some(ctx), inner }
-    }
-}
-
-impl<C, T, E, F> Future for ContextPollFn<C, F>
-    where F: FnMut(&mut C) -> Poll<T, E> {
-    type Item = (C, T);
-    type Error = E;
-
-    fn poll(&mut self) -> Poll<(C, T), E> {
-        match (self.inner)(&mut self.ctx.as_mut().unwrap()) {
-            Ok(Async::Ready(t)) => {
-                let ctx = std::mem::replace(&mut self.ctx, None).unwrap();
-                Ok(Async::Ready((ctx, t)))
-            }
-            Ok(Async::NotReady) => Ok(Async::NotReady),
-            Err(e) => Err(e)
-        }
-    }
+    mixer_future: Pin<Box<dyn Future<Output=()> + Send>>,
+    recording_future: Pin<Box<dyn Future<Output=Result<(), Error>> + Send>>,
 }
 
 #[derive(Debug)]
@@ -164,7 +136,7 @@ impl MixerManager {
         };
         for e in enums {
             m.set_enum(e).unwrap_or_else(|e| {
-                warn!("Failed to set enum: {}", e)
+                log::warn!("Failed to set enum: {}", e)
             });
         }
         m
@@ -172,7 +144,7 @@ impl MixerManager {
 
     fn get_selem(&self, name: &str) -> Result<alsa::mixer::Selem, Error> {
         self.mixer.find_selem(&alsa::mixer::SelemId::new(name, 0))
-            .ok_or(Error::MixerError(format_err!(
+            .ok_or(Error::MixerError(failure::format_err!(
                 "Mixer control '{}' does not exist",
                 &name
             )))
@@ -183,7 +155,7 @@ impl MixerManager {
             .and_then(|s| if s.is_enumerated() {
                 Ok(s)
             } else {
-                Err(Error::MixerError(format_err!(
+                Err(Error::MixerError(failure::format_err!(
                     "Mixer control '{}' is not enumerated",
                     &e.control
                 )))
@@ -194,17 +166,17 @@ impl MixerManager {
                 for (i, val) in vals.enumerate() {
                     let val = val.map_err(|err| Error::MixerError(err.into()))?;
                     if val == e.value {
-                        alsa::mixer::SelemChannelId::iter()
+                        alsa::mixer::SelemChannelId::all().iter()
                             .filter(|c| s.has_capture_channel((*c).clone()) ||
                                 s.has_playback_channel((*c).clone()))
                             .map(|c| s.set_enum_item((*c).clone(), i as u32))
                             .collect::<Result<_, _>>()
                             .map_err(|e| Error::MixerError(e.into()))?;
-                        debug!("Set enum control '{}' to '{}'", &e.control, &e.value);
+                        log::debug!("Set enum control '{}' to '{}'", &e.control, &e.value);
                         return Ok(());
                     }
                 }
-                Err(Error::MixerError(format_err!("Enum value '{}' for control '{}' does not exist",
+                Err(Error::MixerError(failure::format_err!("Enum value '{}' for control '{}' does not exist",
                     &e.value, &e.control)))
             })
     }
@@ -212,7 +184,7 @@ impl MixerManager {
     fn set_mixer(&self, values: &[f32]) -> Result<(), Error> {
         self.get_selem(&self.control).and_then(|s| {
             let (range_min, range_max) = s.get_capture_volume_range();
-            alsa::mixer::SelemChannelId::iter()
+            alsa::mixer::SelemChannelId::all().iter()
                 .filter(|c| s.has_capture_channel((*c).clone()))
                 .zip(values.iter())
                 .map(|(c, v)| s.set_capture_volume(
@@ -227,7 +199,7 @@ impl MixerManager {
     fn get_mixer(&self) -> Result<Vec<f32>, Error> {
         self.get_selem(&self.control).and_then(|s| {
             let (range_min, range_max) = s.get_capture_volume_range();
-            alsa::mixer::SelemChannelId::iter()
+            alsa::mixer::SelemChannelId::all().iter()
                 .filter(|c| s.has_capture_channel((*c).clone()))
                 .map(|c| s.get_capture_volume((*c).clone()))
                 .map(|r| r.map(|unscaled_volume| (if range_max > range_min {
@@ -253,9 +225,9 @@ impl Manager for MixerManager {
     type Item = MixerControl;
     type Error = ();
 
-    fn next_future(self, control: MixerControl) -> Box<dyn Future<Item=Self, Error=()> + Send> {
+    fn next_future(self, control: MixerControl) -> Pin<Box<dyn Future<Output=Result<Self, ()>> + Send>> {
         self.process_control(control);
-        Box::new(future::finished(self))
+        Box::pin(future::ready(Ok(self)))
     }
 }
 
@@ -277,7 +249,7 @@ impl WriteManager {
             &audio_dir,
             &file_prefix,
         )?;
-        debug!("Starting file index: {}", index);
+        log::debug!("Starting file index: {}", index);
 
         Ok(Self {
             audio_dir,
@@ -320,68 +292,48 @@ impl WriteManager {
             .unwrap_or(0))
     }
 
-    fn new_file(self) -> impl Future<Item=Self, Error=Error> {
-        self.close_file()
-            .and_then(|mgr| {
-                ContextPollFn::new(mgr, |mgr| {
-                    match tokio_threadpool::blocking(|| {
-                        let path = mgr.audio_dir.join(format!("{}_{:04}.wav", mgr.file_prefix, mgr.index));
-                        info!("Creating new file: {}", path.display());
-                        Ok(WavSink::from_hound(hound::WavWriter::create(path, mgr.wav_spec)?))
-                    }) {
-                        Ok(Async::Ready(Ok(file))) => Ok(Async::Ready(file)),
-                        Ok(Async::Ready(Err(e))) => Err(Error::WriteError(e)),
-                        Ok(Async::NotReady) => Ok(Async::NotReady),
-                        Err(_) => panic!("Called from outside Tokio thread pool")
-                    }
-                }).map(|(mut mgr, file)| {
-                    mgr.file = Some(file);
-                    mgr.index += 1;
-                    mgr
-                })
-            })
+    async fn new_file(&mut self) -> Result<(), Error> {
+        self.close_file().await?;
+        self.file = Some(::tokio::task::block_in_place(|| {
+            let path = self.audio_dir.join(format!("{}_{:04}.wav", self.file_prefix, self.index));
+            log::info!("Creating new file: {}", path.display());
+            Ok(WavSink::from_hound(hound::WavWriter::create(path, self.wav_spec)?))
+        }).map_err(Error::WriteError)?);
+        self.index += 1;
+        Ok(())
     }
 
-    fn close_file(mut self) -> impl Future<Item=Self, Error=Error> {
+    async fn close_file(&mut self) -> Result<(), Error> {
         let file = std::mem::replace(&mut self.file, None);
-        if let Some(file) = file {
-            Either::A(ContextPollFn::new(file, |file| file.close())
-                .map_err(|e| Error::WriteError(e.into())).map(|_| self))
+        if let Some(mut file) = file {
+            file.close().await.map_err(|e| Error::WriteError(e.into()))
         } else {
-            Either::B(future::finished(self))
+            Ok(())
         }
     }
 
-    fn write_data(self, buf: Vec<i16>) -> impl Future<Item=(WriteManager, Option<Vec<i16>>), Error=Error> {
-        ContextPollFn::new((self, Some(buf)), |(mgr, buf)| {
-            if let Some(file) = &mut mgr.file {
-                match file.start_send(std::mem::replace(buf, None).unwrap()) {
-                    Ok(AsyncSink::NotReady(b)) => {
-                        // Buffer was not accepted, so put it back
-                        std::mem::replace(buf, Some(b));
-                        Ok(Async::NotReady)
-                    }
-                    Ok(AsyncSink::Ready) => Ok(Async::Ready(None)),
-                    Err(wav::Error::FileFull(b)) => Ok(Async::Ready(Some(b))),
-                    Err(e) => Err(Error::WriteError(e.into()))
-                }
-            } else {
-                Ok(Async::Ready(None))
+    async fn write_data(&mut self, buf: Vec<i16>) -> Result<Option<Vec<i16>>, Error> {
+        if let Some(file) = &mut self.file {
+            match file.send(buf).await {
+                Ok(()) => Ok(None),
+                Err(wav::Error::FileFull(b)) => Ok(Some(b)),
+                Err(e) => Err(Error::WriteError(e.into()))
             }
-        }).map(|((mgr, _), buf)| (mgr, buf))
+        } else {
+            Ok(None)
+        }
     }
 
-    fn write_data_split(self, buf: Vec<i16>) -> impl Future<Item=Self, Error=Error> {
-        self.write_data(buf).then(|res| {
-            match res {
-                Ok((mgr, Some(buf))) => Either::A(mgr.new_file()
-                    .and_then(|mgr| mgr.write_data(buf))),
-                r => Either::B(future::done(r))
-            }
-        }).map(|(mgr, _)| mgr)
+    async fn write_data_split(&mut self, buf: Vec<i16>) -> Result<(), Error> {
+        if let Some(leftover_buf) = self.write_data(buf).await? {
+            self.new_file().await?;
+            // Assume that a new file will not have a leftover buffer
+            self.write_data(leftover_buf).await?;
+        }
+        Ok(())
     }
 
-    fn write_data_sync(self, mut buf: Vec<i16>, start_timestamp: AudioTimestamp) -> impl Future<Item=Self, Error=Error> {
+    async fn write_data_sync(&mut self, mut buf: Vec<i16>, start_timestamp: AudioTimestamp) -> Result<(), Error> {
         let mut new_file = false;
         let mut start_recording_response: Option<StartRecordingResponse> = None;
         let mut old_buf: Vec<i16> = vec![];
@@ -393,20 +345,20 @@ impl WriteManager {
 
             if **start_time >= *start_timestamp && **start_time < *end_timestamp {
                 let start_index = (((**start_time - *start_timestamp) / period) * self.wav_spec.channels as u64) as usize;
-                debug!("Started synchronized recording: time: {}, split point: {}", start_time, start_index);
+                log::debug!("Started synchronized recording: time: {}, split point: {}", start_time, start_index);
                 new_file = true;
                 start_recording_response = Some(StartRecordingResponse::Synced);
                 // Buffer that will be written to the already open file
                 old_buf = buf.drain(..start_index).collect::<Vec<i16>>();
             } else if **start_time < *start_timestamp {
-                warn!("Missed start time: {}, buffer start time: {}", start_time, start_timestamp);
+                log::warn!("Missed start time: {}, buffer start time: {}", start_time, start_timestamp);
                 new_file = true;
                 start_recording_response = Some(StartRecordingResponse::NotSynced {
                     requested_time: start_time.clone(),
                     processed_time: start_timestamp,
                 });
             } else if *(start_time - &end_timestamp) > *MAX_START_WAIT {
-                warn!("Start time ({}) too far into future, starting now", start_time);
+                log::warn!("Start time ({}) too far into future, starting now", start_time);
                 new_file = true;
                 start_recording_response = Some(StartRecordingResponse::NotSynced {
                     requested_time: start_time.clone(),
@@ -414,47 +366,42 @@ impl WriteManager {
                 });
             }
         }
-        self.write_data_split(old_buf)
-            .and_then(move |mgr| if new_file {
-                Either::A(mgr.new_file())
-            } else {
-                Either::B(future::finished(mgr))
-            })
-            .and_then(move |mut mgr| {
-                if let Some(start_recording_response) = start_recording_response {
-                    mgr.state = RecorderState::Recording(match start_recording_response {
-                        StartRecordingResponse::Synced => true,
-                        StartRecordingResponse::NotSynced { .. } => false
-                    });
-                    mgr.waiting_tx.drain(..).for_each(|tx| {
-                        tx.send(Ok(start_recording_response.clone())).ok();
-                    });
-                }
-                Ok(mgr)
-            }).and_then(|mgr| mgr.write_data_split(buf))
+        self.write_data_split(old_buf).await?;
+        if new_file {
+            self.new_file().await?;
+        }
+        if let Some(start_recording_response) = start_recording_response {
+            self.state = RecorderState::Recording(match start_recording_response {
+                StartRecordingResponse::Synced => true,
+                StartRecordingResponse::NotSynced { .. } => false
+            });
+            self.waiting_tx.drain(..).for_each(|tx| {
+                tx.send(Ok(start_recording_response.clone())).ok();
+            });
+        }
+        self.write_data_split(buf).await?;
+        Ok(())
     }
 
-    fn set_state_and_respond<T>(res: Result<WriteManager, Error>,
-                                state: RecorderState,
-                                tx: ControlSender<T>,
-                                data: T) -> Result<WriteManager, Error> {
+    fn set_state_and_respond<T>(&mut self, res: Result<(), Error>, state: RecorderState,
+                                tx: ControlSender<T>, data: T) -> Result<(), Error> {
         match res {
-            Ok(mut mgr) => {
-                mgr.state = state;
+            Ok(_) => {
+                self.state = state;
                 // We don't care if the listener disappeared
                 tx.send(Ok(data)).ok();
-                Ok(mgr)
+                Ok(())
             }
             Err(e) => {
                 // We don't care if the listener disappeared
-                tx.send(Err(ControlError::Failed(format_err!("{:?}", e)))).ok();
+                tx.send(Err(ControlError::Failed(failure::format_err!("{:?}", e)))).ok();
                 Err(e)
             }
         }
     }
 
-    fn start_recording(mut self, timestamp: AudioTimestamp, tx: ControlSender<StartRecordingResponse>)
-                       -> impl Future<Item=Self, Error=Error> {
+    fn start_recording(&mut self, timestamp: AudioTimestamp, tx: ControlSender<StartRecordingResponse>)
+                       -> Result<(), Error> {
         self.waiting_tx.drain(..).for_each(|tx| {
             tx.send(Err(ControlError::Cancelled)).ok();
         });
@@ -467,15 +414,15 @@ impl WriteManager {
             },
         };
         self.waiting_tx.push(tx);
-        future::finished(self)
+        Ok(())
     }
 
-    fn stop_recording(mut self, tx: ControlSender<()>) -> impl Future<Item=Self, Error=Error> {
+    async fn stop_recording(&mut self, tx: ControlSender<()>) -> Result<(), Error> {
         self.waiting_tx.drain(..).for_each(|tx| {
             tx.send(Err(ControlError::Cancelled)).ok();
         });
-        self.close_file().then(|res|
-            Self::set_state_and_respond(res, RecorderState::Stopped, tx, ()))
+        let res = self.close_file().await;
+        self.set_state_and_respond(res, RecorderState::Stopped, tx, ())
     }
 }
 
@@ -483,31 +430,26 @@ impl Manager for WriteManager {
     type Item = RecorderControl;
     type Error = Error;
 
-    fn next_future(self, control: RecorderControl) -> Box<dyn Future<Item=Self, Error=Error> + Send> {
-        match control {
-            RecorderControl::StartRecording(timestamp, tx) => Box::new(self.start_recording(timestamp, tx)),
-            RecorderControl::StopRecording(tx) => Box::new(self.stop_recording(tx)),
-            RecorderControl::Data(buf, status) => Box::new(self.write_data_sync(buf, status)),
-            RecorderControl::GetState(tx) => {
-                tx.send(Ok(self.state.clone())).ok();
-                Box::new(future::finished(self))
-            }
-        }
+    fn next_future(mut self, control: RecorderControl) -> Pin<Box<dyn Future<Output=Result<Self, Error>> + Send>> {
+        Box::pin(async {
+            match control {
+                RecorderControl::StartRecording(timestamp, tx) => self.start_recording(timestamp, tx)?,
+                RecorderControl::StopRecording(tx) => self.stop_recording(tx).await?,
+                RecorderControl::Data(buf, status) => self.write_data_sync(buf, status).await?,
+                RecorderControl::GetState(tx) => {
+                    tx.send(Ok(self.state.clone())).ok();
+                    ()
+                }
+            };
+            Ok(self)
+        })
     }
 }
 
 impl Recorder {
-    pub fn run(self) {
-        let mut runtime = ::tokio::runtime::Runtime::new().unwrap();
-
-        runtime.spawn(self.mixer_future
-            .map_err(|e| error!("Mixer error: {:?}", e)));
-
-        runtime.spawn(self.recording_future
-            .map_err(|e| error!("Audio error: {:?}", e)));
-
-        runtime.block_on_all(future::finished::<_, ()>(()))
-            .unwrap();
+    pub async fn run(self) -> Result<(), Error> {
+        let (_, recording_res) = futures::join!(self.mixer_future, self.recording_future);
+        recording_res
     }
 }
 
@@ -570,25 +512,25 @@ impl AudioRecorderBuilder {
 
         let channels = hw_params.get_channels()?;
         if channels != CHANNELS {
-            warn!("Hardware does not support {} channels, using {} channels",
+            log::warn!("Hardware does not support {} channels, using {} channels",
                   CHANNELS, channels);
         }
 
         let sample_rate = hw_params.get_rate()?;
         if sample_rate != SAMPLE_RATE {
-            warn!("Hardware does not support desired sample rate ({} Hz), using {} Hz instead",
+            log::warn!("Hardware does not support desired sample rate ({} Hz), using {} Hz instead",
                   SAMPLE_RATE, sample_rate);
         }
 
         let period_size = hw_params.get_period_size()?;
         if period_size != PERIOD_SIZE {
-            warn!("Hardware does not support desired period size ({}), using {} instead",
+            log::warn!("Hardware does not support desired period size ({}), using {} instead",
                   PERIOD_SIZE, period_size);
         }
 
         let periods = hw_params.get_periods()?;
         if periods != PERIODS {
-            warn!("Hardware does not support desired periods ({}), using {} instead",
+            log::warn!("Hardware does not support desired periods ({}), using {} instead",
                   PERIODS, periods);
         }
 
@@ -602,8 +544,8 @@ impl AudioRecorderBuilder {
 
         pcm.sw_params(&sw_params)?;
 
-        debug!("Using hardware parameters: {:?}", hw_params);
-        debug!("Using software parameters: {:?}", sw_params);
+        log::debug!("Using hardware parameters: {:?}", hw_params);
+        log::debug!("Using software parameters: {:?}", sw_params);
 
         Ok((hw_params, sw_params))
     }
@@ -662,7 +604,7 @@ impl AudioRecorderBuilder {
             }
         };
 
-        let (recorder_tx, recorder_rx) = futures::sync::mpsc::unbounded();
+        let (recorder_tx, recorder_rx) = futures::channel::mpsc::unbounded();
 
         let recording_stream = PCMStream::from_alsa_pcm(pcm)
             .map_err(|e| Error::CaptureError(e.into()))?
@@ -672,11 +614,9 @@ impl AudioRecorderBuilder {
             TeeMap::new(recording_stream, levels_map);
 
         let recording_stream = recording_stream
-            .map(|(buf, status)| RecorderControl::Data(buf, status));
+            .map_ok(|(buf, timestamp)| RecorderControl::Data(buf, timestamp));
 
-        let recording_stream = recording_stream.select(recorder_rx
-            // Channels don't have errors, but we need one for the types to match
-            .map_err(|_| Error::Unknown));
+        let recording_stream = futures::stream::select(recording_stream, recorder_rx.map(Ok));
 
         let write_manager = WriteManager::new(
             self.audio_dir,
@@ -687,11 +627,11 @@ impl AudioRecorderBuilder {
         let recording_sink = ManagerSink::new(write_manager)
             .buffer(BUFFER_LEN);
 
-        let recording_future = Box::new(recording_stream.forward(recording_sink)
-            .map(|_| ()));
+        let recording_future = Box::pin(recording_stream.forward(recording_sink)
+            .map_ok(|_| ()));
 
         // Mixer
-        let (mixer_tx, mixer_rx) = futures::sync::mpsc::unbounded();
+        let (mixer_tx, mixer_rx) = mpsc::unbounded();
 
         let mixer = alsa::Mixer::new(&self.device, false)
             .map_err(|e| Error::CaptureError(e.into()))?;
@@ -703,7 +643,9 @@ impl AudioRecorderBuilder {
         );
 
         let mixer_sink = ManagerSink::new(mixer_manager);
-        let mixer_future = Box::new(mixer_rx.forward(mixer_sink)
+        let mixer_future = Box::pin(mixer_rx
+            .map(Ok)
+            .forward(mixer_sink)
             .map(|_| ()));
 
         Ok((Recorder {
@@ -725,14 +667,18 @@ pub struct RecorderController {
 }
 
 impl RecorderController {
-    fn send_mixer_control(&self, control: MixerControl) {
+    fn send_mixer_control<T>(&mut self, rx: ControlReceiver<T>, control: MixerControl) -> impl Future<Output=ControlResult<T>> {
         self.mixer_tx.unbounded_send(control)
             .expect("Mixer shutdown");
+        // If the sending end of the oneshot is dropped automatically respond with a cancelled error
+        rx.unwrap_or_else(|_| Err(ControlError::Cancelled))
     }
 
-    fn send_recorder_control(&self, control: RecorderControl) {
+    fn send_recorder_control<T>(&mut self, rx: ControlReceiver<T>, control: RecorderControl) -> impl Future<Output=ControlResult<T>> {
         self.recorder_tx.unbounded_send(control)
             .expect("Audio stream shutdown");
+        // If the sending end of the oneshot is dropped automatically respond with a cancelled error
+        rx.unwrap_or_else(|_| Err(ControlError::Cancelled))
     }
 
     pub fn levels_stream(&self) -> Result<LevelsStream, ControlError> {
@@ -740,33 +686,28 @@ impl RecorderController {
             .map_err(|e| ControlError::Failed(e.into()))
     }
 
-    pub fn get_state(&self) -> impl Future<Item=RecorderState, Error=ControlError> {
-        let (tx, rx) = ControlFuture::channel();
-        self.send_recorder_control(RecorderControl::GetState(tx));
-        rx
+    pub fn get_state(&mut self) -> impl Future<Output=ControlResult<RecorderState>> {
+        let (tx, rx) = oneshot::channel();
+        self.send_recorder_control(rx, RecorderControl::GetState(tx))
     }
 
-    pub fn start_recording(&self, time: AudioTimestamp) -> impl Future<Item=StartRecordingResponse, Error=ControlError> {
-        let (tx, rx) = ControlFuture::channel();
-        self.send_recorder_control(RecorderControl::StartRecording(time, tx));
-        rx
+    pub fn start_recording(&mut self, time: AudioTimestamp) -> impl Future<Output=ControlResult<StartRecordingResponse>> {
+        let (tx, rx) = oneshot::channel();
+        self.send_recorder_control(rx, RecorderControl::StartRecording(time, tx))
     }
 
-    pub fn stop_recording(&self) -> impl Future<Item=(), Error=ControlError> {
-        let (tx, rx) = ControlFuture::channel();
-        self.send_recorder_control(RecorderControl::StopRecording(tx));
-        rx
+    pub fn stop_recording(&mut self) -> impl Future<Output=ControlResult<()>> {
+        let (tx, rx) = oneshot::channel();
+        self.send_recorder_control(rx, RecorderControl::StopRecording(tx))
     }
 
-    pub fn set_mixer(&self, values: Vec<f32>) -> impl Future<Item=(), Error=ControlError> {
-        let (tx, rx) = ControlFuture::channel();
-        self.send_mixer_control(MixerControl::SetMixer(values, tx));
-        rx
+    pub fn set_mixer(&mut self, values: Vec<f32>) -> impl Future<Output=ControlResult<()>> {
+        let (tx, rx) = oneshot::channel();
+        self.send_mixer_control(rx, MixerControl::SetMixer(values, tx))
     }
 
-    pub fn get_mixer(&self) -> impl Future<Item=Vec<f32>, Error=ControlError> {
-        let (tx, rx) = ControlFuture::channel();
-        self.send_mixer_control(MixerControl::GetMixer(tx));
-        rx
+    pub fn get_mixer(&mut self) -> impl Future<Output=ControlResult<Vec<f32>>> {
+        let (tx, rx) = oneshot::channel();
+        self.send_mixer_control(rx, MixerControl::GetMixer(tx))
     }
 }

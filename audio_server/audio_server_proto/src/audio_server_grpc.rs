@@ -3,7 +3,7 @@
 
 // https://github.com/Manishearth/rust-clippy/issues/702
 #![allow(unknown_lints)]
-#![allow(clippy)]
+#![allow(clippy::all)]
 
 #![cfg_attr(rustfmt, rustfmt_skip)]
 
@@ -251,7 +251,7 @@ pub fn create_audio_server<S: AudioServer + Send + Clone + 'static>(s: S) -> ::g
     builder = builder.add_unary_handler(&METHOD_AUDIO_SERVER_SET_TIME, move |ctx, req, resp| {
         instance.set_time(ctx, req, resp)
     });
-    let mut instance = s.clone();
+    let mut instance = s;
     builder = builder.add_unary_handler(&METHOD_AUDIO_SERVER_START_TIME_SYNC, move |ctx, req, resp| {
         instance.start_time_sync(ctx, req, resp)
     });

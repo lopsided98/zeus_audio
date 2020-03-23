@@ -9,7 +9,8 @@ fn main() {
         protoc_grpcio::compile_grpc_protos(
             &["audio_server.proto"],
             &[proto_root],
-            "src/protos",
+            "src",
+            None
         ).expect("Failed to compile gRPC definitions!");
     } else {
         println!("gRPC definitions not found, skipping compile");

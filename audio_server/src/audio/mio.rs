@@ -1,7 +1,7 @@
 use std::io;
 use std::os::unix::io::RawFd;
 
-use alsa::poll::PollDescriptors;
+use alsa::poll::Descriptors;
 use mio::Evented;
 use mio::Poll;
 use mio::PollOpt;

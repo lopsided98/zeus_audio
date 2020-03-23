@@ -1,53 +1,25 @@
-use futures::Async;
-use futures::AsyncSink;
+use std::pin::Pin;
+
 use futures::future::Future;
-use futures::Poll;
 use futures::sink::Sink;
-use futures::sync::oneshot;
+use futures::task::{Context, Poll};
 
-/// Future used to communicate back to a caller that an audio control request
-/// has completed, possibly signalling an error.
-pub struct ControlFuture<T, E> {
-    rx: oneshot::Receiver<Result<T, E>>
-}
-
-impl<T, E> ControlFuture<T, E> {
-    pub fn channel() -> (ControlSender<T, E>, ControlFuture<T, E>) {
-        let (tx, rx) = oneshot::channel();
-        (tx, ControlFuture { rx })
-    }
-}
-
-impl<T, E> Future for ControlFuture<T, E> {
-    type Item = T;
-    type Error = E;
-
-    fn poll(&mut self) -> Poll<T, E> {
-        match self.rx.poll() {
-            Ok(Async::Ready(Ok(r))) => Ok(Async::Ready(r)),
-            Ok(Async::Ready(Err(e))) => Err(e),
-            Ok(Async::NotReady) => Ok(Async::NotReady),
-            // The audio stream should never drop a sender before completion
-            Err(_) => panic!("Manager has been shutdown")
-        }
-    }
-}
-
-pub type ControlSender<T, E> = oneshot::Sender<Result<T, E>>;
-
-pub trait Manager {
+pub trait Manager: Sized {
     type Item;
     type Error;
 
-    fn next_future(self, item: Self::Item) -> Box<dyn Future<Item=Self, Error=Self::Error> + Send>;
+    fn next_future(self, item: Self::Item) -> Pin<Box<dyn Future<Output=Result<Self, Self::Error>> + Send>>;
 }
 
 pub struct ManagerSink<M: Manager> {
     mgr: Option<M>,
-    future: Option<Box<dyn Future<Item=M, Error=M::Error> + Send>>,
+    future: Option<Pin<Box<dyn Future<Output=Result<M, M::Error>> + Send>>>,
 }
 
 impl<M: Manager> ManagerSink<M> {
+    pin_utils::unsafe_unpinned!(mgr: Option<M>);
+    pin_utils::unsafe_unpinned!(future: Option<Pin<Box<dyn Future<Output=Result<M, M::Error>> + Send>>>);
+
     pub fn new(mgr: M) -> Self {
         Self {
             mgr: Some(mgr),
@@ -56,44 +28,38 @@ impl<M: Manager> ManagerSink<M> {
     }
 }
 
-impl<M: Manager> Sink for ManagerSink<M> {
-    type SinkItem = M::Item;
-    type SinkError = M::Error;
+impl<M: Manager> Sink<M::Item> for ManagerSink<M> {
+    type Error = M::Error;
 
-    fn start_send(&mut self, item: M::Item) -> Result<AsyncSink<M::Item>, M::Error> {
-        if self.future.is_none() {
-            let mgr = std::mem::replace(&mut self.mgr, None).unwrap();
-            self.future = Some(mgr.next_future(item));
-            return Ok(AsyncSink::Ready);
-        }
-
-        match self.future.as_mut().unwrap().poll() {
-            Ok(Async::Ready(mgr)) => {
-                self.future = Some(mgr.next_future(item));
-                Ok(AsyncSink::Ready)
-            }
-            Err(e) => Err(e),
-            Ok(Async::NotReady) => Ok(AsyncSink::NotReady(item))
-        }
-    }
-
-    fn poll_complete(&mut self) -> Poll<(), M::Error> {
-        if self.future.is_some() {
-            match self.future.as_mut().unwrap().poll() {
-                Ok(Async::Ready(mgr)) => {
-                    self.mgr = Some(mgr);
-                    self.future = None;
-                    Ok(Async::Ready(()))
+    fn poll_ready(mut self: Pin<&mut Self>, cx: &mut Context) -> Poll<Result<(), Self::Error>> {
+        match self.as_mut().future() {
+            None => Poll::Ready(Ok(())),
+            Some(future) => {
+                match future.as_mut().poll(cx) {
+                    Poll::Ready(Ok(mgr)) => {
+                        *self.as_mut().mgr() = Some(mgr);
+                        *self.as_mut().future() = None;
+                        Poll::Ready(Ok(()))
+                    }
+                    Poll::Ready(Err(e)) => Poll::Ready(Err(e)),
+                    Poll::Pending => Poll::Pending
                 }
-                Err(e) => Err(e),
-                Ok(Async::NotReady) => Ok(Async::NotReady)
             }
-        } else {
-            Ok(Async::Ready(()))
         }
     }
 
-    fn close(&mut self) -> Poll<(), M::Error> {
-        self.poll_complete()
+    fn start_send(mut self: Pin<&mut Self>, item: M::Item) -> Result<(), Self::Error> {
+        let mgr = std::mem::replace(self.as_mut().mgr(), None)
+            .expect("start_send() called when not ready");
+        *self.as_mut().future() = Some(mgr.next_future(item));
+        Ok(())
+    }
+
+    fn poll_flush(self: Pin<&mut Self>, cx: &mut Context) -> Poll<Result<(), Self::Error>> {
+        self.poll_ready(cx)
+    }
+
+    fn poll_close(self: Pin<&mut Self>, cx: &mut Context) -> Poll<Result<(), Self::Error>> {
+        self.poll_ready(cx)
     }
 }

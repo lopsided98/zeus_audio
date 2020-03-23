@@ -1,13 +1,14 @@
 use std::io;
+use std::pin::Pin;
 
-use futures::Async;
-use futures::Poll;
 use futures::Stream;
-use tokio::reactor::PollEvented2;
+use futures::task::{Context, Poll};
+use tokio::io::PollEvented;
+
 use crate::audio::timestamp::AudioTimestamp;
 
 pub struct PCM {
-    poll: PollEvented2<super::mio::PCM>,
+    poll: PollEvented<super::mio::PCM>,
     channels: usize,
     period: u64,
 }
@@ -21,8 +22,11 @@ impl PCM {
             channels = hw_params.get_channels()? as usize;
             period = 1_000_000_000 / hw_params.get_rate()? as u64;
         }
+        let poll_pcm = PollEvented::new(pcm)
+            .map_err(|e| Self::convert_io_error("Failed to create PollEvented", e))?;
+
         Ok(Self {
-            poll: PollEvented2::new(pcm),
+            poll: poll_pcm,
             channels,
             period,
         })
@@ -41,18 +45,10 @@ impl PCM {
         })
     }
 
-    pub fn poll_read(&self, buf: &mut [i16]) -> Poll<(usize, AudioTimestamp), alsa::Error> {
-        fn map_alsa_err(msg: &'static str, e: io::Error) -> alsa::Error {
-            match e.raw_os_error() {
-                Some(e) => alsa::Error::new(msg, e),
-                // I don't think this will ever happen, but return some kind of error anyway
-                None => alsa::Error::unsupported(msg)
-            }
-        }
-
+    pub fn poll_read(&self, cx: &mut Context, buf: &mut [i16]) -> Poll<Result<(usize, AudioTimestamp), alsa::Error>> {
         let poll = &self.poll;
-        try_ready!(poll.poll_read_ready(mio::Ready::readable())
-            .map_err(|e| map_alsa_err("Failed to poll ALSA", e)));
+        futures::ready!(poll.poll_read_ready(cx, mio::Ready::readable()))
+            .map_err(|e| Self::convert_io_error("Failed to poll ALSA", e))?;
 
         let pcm = poll.get_ref().get_ref();
 
@@ -60,12 +56,12 @@ impl PCM {
             let res = self.read_timestamp(pcm, buf);
             if let Err(e) = res {
                 match pcm.state() {
-                    alsa::pcm::State::XRun => warn!("ALSA buffer overrun"),
+                    alsa::pcm::State::XRun => log::warn!("ALSA buffer overrun"),
                     _ => ()
                 };
                 // Retry if the error could be recovered
                 if pcm.try_recover(e, false).is_err() {
-                    debug!("Failed to recover ALSA error");
+                    log::debug!("Failed to recover ALSA error");
                     break res;
                 }
             } else {
@@ -75,35 +71,41 @@ impl PCM {
 
         match res {
             Ok((n, timestamp)) => {
-                poll.clear_read_ready(mio::Ready::readable())
-                    .map_err(|e| map_alsa_err("Failed to clear mio ready", e))?;
-                Ok(Async::Ready((n * self.channels, timestamp)))
+                poll.clear_read_ready(cx, mio::Ready::readable())
+                    .map_err(|e| Self::convert_io_error("Failed to clear mio ready", e))?;
+                Poll::Ready(Ok((n * self.channels, timestamp)))
             }
             Err(e) => {
                 let errno = e.errno().unwrap();
                 if errno == nix::errno::Errno::EAGAIN {
-                    poll.clear_read_ready(mio::Ready::readable())
-                        .map_err(|e| map_alsa_err("Failed to clear mio ready", e))?;
-                    Ok(Async::NotReady)
-                } else { Err(e) }
+                    poll.clear_read_ready(cx, mio::Ready::readable())
+                        .map_err(|e| Self::convert_io_error("Failed to clear mio ready", e))?;
+                    Poll::Pending
+                } else { Poll::Ready(Err(e)) }
             }
+        }
+    }
+
+    fn convert_io_error(msg: &'static str, e: io::Error) -> alsa::Error {
+        match e.raw_os_error() {
+            Some(e) => alsa::Error::new(msg, e),
+            // I don't think this will ever happen, but return some kind of error anyway
+            None => alsa::Error::unsupported(msg)
         }
     }
 }
 
 pub struct PCMStream {
-    pcm: PCM,
-    buffer: Vec<i16>,
+    pcm: PCM
 }
 
 impl PCMStream {
     const BUFFER_SIZE: usize = 3000;
 
+//    pin_utils::unsafe_unpinned!(pcm: PCM);
+
     pub fn new(pcm: PCM) -> Self {
-        Self {
-            pcm,
-            buffer: vec![0; Self::BUFFER_SIZE],
-        }
+        Self { pcm }
     }
 
     pub fn from_alsa_pcm(pcm: alsa::PCM) -> Result<Self, alsa::Error> {
@@ -112,18 +114,17 @@ impl PCMStream {
 }
 
 impl Stream for PCMStream {
-    type Item = (Vec<i16>, AudioTimestamp);
-    type Error = alsa::Error;
+    type Item = Result<(Vec<i16>, AudioTimestamp), alsa::Error>;
 
-    fn poll(&mut self) -> Poll<Option<(Vec<i16>, AudioTimestamp)>, alsa::Error> {
-        match self.pcm.poll_read(&mut self.buffer) {
-            Ok(Async::Ready((len, timestamp))) => {
-                let mut buf = std::mem::replace(&mut self.buffer, vec![0; Self::BUFFER_SIZE]);
-                buf.truncate(len);
-                Ok(Async::Ready(Some((buf, timestamp))))
+    fn poll_next(self: Pin<&mut Self>, cx: &mut Context) -> Poll<Option<Self::Item>> {
+        let mut buffer = vec![0; Self::BUFFER_SIZE];
+        match self.pcm.poll_read(cx, &mut buffer) {
+            Poll::Ready(Ok((len, timestamp))) => {
+                buffer.truncate(len);
+                Poll::Ready(Some(Ok((buffer, timestamp))))
             }
-            Ok(Async::NotReady) => Ok(Async::NotReady),
-            Err(e) => Err(e)
+            Poll::Ready(Err(e)) => Poll::Ready(Some(Err(e))),
+            Poll::Pending => Poll::Pending
         }
     }
 }

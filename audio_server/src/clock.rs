@@ -1,13 +1,11 @@
 use std::io;
-use std::process::Command;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering;
 
+use failure::Fail;
+use tokio::process::Command;
 use futures::Future;
-use futures::future::Either;
-use futures::future::IntoFuture;
-use tokio_process::CommandExt;
 
 #[derive(Debug, Fail)]
 pub enum Error {
@@ -63,39 +61,47 @@ impl Clock {
         }
     }
 
-    pub fn start_sync(&self) -> impl Future<Item=(), Error=Error> {
-        if self.master {
-            Either::A(Err(Error::Master).into_future())
-        } else if self.time_set.load(Ordering::Relaxed) {
-            Either::A(Err(Error::TimeAlreadySet).into_future())
-        } else {
-            let time_set = self.time_set.clone();
-            Either::B(Command::new("sudo")
+    pub fn start_sync(&self) -> impl Future<Output=Result<(), Error>> {
+        let master = self.master;
+        let time_set = self.time_set.clone();
+        async move {
+            if master {
+                return Err(Error::Master);
+            }
+            if time_set.load(Ordering::Relaxed) {
+                return Err(Error::TimeAlreadySet);
+            }
+
+            let systemctl_output = Command::new("sudo")
                 .arg("-n") // Non-interactive mode
                 .arg("systemctl")
                 .arg("start")
                 .arg("chronyd")
-                .output_async().map_err(|e| Error::StartSyncFailed(e.into()))
-                .and_then(|output| if output.status.success() {
-                    Ok(())
-                } else {
-                    let stderr = std::str::from_utf8(&output.stderr)
-                        .map_err(|e| Error::StartSyncFailed(e.into()))?;
-                    Err(Error::StartSyncFailed(format_err!("Failed to start chronyd: {}", stderr)))
-                })
-                .and_then(|_| Self::chronyc_command()
-                    .arg("-m")
-                    .arg("burst 10/15")
-                    .arg("waitsync 30 0 0 0.5")
-                    .output_async().map_err(|e| Error::StartSyncFailed(e.into())))
-                .and_then(move |output| if output.status.success() {
-                    time_set.store(true, Ordering::Relaxed);
-                    Ok(())
-                } else {
-                    let stdout = std::str::from_utf8(&output.stdout)
-                        .map_err(|e| Error::StartSyncFailed(e.into()))?;
-                    Err(Error::StartSyncFailed(format_err!("Failed to synchronize clock: {}", stdout)))
-                }))
+                .output().await
+                .map_err(|e| Error::StartSyncFailed(e.into()))?;
+
+            if !systemctl_output.status.success() {
+                let stderr = std::str::from_utf8(&systemctl_output.stderr)
+                    .map_err(|e| Error::StartSyncFailed(e.into()))?;
+                return Err(Error::StartSyncFailed(failure::format_err!("Failed to start chronyd: {}", stderr)));
+            }
+
+
+            let chronyc_output = Self::chronyc_command()
+                .arg("-m")
+                .arg("burst 10/15")
+                .arg("waitsync 30 0 0 0.5")
+                .output().await
+                .map_err(|e| Error::StartSyncFailed(e.into()))?;
+
+            if !chronyc_output.status.success() {
+                let stdout = std::str::from_utf8(&chronyc_output.stdout)
+                    .map_err(|e| Error::StartSyncFailed(e.into()))?;
+                return Err(Error::StartSyncFailed(failure::format_err!("Failed to synchronize clock: {}", stdout)));
+            }
+
+            time_set.store(true, Ordering::Relaxed);
+            Ok(())
         }
     }
 }

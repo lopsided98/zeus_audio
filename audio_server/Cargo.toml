@@ -1,35 +1,33 @@
 [package]
 name = "audio_server"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Ben Wolsieffer <benwolsieffer@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+audio_server_proto = { path = "./audio_server_proto" }
 alsa = { git = "https://github.com/lopsided98/alsa-rs" }
 #alsa = { path = "../alsa-rs" }
 env_logger = "0"
 failure = "0"
 failure_derive = "0"
-futures = "0"
-grpcio = { version = "0", default-features = false, features = ["protobuf-codec"] }
+futures = { version = "0.3", features = ["compat"] }
+futures01 = { package = "futures", version = "0.1" }
 hound = "3"
 libc = "0"
 log = "0"
 protobuf = "2"
-tokio = "0"
-tokio-process = "0"
-tokio-threadpool = "0"
+grpcio = { version = "0", default-features = false, features = ["protobuf-codec"] }
+tokio = { version = "0.2", features = ["macros", "rt-core", "rt-threaded", "io-driver", "process", "blocking"] }
 hostname = "0"
 serde = "1"
 serde_derive = "1"
 serde_yaml = "0"
 regex = "1"
 # Older version used by alsa
-nix = "0.9"
-mio = "0"
-
-[build-dependencies]
-protoc-grpcio = "0"
+nix = "0.15"
+mio = { version = "0.6" }
+pin-utils = "0.1.0-alpha.4"
 
 [profile.release]
 debug = true
