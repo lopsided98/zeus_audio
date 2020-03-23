@@ -9,6 +9,7 @@ use mio::Ready;
 use mio::Token;
 use mio::unix::EventedFd;
 
+/// Mio event source for an ALSA PCM device.
 pub struct PCM {
     pcm: alsa::PCM,
     poll_fds: Vec<RawFd>,
@@ -68,5 +69,3 @@ impl Evented for PCM {
         Ok(())
     }
 }
-
-//unsafe impl Send for PCM {}

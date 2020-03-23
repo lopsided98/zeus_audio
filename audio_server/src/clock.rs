@@ -35,12 +35,17 @@ impl Clock {
         }
     }
 
+    /// Command to start chronyc with sudo. Extra arguments can be appended
+    /// before running.
     fn chronyc_command() -> Command {
         let mut c = Command::new("sudo");
         c.arg("-n").arg("-u").arg("chrony").arg("chronyc");
         c
     }
 
+    /// Manually set the time to the specified value, relative to the Unix
+    /// epoch. This can only be called on the master, and can only be done
+    /// once.
     pub fn set_time(&mut self, seconds: i64, nanos: i32) -> Result<(), Error> {
         if !self.master {
             Err(Error::NotMaster)
@@ -61,6 +66,9 @@ impl Clock {
         }
     }
 
+    /// Start NTP time synchronization. This starts the chronyd systemd service
+    /// and sends a burst synchronization command. This can only be run on
+    /// other than the master, and it can only be run once.
     pub fn start_sync(&self) -> impl Future<Output=Result<(), Error>> {
         let master = self.master;
         let time_set = self.time_set.clone();

@@ -7,6 +7,8 @@ use tokio::io::PollEvented;
 
 use crate::audio::timestamp::AudioTimestamp;
 
+/// Enables asynchronous reading from an ALSA PCM device. See [PCMStream] for a
+/// wrapper that provides a stream of sample buffers.
 pub struct PCM {
     poll: PollEvented<super::mio::PCM>,
     channels: usize,
@@ -45,6 +47,7 @@ impl PCM {
         })
     }
 
+    /// Read timestamped samples into the specified buffer.
     pub fn poll_read(&self, cx: &mut Context, buf: &mut [i16]) -> Poll<Result<(usize, AudioTimestamp), alsa::Error>> {
         let poll = &self.poll;
         futures::ready!(poll.poll_read_ready(cx, mio::Ready::readable()))
@@ -95,14 +98,13 @@ impl PCM {
     }
 }
 
+/// Stream of timestamped ALSA PCM sample buffers.
 pub struct PCMStream {
     pcm: PCM
 }
 
 impl PCMStream {
     const BUFFER_SIZE: usize = 3000;
-
-//    pin_utils::unsafe_unpinned!(pcm: PCM);
 
     pub fn new(pcm: PCM) -> Self {
         Self { pcm }

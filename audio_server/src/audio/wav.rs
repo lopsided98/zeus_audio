@@ -24,6 +24,7 @@ impl From<hound::Error> for Error {
     }
 }
 
+/// Sink for buffers of PCM samples
 pub struct WavSink<W: Write + Seek> {
     hound: Option<hound::WavWriter<W>>,
     max_file_samples: usize,

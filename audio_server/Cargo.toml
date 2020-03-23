@@ -26,7 +26,8 @@ serde_yaml = "0"
 regex = "1"
 # Older version used by alsa
 nix = "0.15"
-mio = { version = "0.6" }
+# tokio does not support >0.6
+mio = "0.6"
 pin-utils = "0.1.0-alpha.4"
 
 [profile.release]

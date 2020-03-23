@@ -19,6 +19,14 @@ pub enum Error {
     RegistrationError(#[fail(cause)] failure::Error)
 }
 
+/// Stream that copies items to an arbitrary number of endpoints. Endpoints can
+/// be dynamically registered at any time. Each item can be mapped before being
+/// sent to the endpoints, but is passed through unmodified to the next stream
+/// in the chain. Items must be [Result]s, and their [Err] cases are not passed
+/// though to the endpoints (because they normally cannot be cloned).
+///
+/// This stream is useful for eavesdropping on a stream and sending the results
+/// to multiple clients.
 #[must_use = "streams do nothing unless polled"]
 pub struct TeeMap<St, F, U> {
     stream: St,
@@ -33,11 +41,13 @@ enum EndpointMessage<U> {
     TaskWake(Waker),
 }
 
+/// Used to register endpoints of a [TeeMap].
 #[derive(Clone)]
 pub struct EndpointRegistration<U> {
     tx: mpsc::Sender<EndpointMessage<U>>
 }
 
+/// Endpoint stream for a [TeeMap].
 #[derive(Debug)]
 pub struct Endpoint<U> {
     item: Arc<ItemWrapper<U>>,
@@ -203,6 +213,7 @@ impl<U> Stream for Endpoint<U> {
         }
         match item {
             None => {
+                // Ask the source to wake us when there is a new message
                 if self.tx.send(EndpointMessage::TaskWake(cx.waker().clone())).is_err() {
                     // Receiver disconnected, the stream must have finished and been dropped
                     Poll::Ready(None)
@@ -212,5 +223,30 @@ impl<U> Stream for Endpoint<U> {
             }
             Some(i) => Poll::Ready(i)
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use futures::future::join;
+    use futures::{StreamExt, TryStreamExt};
+
+    use super::*;
+
+    #[tokio::test]
+    async fn stream_passthrough() {
+        // Input data
+        let vec_in = vec![1, 4, 5];
+
+        let (tee_map, _) = TeeMap::new(
+            // Wrap input data in Result
+            futures::stream::iter(vec_in.clone().into_iter()
+                .map::<_, fn(_) -> Result<i32, ()>>(Ok)),
+            // Identity mapping
+            |i: &i32| i.clone(),
+        );
+
+        assert_eq!(tee_map.map(Result::unwrap)
+                       .collect::<Vec<i32>>().await, vec_in);
     }
 }
