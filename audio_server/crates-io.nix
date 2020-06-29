@@ -5,76 +5,171 @@ let inherit (lib.lists) fold;
 in
 rec {
 
-# aho-corasick-0.7.10
+# addr2line-0.12.2
 
-  crates.aho_corasick."0.7.10" = deps: { features?(features_.aho_corasick."0.7.10" deps {}) }: buildRustCrate {
-    crateName = "aho-corasick";
-    version = "0.7.10";
-    description = "Fast multiple substring searching.";
-    authors = [ "Andrew Gallant <jamslam@gmail.com>" ];
-    sha256 = "0mmhg2dsz8b2iphdhdx24kzgr2ga9p879w30y1529kcsqv26mfwv";
-    libName = "aho_corasick";
+  crates.addr2line."0.12.2" = deps: { features?(features_.addr2line."0.12.2" deps {}) }: buildRustCrate {
+    crateName = "addr2line";
+    version = "0.12.2";
+    description = "A cross-platform symbolication library written in Rust, using `gimli`";
+    authors = [ "Nick Fitzgerald <fitzgen@gmail.com>" "Philip Craig <philipjcraig@gmail.com>" "Jon Gjengset <jon@thesquareplanet.com>" "Noah Bergbauer <noah.bergbauer@tum.de>" ];
+    sha256 = "12wfza0vs3qh38v32fpfz69bl3rgixxsds5qxzyz168lzi21x64n";
     dependencies = mapFeatures features ([
-      (crates."memchr"."${deps."aho_corasick"."0.7.10"."memchr"}" deps)
+      (crates."gimli"."${deps."addr2line"."0.12.2"."gimli"}" deps)
     ]);
-    features = mkFeatures (features."aho_corasick"."0.7.10" or {});
+    features = mkFeatures (features."addr2line"."0.12.2" or {});
   };
-  features_.aho_corasick."0.7.10" = deps: f: updateFeatures f (rec {
-    aho_corasick = fold recursiveUpdate {} [
-      { "0.7.10"."std" =
-        (f.aho_corasick."0.7.10"."std" or false) ||
-        (f.aho_corasick."0.7.10".default or false) ||
-        (aho_corasick."0.7.10"."default" or false); }
-      { "0.7.10".default = (f.aho_corasick."0.7.10".default or true); }
+  features_.addr2line."0.12.2" = deps: f: updateFeatures f (rec {
+    addr2line = fold recursiveUpdate {} [
+      { "0.12.2"."cpp_demangle" =
+        (f.addr2line."0.12.2"."cpp_demangle" or false) ||
+        (f.addr2line."0.12.2".default or false) ||
+        (addr2line."0.12.2"."default" or false); }
+      { "0.12.2"."fallible-iterator" =
+        (f.addr2line."0.12.2"."fallible-iterator" or false) ||
+        (f.addr2line."0.12.2".default or false) ||
+        (addr2line."0.12.2"."default" or false); }
+      { "0.12.2"."object" =
+        (f.addr2line."0.12.2"."object" or false) ||
+        (f.addr2line."0.12.2".std-object or false) ||
+        (addr2line."0.12.2"."std-object" or false); }
+      { "0.12.2"."rustc-demangle" =
+        (f.addr2line."0.12.2"."rustc-demangle" or false) ||
+        (f.addr2line."0.12.2".default or false) ||
+        (addr2line."0.12.2"."default" or false); }
+      { "0.12.2"."smallvec" =
+        (f.addr2line."0.12.2"."smallvec" or false) ||
+        (f.addr2line."0.12.2".default or false) ||
+        (addr2line."0.12.2"."default" or false); }
+      { "0.12.2"."std" =
+        (f.addr2line."0.12.2"."std" or false) ||
+        (f.addr2line."0.12.2".std-object or false) ||
+        (addr2line."0.12.2"."std-object" or false); }
+      { "0.12.2"."std-object" =
+        (f.addr2line."0.12.2"."std-object" or false) ||
+        (f.addr2line."0.12.2".default or false) ||
+        (addr2line."0.12.2"."default" or false); }
+      { "0.12.2".default = (f.addr2line."0.12.2".default or true); }
     ];
-    memchr = fold recursiveUpdate {} [
-      { "${deps.aho_corasick."0.7.10".memchr}"."use_std" =
-        (f.memchr."${deps.aho_corasick."0.7.10".memchr}"."use_std" or false) ||
-        (aho_corasick."0.7.10"."std" or false) ||
-        (f."aho_corasick"."0.7.10"."std" or false); }
-      { "${deps.aho_corasick."0.7.10".memchr}".default = (f.memchr."${deps.aho_corasick."0.7.10".memchr}".default or false); }
+    gimli = fold recursiveUpdate {} [
+      { "${deps.addr2line."0.12.2".gimli}"."endian-reader" =
+        (f.gimli."${deps.addr2line."0.12.2".gimli}"."endian-reader" or false) ||
+        (addr2line."0.12.2"."std-object" or false) ||
+        (f."addr2line"."0.12.2"."std-object" or false); }
+      { "${deps.addr2line."0.12.2".gimli}"."read" = true; }
+      { "${deps.addr2line."0.12.2".gimli}"."std" =
+        (f.gimli."${deps.addr2line."0.12.2".gimli}"."std" or false) ||
+        (addr2line."0.12.2"."std" or false) ||
+        (f."addr2line"."0.12.2"."std" or false); }
+      { "${deps.addr2line."0.12.2".gimli}".default = (f.gimli."${deps.addr2line."0.12.2".gimli}".default or false); }
     ];
   }) [
-    (features_.memchr."${deps."aho_corasick"."0.7.10"."memchr"}" deps)
+    (features_.gimli."${deps."addr2line"."0.12.2"."gimli"}" deps)
   ];
 
 
 # end
-# anyhow-1.0.27
+# adler32-1.1.0
 
-  crates.anyhow."1.0.27" = deps: { features?(features_.anyhow."1.0.27" deps {}) }: buildRustCrate {
-    crateName = "anyhow";
-    version = "1.0.27";
-    description = "Flexible concrete Error type built on std::error::Error";
-    authors = [ "David Tolnay <dtolnay@gmail.com>" ];
-    edition = "2018";
-    sha256 = "1q8hij7rnrsj5cvz2gfkqkn5w09bsf09rpaa75lsr58qs059rgyz";
-    features = mkFeatures (features."anyhow"."1.0.27" or {});
+  crates.adler32."1.1.0" = deps: { features?(features_.adler32."1.1.0" deps {}) }: buildRustCrate {
+    crateName = "adler32";
+    version = "1.1.0";
+    description = "Minimal Adler32 implementation for Rust.";
+    authors = [ "Remi Rampin <remirampin@gmail.com>" ];
+    sha256 = "104mzl9s7ns995jjj282fcp49xa65izknx3y4zqliq6ns614ldy8";
+    dependencies = mapFeatures features ([
+]);
+    features = mkFeatures (features."adler32"."1.1.0" or {});
   };
-  features_.anyhow."1.0.27" = deps: f: updateFeatures f (rec {
-    anyhow = fold recursiveUpdate {} [
-      { "1.0.27"."std" =
-        (f.anyhow."1.0.27"."std" or false) ||
-        (f.anyhow."1.0.27".default or false) ||
-        (anyhow."1.0.27"."default" or false); }
-      { "1.0.27".default = (f.anyhow."1.0.27".default or true); }
+  features_.adler32."1.1.0" = deps: f: updateFeatures f (rec {
+    adler32 = fold recursiveUpdate {} [
+      { "1.1.0"."compiler_builtins" =
+        (f.adler32."1.1.0"."compiler_builtins" or false) ||
+        (f.adler32."1.1.0".rustc-dep-of-std or false) ||
+        (adler32."1.1.0"."rustc-dep-of-std" or false); }
+      { "1.1.0"."core" =
+        (f.adler32."1.1.0"."core" or false) ||
+        (f.adler32."1.1.0".rustc-dep-of-std or false) ||
+        (adler32."1.1.0"."rustc-dep-of-std" or false); }
+      { "1.1.0"."std" =
+        (f.adler32."1.1.0"."std" or false) ||
+        (f.adler32."1.1.0".default or false) ||
+        (adler32."1.1.0"."default" or false); }
+      { "1.1.0".default = (f.adler32."1.1.0".default or true); }
     ];
   }) [];
 
 
 # end
-# arc-swap-0.4.5
+# aho-corasick-0.7.13
 
-  crates.arc_swap."0.4.5" = deps: { features?(features_.arc_swap."0.4.5" deps {}) }: buildRustCrate {
+  crates.aho_corasick."0.7.13" = deps: { features?(features_.aho_corasick."0.7.13" deps {}) }: buildRustCrate {
+    crateName = "aho-corasick";
+    version = "0.7.13";
+    description = "Fast multiple substring searching.";
+    authors = [ "Andrew Gallant <jamslam@gmail.com>" ];
+    sha256 = "0wp1g4sx7472q5dzgxmcq8f368nv50bjgh5bzzp16320b934qf9a";
+    libName = "aho_corasick";
+    dependencies = mapFeatures features ([
+      (crates."memchr"."${deps."aho_corasick"."0.7.13"."memchr"}" deps)
+    ]);
+    features = mkFeatures (features."aho_corasick"."0.7.13" or {});
+  };
+  features_.aho_corasick."0.7.13" = deps: f: updateFeatures f (rec {
+    aho_corasick = fold recursiveUpdate {} [
+      { "0.7.13"."std" =
+        (f.aho_corasick."0.7.13"."std" or false) ||
+        (f.aho_corasick."0.7.13".default or false) ||
+        (aho_corasick."0.7.13"."default" or false); }
+      { "0.7.13".default = (f.aho_corasick."0.7.13".default or true); }
+    ];
+    memchr = fold recursiveUpdate {} [
+      { "${deps.aho_corasick."0.7.13".memchr}"."use_std" =
+        (f.memchr."${deps.aho_corasick."0.7.13".memchr}"."use_std" or false) ||
+        (aho_corasick."0.7.13"."std" or false) ||
+        (f."aho_corasick"."0.7.13"."std" or false); }
+      { "${deps.aho_corasick."0.7.13".memchr}".default = (f.memchr."${deps.aho_corasick."0.7.13".memchr}".default or false); }
+    ];
+  }) [
+    (features_.memchr."${deps."aho_corasick"."0.7.13"."memchr"}" deps)
+  ];
+
+
+# end
+# anyhow-1.0.31
+
+  crates.anyhow."1.0.31" = deps: { features?(features_.anyhow."1.0.31" deps {}) }: buildRustCrate {
+    crateName = "anyhow";
+    version = "1.0.31";
+    description = "Flexible concrete Error type built on std::error::Error";
+    authors = [ "David Tolnay <dtolnay@gmail.com>" ];
+    edition = "2018";
+    sha256 = "0qzk1zv46dc69c639zlgblv1bp0b7m87b7mm6a4dcfms0pl0khp4";
+    features = mkFeatures (features."anyhow"."1.0.31" or {});
+  };
+  features_.anyhow."1.0.31" = deps: f: updateFeatures f (rec {
+    anyhow = fold recursiveUpdate {} [
+      { "1.0.31"."std" =
+        (f.anyhow."1.0.31"."std" or false) ||
+        (f.anyhow."1.0.31".default or false) ||
+        (anyhow."1.0.31"."default" or false); }
+      { "1.0.31".default = (f.anyhow."1.0.31".default or true); }
+    ];
+  }) [];
+
+
+# end
+# arc-swap-0.4.7
+
+  crates.arc_swap."0.4.7" = deps: { features?(features_.arc_swap."0.4.7" deps {}) }: buildRustCrate {
     crateName = "arc-swap";
-    version = "0.4.5";
+    version = "0.4.7";
     description = "Atomically swappable Arc";
     authors = [ "Michal 'vorner' Vaner <vorner@vorner.cz>" ];
-    sha256 = "0y82993jh2c71qsrqwdr8h4w7bpmjm6v5ndygqnqc3w8nklgzfg7";
-    features = mkFeatures (features."arc_swap"."0.4.5" or {});
+    sha256 = "1x69rg4b6sjzz4hkjbs3wkyqha7l00x044bn87j4l4prmc9dkxh7";
+    features = mkFeatures (features."arc_swap"."0.4.7" or {});
   };
-  features_.arc_swap."0.4.5" = deps: f: updateFeatures f (rec {
-    arc_swap."0.4.5".default = (f.arc_swap."0.4.5".default or true);
+  features_.arc_swap."0.4.7" = deps: f: updateFeatures f (rec {
+    arc_swap."0.4.7".default = (f.arc_swap."0.4.7".default or true);
   }) [];
 
 
@@ -138,36 +233,35 @@ rec {
 
 
 # end
-# async-trait-0.1.26
+# async-trait-0.1.36
 
-  crates.async_trait."0.1.26" = deps: { features?(features_.async_trait."0.1.26" deps {}) }: buildRustCrate {
+  crates.async_trait."0.1.36" = deps: { features?(features_.async_trait."0.1.36" deps {}) }: buildRustCrate {
     crateName = "async-trait";
-    version = "0.1.26";
+    version = "0.1.36";
     description = "Type erasure for async trait methods";
     authors = [ "David Tolnay <dtolnay@gmail.com>" ];
     edition = "2018";
-    sha256 = "100jymkpc7a7i5snhqngpnq1lmiywmhqf4gf36f8kz1a24xijbr6";
+    sha256 = "1bkx2v57akzwcszkgbr81q3k0gsnj6xg3r9ar3qhwg88c5lrvypi";
     procMacro = true;
     dependencies = mapFeatures features ([
-      (crates."proc_macro2"."${deps."async_trait"."0.1.26"."proc_macro2"}" deps)
-      (crates."quote"."${deps."async_trait"."0.1.26"."quote"}" deps)
-      (crates."syn"."${deps."async_trait"."0.1.26"."syn"}" deps)
+      (crates."proc_macro2"."${deps."async_trait"."0.1.36"."proc_macro2"}" deps)
+      (crates."quote"."${deps."async_trait"."0.1.36"."quote"}" deps)
+      (crates."syn"."${deps."async_trait"."0.1.36"."syn"}" deps)
     ]);
-    features = mkFeatures (features."async_trait"."0.1.26" or {});
   };
-  features_.async_trait."0.1.26" = deps: f: updateFeatures f (rec {
-    async_trait."0.1.26".default = (f.async_trait."0.1.26".default or true);
-    proc_macro2."${deps.async_trait."0.1.26".proc_macro2}".default = true;
-    quote."${deps.async_trait."0.1.26".quote}".default = true;
+  features_.async_trait."0.1.36" = deps: f: updateFeatures f (rec {
+    async_trait."0.1.36".default = (f.async_trait."0.1.36".default or true);
+    proc_macro2."${deps.async_trait."0.1.36".proc_macro2}".default = true;
+    quote."${deps.async_trait."0.1.36".quote}".default = true;
     syn = fold recursiveUpdate {} [
-      { "${deps.async_trait."0.1.26".syn}"."full" = true; }
-      { "${deps.async_trait."0.1.26".syn}"."visit-mut" = true; }
-      { "${deps.async_trait."0.1.26".syn}".default = true; }
+      { "${deps.async_trait."0.1.36".syn}"."full" = true; }
+      { "${deps.async_trait."0.1.36".syn}"."visit-mut" = true; }
+      { "${deps.async_trait."0.1.36".syn}".default = true; }
     ];
   }) [
-    (features_.proc_macro2."${deps."async_trait"."0.1.26"."proc_macro2"}" deps)
-    (features_.quote."${deps."async_trait"."0.1.26"."quote"}" deps)
-    (features_.syn."${deps."async_trait"."0.1.26"."syn"}" deps)
+    (features_.proc_macro2."${deps."async_trait"."0.1.36"."proc_macro2"}" deps)
+    (features_.quote."${deps."async_trait"."0.1.36"."quote"}" deps)
+    (features_.syn."${deps."async_trait"."0.1.36"."syn"}" deps)
   ];
 
 
@@ -225,161 +319,107 @@ rec {
 
 
 # end
-# backtrace-0.3.46
+# backtrace-0.3.49
 
-  crates.backtrace."0.3.46" = deps: { features?(features_.backtrace."0.3.46" deps {}) }: buildRustCrate {
+  crates.backtrace."0.3.49" = deps: { features?(features_.backtrace."0.3.49" deps {}) }: buildRustCrate {
     crateName = "backtrace";
-    version = "0.3.46";
+    version = "0.3.49";
     description = "A library to acquire a stack trace (backtrace) at runtime in a Rust program.\n";
     authors = [ "The Rust Project Developers" ];
     edition = "2018";
-    sha256 = "11bh4zlmngc405zmcyakm8lzx0lvb2b6fscn3af8l662n4k8qyi0";
+    sha256 = "1kid0m3na6qyrcvnjrj844jnxvpp6gb5anzr5gxgqwxkhl0rf5l4";
     dependencies = mapFeatures features ([
-      (crates."cfg_if"."${deps."backtrace"."0.3.46"."cfg_if"}" deps)
-      (crates."libc"."${deps."backtrace"."0.3.46"."libc"}" deps)
-      (crates."rustc_demangle"."${deps."backtrace"."0.3.46"."rustc_demangle"}" deps)
+      (crates."cfg_if"."${deps."backtrace"."0.3.49"."cfg_if"}" deps)
+      (crates."libc"."${deps."backtrace"."0.3.49"."libc"}" deps)
+      (crates."rustc_demangle"."${deps."backtrace"."0.3.49"."rustc_demangle"}" deps)
     ]
-      ++ (if features.backtrace."0.3.46".backtrace-sys or false then [ (crates.backtrace_sys."${deps."backtrace"."0.3.46".backtrace_sys}" deps) ] else []))
+      ++ (if features.backtrace."0.3.49".addr2line or false then [ (crates.addr2line."${deps."backtrace"."0.3.49".addr2line}" deps) ] else [])
+      ++ (if features.backtrace."0.3.49".miniz_oxide or false then [ (crates.miniz_oxide."${deps."backtrace"."0.3.49".miniz_oxide}" deps) ] else [])
+      ++ (if features.backtrace."0.3.49".object or false then [ (crates.object."${deps."backtrace"."0.3.49".object}" deps) ] else []))
       ++ (if kernel == "windows" then mapFeatures features ([
 ]) else []);
-    features = mkFeatures (features."backtrace"."0.3.46" or {});
+    features = mkFeatures (features."backtrace"."0.3.49" or {});
   };
-  features_.backtrace."0.3.46" = deps: f: updateFeatures f (rec {
+  features_.backtrace."0.3.49" = deps: f: updateFeatures f (rec {
+    addr2line."${deps.backtrace."0.3.49".addr2line}".default = (f.addr2line."${deps.backtrace."0.3.49".addr2line}".default or false);
     backtrace = fold recursiveUpdate {} [
-      { "0.3.46"."addr2line" =
-        (f.backtrace."0.3.46"."addr2line" or false) ||
-        (f.backtrace."0.3.46".gimli-symbolize or false) ||
-        (backtrace."0.3.46"."gimli-symbolize" or false); }
-      { "0.3.46"."compiler_builtins" =
-        (f.backtrace."0.3.46"."compiler_builtins" or false) ||
-        (f.backtrace."0.3.46".rustc-dep-of-std or false) ||
-        (backtrace."0.3.46"."rustc-dep-of-std" or false); }
-      { "0.3.46"."core" =
-        (f.backtrace."0.3.46"."core" or false) ||
-        (f.backtrace."0.3.46".rustc-dep-of-std or false) ||
-        (backtrace."0.3.46"."rustc-dep-of-std" or false); }
-      { "0.3.46"."dbghelp" =
-        (f.backtrace."0.3.46"."dbghelp" or false) ||
-        (f.backtrace."0.3.46".default or false) ||
-        (backtrace."0.3.46"."default" or false); }
-      { "0.3.46"."dladdr" =
-        (f.backtrace."0.3.46"."dladdr" or false) ||
-        (f.backtrace."0.3.46".default or false) ||
-        (backtrace."0.3.46"."default" or false); }
-      { "0.3.46"."findshlibs" =
-        (f.backtrace."0.3.46"."findshlibs" or false) ||
-        (f.backtrace."0.3.46".gimli-symbolize or false) ||
-        (backtrace."0.3.46"."gimli-symbolize" or false); }
-      { "0.3.46"."goblin" =
-        (f.backtrace."0.3.46"."goblin" or false) ||
-        (f.backtrace."0.3.46".gimli-symbolize or false) ||
-        (backtrace."0.3.46"."gimli-symbolize" or false); }
-      { "0.3.46"."libbacktrace" =
-        (f.backtrace."0.3.46"."libbacktrace" or false) ||
-        (f.backtrace."0.3.46".default or false) ||
-        (backtrace."0.3.46"."default" or false); }
-      { "0.3.46"."libunwind" =
-        (f.backtrace."0.3.46"."libunwind" or false) ||
-        (f.backtrace."0.3.46".default or false) ||
-        (backtrace."0.3.46"."default" or false); }
-      { "0.3.46"."memmap" =
-        (f.backtrace."0.3.46"."memmap" or false) ||
-        (f.backtrace."0.3.46".gimli-symbolize or false) ||
-        (backtrace."0.3.46"."gimli-symbolize" or false); }
-      { "0.3.46"."rustc-serialize" =
-        (f.backtrace."0.3.46"."rustc-serialize" or false) ||
-        (f.backtrace."0.3.46".serialize-rustc or false) ||
-        (backtrace."0.3.46"."serialize-rustc" or false); }
-      { "0.3.46"."serde" =
-        (f.backtrace."0.3.46"."serde" or false) ||
-        (f.backtrace."0.3.46".serialize-serde or false) ||
-        (backtrace."0.3.46"."serialize-serde" or false); }
-      { "0.3.46"."std" =
-        (f.backtrace."0.3.46"."std" or false) ||
-        (f.backtrace."0.3.46".default or false) ||
-        (backtrace."0.3.46"."default" or false); }
-      { "0.3.46".default = (f.backtrace."0.3.46".default or true); }
-    ];
-    backtrace_sys = fold recursiveUpdate {} [
-      { "${deps.backtrace."0.3.46".backtrace_sys}"."backtrace-sys" =
-        (f.backtrace_sys."${deps.backtrace."0.3.46".backtrace_sys}"."backtrace-sys" or false) ||
-        (backtrace."0.3.46"."libbacktrace" or false) ||
-        (f."backtrace"."0.3.46"."libbacktrace" or false); }
-      { "${deps.backtrace."0.3.46".backtrace_sys}"."rustc-dep-of-std" =
-        (f.backtrace_sys."${deps.backtrace."0.3.46".backtrace_sys}"."rustc-dep-of-std" or false) ||
-        (backtrace."0.3.46"."rustc-dep-of-std" or false) ||
-        (f."backtrace"."0.3.46"."rustc-dep-of-std" or false); }
-      { "${deps.backtrace."0.3.46".backtrace_sys}".default = true; }
+      { "0.3.49"."addr2line" =
+        (f.backtrace."0.3.49"."addr2line" or false) ||
+        (f.backtrace."0.3.49".gimli-symbolize or false) ||
+        (backtrace."0.3.49"."gimli-symbolize" or false); }
+      { "0.3.49"."compiler_builtins" =
+        (f.backtrace."0.3.49"."compiler_builtins" or false) ||
+        (f.backtrace."0.3.49".rustc-dep-of-std or false) ||
+        (backtrace."0.3.49"."rustc-dep-of-std" or false); }
+      { "0.3.49"."core" =
+        (f.backtrace."0.3.49"."core" or false) ||
+        (f.backtrace."0.3.49".rustc-dep-of-std or false) ||
+        (backtrace."0.3.49"."rustc-dep-of-std" or false); }
+      { "0.3.49"."gimli-symbolize" =
+        (f.backtrace."0.3.49"."gimli-symbolize" or false) ||
+        (f.backtrace."0.3.49".default or false) ||
+        (backtrace."0.3.49"."default" or false); }
+      { "0.3.49"."miniz_oxide" =
+        (f.backtrace."0.3.49"."miniz_oxide" or false) ||
+        (f.backtrace."0.3.49".gimli-symbolize or false) ||
+        (backtrace."0.3.49"."gimli-symbolize" or false); }
+      { "0.3.49"."object" =
+        (f.backtrace."0.3.49"."object" or false) ||
+        (f.backtrace."0.3.49".gimli-symbolize or false) ||
+        (backtrace."0.3.49"."gimli-symbolize" or false); }
+      { "0.3.49"."rustc-serialize" =
+        (f.backtrace."0.3.49"."rustc-serialize" or false) ||
+        (f.backtrace."0.3.49".serialize-rustc or false) ||
+        (backtrace."0.3.49"."serialize-rustc" or false); }
+      { "0.3.49"."serde" =
+        (f.backtrace."0.3.49"."serde" or false) ||
+        (f.backtrace."0.3.49".serialize-serde or false) ||
+        (backtrace."0.3.49"."serialize-serde" or false); }
+      { "0.3.49"."std" =
+        (f.backtrace."0.3.49"."std" or false) ||
+        (f.backtrace."0.3.49".default or false) ||
+        (backtrace."0.3.49"."default" or false) ||
+        (f.backtrace."0.3.49".gimli-symbolize or false) ||
+        (backtrace."0.3.49"."gimli-symbolize" or false); }
+      { "0.3.49".default = (f.backtrace."0.3.49".default or true); }
     ];
     cfg_if = fold recursiveUpdate {} [
-      { "${deps.backtrace."0.3.46".cfg_if}"."rustc-dep-of-std" =
-        (f.cfg_if."${deps.backtrace."0.3.46".cfg_if}"."rustc-dep-of-std" or false) ||
-        (backtrace."0.3.46"."rustc-dep-of-std" or false) ||
-        (f."backtrace"."0.3.46"."rustc-dep-of-std" or false); }
-      { "${deps.backtrace."0.3.46".cfg_if}".default = true; }
+      { "${deps.backtrace."0.3.49".cfg_if}"."rustc-dep-of-std" =
+        (f.cfg_if."${deps.backtrace."0.3.49".cfg_if}"."rustc-dep-of-std" or false) ||
+        (backtrace."0.3.49"."rustc-dep-of-std" or false) ||
+        (f."backtrace"."0.3.49"."rustc-dep-of-std" or false); }
+      { "${deps.backtrace."0.3.49".cfg_if}".default = true; }
     ];
     libc = fold recursiveUpdate {} [
-      { "${deps.backtrace."0.3.46".libc}"."rustc-dep-of-std" =
-        (f.libc."${deps.backtrace."0.3.46".libc}"."rustc-dep-of-std" or false) ||
-        (backtrace."0.3.46"."rustc-dep-of-std" or false) ||
-        (f."backtrace"."0.3.46"."rustc-dep-of-std" or false); }
-      { "${deps.backtrace."0.3.46".libc}".default = (f.libc."${deps.backtrace."0.3.46".libc}".default or false); }
+      { "${deps.backtrace."0.3.49".libc}"."rustc-dep-of-std" =
+        (f.libc."${deps.backtrace."0.3.49".libc}"."rustc-dep-of-std" or false) ||
+        (backtrace."0.3.49"."rustc-dep-of-std" or false) ||
+        (f."backtrace"."0.3.49"."rustc-dep-of-std" or false); }
+      { "${deps.backtrace."0.3.49".libc}".default = (f.libc."${deps.backtrace."0.3.49".libc}".default or false); }
+    ];
+    miniz_oxide."${deps.backtrace."0.3.49".miniz_oxide}".default = true;
+    object = fold recursiveUpdate {} [
+      { "${deps.backtrace."0.3.49".object}"."elf" = true; }
+      { "${deps.backtrace."0.3.49".object}"."macho" = true; }
+      { "${deps.backtrace."0.3.49".object}"."pe" = true; }
+      { "${deps.backtrace."0.3.49".object}"."read_core" = true; }
+      { "${deps.backtrace."0.3.49".object}"."unaligned" = true; }
+      { "${deps.backtrace."0.3.49".object}".default = (f.object."${deps.backtrace."0.3.49".object}".default or false); }
     ];
     rustc_demangle = fold recursiveUpdate {} [
-      { "${deps.backtrace."0.3.46".rustc_demangle}"."rustc-dep-of-std" =
-        (f.rustc_demangle."${deps.backtrace."0.3.46".rustc_demangle}"."rustc-dep-of-std" or false) ||
-        (backtrace."0.3.46"."rustc-dep-of-std" or false) ||
-        (f."backtrace"."0.3.46"."rustc-dep-of-std" or false); }
-      { "${deps.backtrace."0.3.46".rustc_demangle}".default = true; }
+      { "${deps.backtrace."0.3.49".rustc_demangle}"."rustc-dep-of-std" =
+        (f.rustc_demangle."${deps.backtrace."0.3.49".rustc_demangle}"."rustc-dep-of-std" or false) ||
+        (backtrace."0.3.49"."rustc-dep-of-std" or false) ||
+        (f."backtrace"."0.3.49"."rustc-dep-of-std" or false); }
+      { "${deps.backtrace."0.3.49".rustc_demangle}".default = true; }
     ];
   }) [
-    (features_.backtrace_sys."${deps."backtrace"."0.3.46"."backtrace_sys"}" deps)
-    (features_.cfg_if."${deps."backtrace"."0.3.46"."cfg_if"}" deps)
-    (features_.libc."${deps."backtrace"."0.3.46"."libc"}" deps)
-    (features_.rustc_demangle."${deps."backtrace"."0.3.46"."rustc_demangle"}" deps)
-  ];
-
-
-# end
-# backtrace-sys-0.1.35
-
-  crates.backtrace_sys."0.1.35" = deps: { features?(features_.backtrace_sys."0.1.35" deps {}) }: buildRustCrate {
-    crateName = "backtrace-sys";
-    version = "0.1.35";
-    description = "Bindings to the libbacktrace gcc library\n";
-    authors = [ "Alex Crichton <alex@alexcrichton.com>" ];
-    sha256 = "0ipr3zppz25fyblzmb9xfg7g4zrqwnfbq1b10banfghydgg6qccj";
-    build = "build.rs";
-    dependencies = mapFeatures features ([
-      (crates."libc"."${deps."backtrace_sys"."0.1.35"."libc"}" deps)
-    ]);
-
-    buildDependencies = mapFeatures features ([
-      (crates."cc"."${deps."backtrace_sys"."0.1.35"."cc"}" deps)
-    ]);
-    features = mkFeatures (features."backtrace_sys"."0.1.35" or {});
-  };
-  features_.backtrace_sys."0.1.35" = deps: f: updateFeatures f (rec {
-    backtrace_sys = fold recursiveUpdate {} [
-      { "0.1.35"."backtrace-sys" =
-        (f.backtrace_sys."0.1.35"."backtrace-sys" or false) ||
-        (f.backtrace_sys."0.1.35".default or false) ||
-        (backtrace_sys."0.1.35"."default" or false); }
-      { "0.1.35"."compiler_builtins" =
-        (f.backtrace_sys."0.1.35"."compiler_builtins" or false) ||
-        (f.backtrace_sys."0.1.35".rustc-dep-of-std or false) ||
-        (backtrace_sys."0.1.35"."rustc-dep-of-std" or false); }
-      { "0.1.35"."core" =
-        (f.backtrace_sys."0.1.35"."core" or false) ||
-        (f.backtrace_sys."0.1.35".rustc-dep-of-std or false) ||
-        (backtrace_sys."0.1.35"."rustc-dep-of-std" or false); }
-      { "0.1.35".default = (f.backtrace_sys."0.1.35".default or true); }
-    ];
-    cc."${deps.backtrace_sys."0.1.35".cc}".default = true;
-    libc."${deps.backtrace_sys."0.1.35".libc}".default = (f.libc."${deps.backtrace_sys."0.1.35".libc}".default or false);
-  }) [
-    (features_.libc."${deps."backtrace_sys"."0.1.35"."libc"}" deps)
-    (features_.cc."${deps."backtrace_sys"."0.1.35"."cc"}" deps)
+    (features_.addr2line."${deps."backtrace"."0.3.49"."addr2line"}" deps)
+    (features_.cfg_if."${deps."backtrace"."0.3.49"."cfg_if"}" deps)
+    (features_.libc."${deps."backtrace"."0.3.49"."libc"}" deps)
+    (features_.miniz_oxide."${deps."backtrace"."0.3.49"."miniz_oxide"}" deps)
+    (features_.object."${deps."backtrace"."0.3.49"."object"}" deps)
+    (features_.rustc_demangle."${deps."backtrace"."0.3.49"."rustc_demangle"}" deps)
   ];
 
 
@@ -445,53 +485,57 @@ rec {
 
 
 # end
-# bytes-0.5.4
+# bytes-0.5.5
 
-  crates.bytes."0.5.4" = deps: { features?(features_.bytes."0.5.4" deps {}) }: buildRustCrate {
+  crates.bytes."0.5.5" = deps: { features?(features_.bytes."0.5.5" deps {}) }: buildRustCrate {
     crateName = "bytes";
-    version = "0.5.4";
+    version = "0.5.5";
     description = "Types and traits for working with bytes";
     authors = [ "Carl Lerche <me@carllerche.com>" "Sean McArthur <sean@seanmonstar.com>" ];
     edition = "2018";
-    sha256 = "0v7dcwfzya64c65haqydhyhkjk0czfrma14lrm7wkqmz4j4skpwh";
+    sha256 = "1yx27hqc551mz6l0kp7fpxpsl84rpmrwd6klnzncc5j5926nzvss";
     dependencies = mapFeatures features ([
 ])
-      ++ (if !(kernel == "windows") then mapFeatures features ([
-]) else []);
-    features = mkFeatures (features."bytes"."0.5.4" or {});
+      ++ (if kernel == "loom" then mapFeatures features ([
+      (crates."loom"."${deps."bytes"."0.5.5"."loom"}" deps)
+    ]) else []);
+    features = mkFeatures (features."bytes"."0.5.5" or {});
   };
-  features_.bytes."0.5.4" = deps: f: updateFeatures f (rec {
+  features_.bytes."0.5.5" = deps: f: updateFeatures f (rec {
     bytes = fold recursiveUpdate {} [
-      { "0.5.4"."std" =
-        (f.bytes."0.5.4"."std" or false) ||
-        (f.bytes."0.5.4".default or false) ||
-        (bytes."0.5.4"."default" or false); }
-      { "0.5.4".default = (f.bytes."0.5.4".default or true); }
+      { "0.5.5"."std" =
+        (f.bytes."0.5.5"."std" or false) ||
+        (f.bytes."0.5.5".default or false) ||
+        (bytes."0.5.5"."default" or false); }
+      { "0.5.5".default = (f.bytes."0.5.5".default or true); }
     ];
-  }) [];
+    loom."${deps.bytes."0.5.5".loom}".default = true;
+  }) [
+    (features_.loom."${deps."bytes"."0.5.5"."loom"}" deps)
+  ];
 
 
 # end
-# cc-1.0.50
+# cc-1.0.56
 
-  crates.cc."1.0.50" = deps: { features?(features_.cc."1.0.50" deps {}) }: buildRustCrate {
+  crates.cc."1.0.56" = deps: { features?(features_.cc."1.0.56" deps {}) }: buildRustCrate {
     crateName = "cc";
-    version = "1.0.50";
+    version = "1.0.56";
     description = "A build-time dependency for Cargo build scripts to assist in invoking the native\nC compiler to compile native C code into a static archive to be linked into Rust\ncode.\n";
     authors = [ "Alex Crichton <alex@alexcrichton.com>" ];
     edition = "2018";
-    sha256 = "1di84m338b9c42vfq86g5lyq5s03i0zfvvf59dvb6mr37z063h1d";
+    sha256 = "0d0h2mnq9fswf6bv95zb578ar9zdq7xsbxg1i30xky1pf296kh69";
     dependencies = mapFeatures features ([
 ]);
-    features = mkFeatures (features."cc"."1.0.50" or {});
+    features = mkFeatures (features."cc"."1.0.56" or {});
   };
-  features_.cc."1.0.50" = deps: f: updateFeatures f (rec {
+  features_.cc."1.0.56" = deps: f: updateFeatures f (rec {
     cc = fold recursiveUpdate {} [
-      { "1.0.50"."jobserver" =
-        (f.cc."1.0.50"."jobserver" or false) ||
-        (f.cc."1.0.50".parallel or false) ||
-        (cc."1.0.50"."parallel" or false); }
-      { "1.0.50".default = (f.cc."1.0.50".default or true); }
+      { "1.0.56"."jobserver" =
+        (f.cc."1.0.56"."jobserver" or false) ||
+        (f.cc."1.0.56".parallel or false) ||
+        (cc."1.0.56"."parallel" or false); }
+      { "1.0.56".default = (f.cc."1.0.56".default or true); }
     ];
   }) [];
 
@@ -526,17 +570,17 @@ rec {
 
 
 # end
-# dtoa-0.4.5
+# dtoa-0.4.6
 
-  crates.dtoa."0.4.5" = deps: { features?(features_.dtoa."0.4.5" deps {}) }: buildRustCrate {
+  crates.dtoa."0.4.6" = deps: { features?(features_.dtoa."0.4.6" deps {}) }: buildRustCrate {
     crateName = "dtoa";
-    version = "0.4.5";
+    version = "0.4.6";
     description = "Fast functions for printing floating-point primitives to an io::Write";
     authors = [ "David Tolnay <dtolnay@gmail.com>" ];
-    sha256 = "15npcbjlkd9wm82x7gf1al7sn4rfd3jqzq5ysiy4qz1wsbrlsghv";
+    sha256 = "0x6kgqv5n14v1jy2j19wkqcss8j3lr7pir8h9p32sk6xk83mq0wm";
   };
-  features_.dtoa."0.4.5" = deps: f: updateFeatures f (rec {
-    dtoa."0.4.5".default = (f.dtoa."0.4.5".default or true);
+  features_.dtoa."0.4.6" = deps: f: updateFeatures f (rec {
+    dtoa."0.4.6".default = (f.dtoa."0.4.6".default or true);
   }) [];
 
 
@@ -621,78 +665,78 @@ rec {
 
 
 # end
-# failure-0.1.7
+# failure-0.1.8
 
-  crates.failure."0.1.7" = deps: { features?(features_.failure."0.1.7" deps {}) }: buildRustCrate {
+  crates.failure."0.1.8" = deps: { features?(features_.failure."0.1.8" deps {}) }: buildRustCrate {
     crateName = "failure";
-    version = "0.1.7";
+    version = "0.1.8";
     description = "Experimental error handling abstraction.";
     authors = [ "Without Boats <boats@mozilla.com>" ];
-    sha256 = "019ky26smn3fb1k791yx907vh7cjrrl5rfwpwq0jilscivcfcn4i";
+    sha256 = "07zni065gnk5n8qy1c867wwks11yj0y3fykk4zip132ziiw7lbwx";
     dependencies = mapFeatures features ([
     ]
-      ++ (if features.failure."0.1.7".backtrace or false then [ (crates.backtrace."${deps."failure"."0.1.7".backtrace}" deps) ] else [])
-      ++ (if features.failure."0.1.7".failure_derive or false then [ (crates.failure_derive."${deps."failure"."0.1.7".failure_derive}" deps) ] else []));
-    features = mkFeatures (features."failure"."0.1.7" or {});
+      ++ (if features.failure."0.1.8".backtrace or false then [ (crates.backtrace."${deps."failure"."0.1.8".backtrace}" deps) ] else [])
+      ++ (if features.failure."0.1.8".failure_derive or false then [ (crates.failure_derive."${deps."failure"."0.1.8".failure_derive}" deps) ] else []));
+    features = mkFeatures (features."failure"."0.1.8" or {});
   };
-  features_.failure."0.1.7" = deps: f: updateFeatures f (rec {
-    backtrace."${deps.failure."0.1.7".backtrace}".default = true;
+  features_.failure."0.1.8" = deps: f: updateFeatures f (rec {
+    backtrace."${deps.failure."0.1.8".backtrace}".default = true;
     failure = fold recursiveUpdate {} [
-      { "0.1.7"."backtrace" =
-        (f.failure."0.1.7"."backtrace" or false) ||
-        (f.failure."0.1.7".std or false) ||
-        (failure."0.1.7"."std" or false); }
-      { "0.1.7"."derive" =
-        (f.failure."0.1.7"."derive" or false) ||
-        (f.failure."0.1.7".default or false) ||
-        (failure."0.1.7"."default" or false); }
-      { "0.1.7"."failure_derive" =
-        (f.failure."0.1.7"."failure_derive" or false) ||
-        (f.failure."0.1.7".derive or false) ||
-        (failure."0.1.7"."derive" or false); }
-      { "0.1.7"."std" =
-        (f.failure."0.1.7"."std" or false) ||
-        (f.failure."0.1.7".default or false) ||
-        (failure."0.1.7"."default" or false); }
-      { "0.1.7".default = (f.failure."0.1.7".default or true); }
+      { "0.1.8"."backtrace" =
+        (f.failure."0.1.8"."backtrace" or false) ||
+        (f.failure."0.1.8".std or false) ||
+        (failure."0.1.8"."std" or false); }
+      { "0.1.8"."derive" =
+        (f.failure."0.1.8"."derive" or false) ||
+        (f.failure."0.1.8".default or false) ||
+        (failure."0.1.8"."default" or false); }
+      { "0.1.8"."failure_derive" =
+        (f.failure."0.1.8"."failure_derive" or false) ||
+        (f.failure."0.1.8".derive or false) ||
+        (failure."0.1.8"."derive" or false); }
+      { "0.1.8"."std" =
+        (f.failure."0.1.8"."std" or false) ||
+        (f.failure."0.1.8".default or false) ||
+        (failure."0.1.8"."default" or false); }
+      { "0.1.8".default = (f.failure."0.1.8".default or true); }
     ];
-    failure_derive."${deps.failure."0.1.7".failure_derive}".default = true;
+    failure_derive."${deps.failure."0.1.8".failure_derive}".default = true;
   }) [
-    (features_.backtrace."${deps."failure"."0.1.7"."backtrace"}" deps)
-    (features_.failure_derive."${deps."failure"."0.1.7"."failure_derive"}" deps)
+    (features_.backtrace."${deps."failure"."0.1.8"."backtrace"}" deps)
+    (features_.failure_derive."${deps."failure"."0.1.8"."failure_derive"}" deps)
   ];
 
 
 # end
-# failure_derive-0.1.7
+# failure_derive-0.1.8
 
-  crates.failure_derive."0.1.7" = deps: { features?(features_.failure_derive."0.1.7" deps {}) }: buildRustCrate {
+  crates.failure_derive."0.1.8" = deps: { features?(features_.failure_derive."0.1.8" deps {}) }: buildRustCrate {
     crateName = "failure_derive";
-    version = "0.1.7";
+    version = "0.1.8";
     description = "derives for the failure crate";
     authors = [ "Without Boats <woboats@gmail.com>" ];
-    sha256 = "0jmxv0i4f4vkmpk13anqnxf3z0jf69yhaz5s9y375g4cgb5p2vvs";
+    sha256 = "17379q0fq27jvyvz77lpbxq2hxcyhmqi5al3allxc4zkqjhfm1wg";
     procMacro = true;
     build = "build.rs";
     dependencies = mapFeatures features ([
-      (crates."proc_macro2"."${deps."failure_derive"."0.1.7"."proc_macro2"}" deps)
-      (crates."quote"."${deps."failure_derive"."0.1.7"."quote"}" deps)
-      (crates."syn"."${deps."failure_derive"."0.1.7"."syn"}" deps)
-      (crates."synstructure"."${deps."failure_derive"."0.1.7"."synstructure"}" deps)
+      (crates."proc_macro2"."${deps."failure_derive"."0.1.8"."proc_macro2"}" deps)
+      (crates."quote"."${deps."failure_derive"."0.1.8"."quote"}" deps)
+      (crates."syn"."${deps."failure_derive"."0.1.8"."syn"}" deps)
+      (crates."synstructure"."${deps."failure_derive"."0.1.8"."synstructure"}" deps)
     ]);
-    features = mkFeatures (features."failure_derive"."0.1.7" or {});
+    features = mkFeatures (features."failure_derive"."0.1.8" or {});
   };
-  features_.failure_derive."0.1.7" = deps: f: updateFeatures f (rec {
-    failure_derive."0.1.7".default = (f.failure_derive."0.1.7".default or true);
-    proc_macro2."${deps.failure_derive."0.1.7".proc_macro2}".default = true;
-    quote."${deps.failure_derive."0.1.7".quote}".default = true;
-    syn."${deps.failure_derive."0.1.7".syn}".default = true;
-    synstructure."${deps.failure_derive."0.1.7".synstructure}".default = true;
+  features_.failure_derive."0.1.8" = deps: f: updateFeatures f (rec {
+    failure_derive."0.1.8".default = (f.failure_derive."0.1.8".default or true);
+    proc_macro2."${deps.failure_derive."0.1.8".proc_macro2}".default = true;
+    quote."${deps.failure_derive."0.1.8".quote}".default = true;
+    syn."${deps.failure_derive."0.1.8".syn}".default = true;
+    synstructure."${deps.failure_derive."0.1.8".synstructure}".default = true;
   }) [
-    (features_.proc_macro2."${deps."failure_derive"."0.1.7"."proc_macro2"}" deps)
-    (features_.quote."${deps."failure_derive"."0.1.7"."quote"}" deps)
-    (features_.syn."${deps."failure_derive"."0.1.7"."syn"}" deps)
-    (features_.synstructure."${deps."failure_derive"."0.1.7"."synstructure"}" deps)
+    (features_.proc_macro2."${deps."failure_derive"."0.1.8"."proc_macro2"}" deps)
+    (features_.quote."${deps."failure_derive"."0.1.8"."quote"}" deps)
+    (features_.syn."${deps."failure_derive"."0.1.8"."syn"}" deps)
+    (features_.synstructure."${deps."failure_derive"."0.1.8"."synstructure"}" deps)
   ];
 
 
@@ -719,18 +763,25 @@ rec {
 
 
 # end
-# fnv-1.0.6
+# fnv-1.0.7
 
-  crates.fnv."1.0.6" = deps: { features?(features_.fnv."1.0.6" deps {}) }: buildRustCrate {
+  crates.fnv."1.0.7" = deps: { features?(features_.fnv."1.0.7" deps {}) }: buildRustCrate {
     crateName = "fnv";
-    version = "1.0.6";
+    version = "1.0.7";
     description = "Fowler–Noll–Vo hash function";
     authors = [ "Alex Crichton <alex@alexcrichton.com>" ];
-    sha256 = "128mlh23y3gg6ag5h8iiqlcbl59smisdzraqy88ldrf75kbw27ip";
+    sha256 = "020gqgq68jwwy3rvlzaiaywyhpb5282frf05kfbv3cgh64v7xl70";
     libPath = "lib.rs";
+    features = mkFeatures (features."fnv"."1.0.7" or {});
   };
-  features_.fnv."1.0.6" = deps: f: updateFeatures f (rec {
-    fnv."1.0.6".default = (f.fnv."1.0.6".default or true);
+  features_.fnv."1.0.7" = deps: f: updateFeatures f (rec {
+    fnv = fold recursiveUpdate {} [
+      { "1.0.7"."std" =
+        (f.fnv."1.0.7"."std" or false) ||
+        (f.fnv."1.0.7".default or false) ||
+        (fnv."1.0.7"."default" or false); }
+      { "1.0.7".default = (f.fnv."1.0.7".default or true); }
+    ];
   }) [];
 
 
@@ -800,626 +851,694 @@ rec {
 
 
 # end
-# futures-0.3.4
+# futures-0.3.5
 
-  crates.futures."0.3.4" = deps: { features?(features_.futures."0.3.4" deps {}) }: buildRustCrate {
+  crates.futures."0.3.5" = deps: { features?(features_.futures."0.3.5" deps {}) }: buildRustCrate {
     crateName = "futures";
-    version = "0.3.4";
+    version = "0.3.5";
     description = "An implementation of futures and streams featuring zero allocations,\ncomposability, and iterator-like interfaces.\n";
     authors = [ "Alex Crichton <alex@alexcrichton.com>" ];
     edition = "2018";
-    sha256 = "0x84abzfq22q2n91ki0qxnxj2234vz2l8wriqppw6ycc4p8a0990";
+    sha256 = "0c4qp7m061qi7v6wvw9rkrpn101l28ipfivrwf31fnv3148wcv6c";
     dependencies = mapFeatures features ([
-      (crates."futures_channel"."${deps."futures"."0.3.4"."futures_channel"}" deps)
-      (crates."futures_core"."${deps."futures"."0.3.4"."futures_core"}" deps)
-      (crates."futures_io"."${deps."futures"."0.3.4"."futures_io"}" deps)
-      (crates."futures_sink"."${deps."futures"."0.3.4"."futures_sink"}" deps)
-      (crates."futures_task"."${deps."futures"."0.3.4"."futures_task"}" deps)
-      (crates."futures_util"."${deps."futures"."0.3.4"."futures_util"}" deps)
+      (crates."futures_channel"."${deps."futures"."0.3.5"."futures_channel"}" deps)
+      (crates."futures_core"."${deps."futures"."0.3.5"."futures_core"}" deps)
+      (crates."futures_io"."${deps."futures"."0.3.5"."futures_io"}" deps)
+      (crates."futures_sink"."${deps."futures"."0.3.5"."futures_sink"}" deps)
+      (crates."futures_task"."${deps."futures"."0.3.5"."futures_task"}" deps)
+      (crates."futures_util"."${deps."futures"."0.3.5"."futures_util"}" deps)
     ]
-      ++ (if features.futures."0.3.4".futures-executor or false then [ (crates.futures_executor."${deps."futures"."0.3.4".futures_executor}" deps) ] else []));
-    features = mkFeatures (features."futures"."0.3.4" or {});
+      ++ (if features.futures."0.3.5".futures-executor or false then [ (crates.futures_executor."${deps."futures"."0.3.5".futures_executor}" deps) ] else []));
+    features = mkFeatures (features."futures"."0.3.5" or {});
   };
-  features_.futures."0.3.4" = deps: f: updateFeatures f (rec {
+  features_.futures."0.3.5" = deps: f: updateFeatures f (rec {
     futures = fold recursiveUpdate {} [
-      { "0.3.4"."alloc" =
-        (f.futures."0.3.4"."alloc" or false) ||
-        (f.futures."0.3.4".std or false) ||
-        (futures."0.3.4"."std" or false); }
-      { "0.3.4"."async-await" =
-        (f.futures."0.3.4"."async-await" or false) ||
-        (f.futures."0.3.4".default or false) ||
-        (futures."0.3.4"."default" or false); }
-      { "0.3.4"."compat" =
-        (f.futures."0.3.4"."compat" or false) ||
-        (f.futures."0.3.4".io-compat or false) ||
-        (futures."0.3.4"."io-compat" or false); }
-      { "0.3.4"."executor" =
-        (f.futures."0.3.4"."executor" or false) ||
-        (f.futures."0.3.4".default or false) ||
-        (futures."0.3.4"."default" or false) ||
-        (f.futures."0.3.4".thread-pool or false) ||
-        (futures."0.3.4"."thread-pool" or false); }
-      { "0.3.4"."std" =
-        (f.futures."0.3.4"."std" or false) ||
-        (f.futures."0.3.4".compat or false) ||
-        (futures."0.3.4"."compat" or false) ||
-        (f.futures."0.3.4".default or false) ||
-        (futures."0.3.4"."default" or false) ||
-        (f.futures."0.3.4".executor or false) ||
-        (futures."0.3.4"."executor" or false); }
-      { "0.3.4".default = (f.futures."0.3.4".default or true); }
+      { "0.3.5"."alloc" =
+        (f.futures."0.3.5"."alloc" or false) ||
+        (f.futures."0.3.5".std or false) ||
+        (futures."0.3.5"."std" or false); }
+      { "0.3.5"."async-await" =
+        (f.futures."0.3.5"."async-await" or false) ||
+        (f.futures."0.3.5".default or false) ||
+        (futures."0.3.5"."default" or false); }
+      { "0.3.5"."compat" =
+        (f.futures."0.3.5"."compat" or false) ||
+        (f.futures."0.3.5".io-compat or false) ||
+        (futures."0.3.5"."io-compat" or false); }
+      { "0.3.5"."executor" =
+        (f.futures."0.3.5"."executor" or false) ||
+        (f.futures."0.3.5".default or false) ||
+        (futures."0.3.5"."default" or false) ||
+        (f.futures."0.3.5".thread-pool or false) ||
+        (futures."0.3.5"."thread-pool" or false); }
+      { "0.3.5"."std" =
+        (f.futures."0.3.5"."std" or false) ||
+        (f.futures."0.3.5".compat or false) ||
+        (futures."0.3.5"."compat" or false) ||
+        (f.futures."0.3.5".default or false) ||
+        (futures."0.3.5"."default" or false) ||
+        (f.futures."0.3.5".executor or false) ||
+        (futures."0.3.5"."executor" or false); }
+      { "0.3.5".default = (f.futures."0.3.5".default or true); }
     ];
     futures_channel = fold recursiveUpdate {} [
-      { "${deps.futures."0.3.4".futures_channel}"."alloc" =
-        (f.futures_channel."${deps.futures."0.3.4".futures_channel}"."alloc" or false) ||
-        (futures."0.3.4"."alloc" or false) ||
-        (f."futures"."0.3.4"."alloc" or false); }
-      { "${deps.futures."0.3.4".futures_channel}"."cfg-target-has-atomic" =
-        (f.futures_channel."${deps.futures."0.3.4".futures_channel}"."cfg-target-has-atomic" or false) ||
-        (futures."0.3.4"."cfg-target-has-atomic" or false) ||
-        (f."futures"."0.3.4"."cfg-target-has-atomic" or false); }
-      { "${deps.futures."0.3.4".futures_channel}"."sink" = true; }
-      { "${deps.futures."0.3.4".futures_channel}"."unstable" =
-        (f.futures_channel."${deps.futures."0.3.4".futures_channel}"."unstable" or false) ||
-        (futures."0.3.4"."unstable" or false) ||
-        (f."futures"."0.3.4"."unstable" or false); }
-      { "${deps.futures."0.3.4".futures_channel}".default = (f.futures_channel."${deps.futures."0.3.4".futures_channel}".default or false); }
+      { "${deps.futures."0.3.5".futures_channel}"."alloc" =
+        (f.futures_channel."${deps.futures."0.3.5".futures_channel}"."alloc" or false) ||
+        (futures."0.3.5"."alloc" or false) ||
+        (f."futures"."0.3.5"."alloc" or false); }
+      { "${deps.futures."0.3.5".futures_channel}"."cfg-target-has-atomic" =
+        (f.futures_channel."${deps.futures."0.3.5".futures_channel}"."cfg-target-has-atomic" or false) ||
+        (futures."0.3.5"."cfg-target-has-atomic" or false) ||
+        (f."futures"."0.3.5"."cfg-target-has-atomic" or false); }
+      { "${deps.futures."0.3.5".futures_channel}"."sink" = true; }
+      { "${deps.futures."0.3.5".futures_channel}"."unstable" =
+        (f.futures_channel."${deps.futures."0.3.5".futures_channel}"."unstable" or false) ||
+        (futures."0.3.5"."unstable" or false) ||
+        (f."futures"."0.3.5"."unstable" or false); }
+      { "${deps.futures."0.3.5".futures_channel}".default = (f.futures_channel."${deps.futures."0.3.5".futures_channel}".default or false); }
     ];
     futures_core = fold recursiveUpdate {} [
-      { "${deps.futures."0.3.4".futures_core}"."alloc" =
-        (f.futures_core."${deps.futures."0.3.4".futures_core}"."alloc" or false) ||
-        (futures."0.3.4"."alloc" or false) ||
-        (f."futures"."0.3.4"."alloc" or false); }
-      { "${deps.futures."0.3.4".futures_core}"."cfg-target-has-atomic" =
-        (f.futures_core."${deps.futures."0.3.4".futures_core}"."cfg-target-has-atomic" or false) ||
-        (futures."0.3.4"."cfg-target-has-atomic" or false) ||
-        (f."futures"."0.3.4"."cfg-target-has-atomic" or false); }
-      { "${deps.futures."0.3.4".futures_core}"."std" =
-        (f.futures_core."${deps.futures."0.3.4".futures_core}"."std" or false) ||
-        (futures."0.3.4"."std" or false) ||
-        (f."futures"."0.3.4"."std" or false); }
-      { "${deps.futures."0.3.4".futures_core}"."unstable" =
-        (f.futures_core."${deps.futures."0.3.4".futures_core}"."unstable" or false) ||
-        (futures."0.3.4"."unstable" or false) ||
-        (f."futures"."0.3.4"."unstable" or false); }
-      { "${deps.futures."0.3.4".futures_core}".default = (f.futures_core."${deps.futures."0.3.4".futures_core}".default or false); }
+      { "${deps.futures."0.3.5".futures_core}"."alloc" =
+        (f.futures_core."${deps.futures."0.3.5".futures_core}"."alloc" or false) ||
+        (futures."0.3.5"."alloc" or false) ||
+        (f."futures"."0.3.5"."alloc" or false); }
+      { "${deps.futures."0.3.5".futures_core}"."cfg-target-has-atomic" =
+        (f.futures_core."${deps.futures."0.3.5".futures_core}"."cfg-target-has-atomic" or false) ||
+        (futures."0.3.5"."cfg-target-has-atomic" or false) ||
+        (f."futures"."0.3.5"."cfg-target-has-atomic" or false); }
+      { "${deps.futures."0.3.5".futures_core}"."std" =
+        (f.futures_core."${deps.futures."0.3.5".futures_core}"."std" or false) ||
+        (futures."0.3.5"."std" or false) ||
+        (f."futures"."0.3.5"."std" or false); }
+      { "${deps.futures."0.3.5".futures_core}"."unstable" =
+        (f.futures_core."${deps.futures."0.3.5".futures_core}"."unstable" or false) ||
+        (futures."0.3.5"."unstable" or false) ||
+        (f."futures"."0.3.5"."unstable" or false); }
+      { "${deps.futures."0.3.5".futures_core}".default = (f.futures_core."${deps.futures."0.3.5".futures_core}".default or false); }
     ];
     futures_executor = fold recursiveUpdate {} [
-      { "${deps.futures."0.3.4".futures_executor}"."std" =
-        (f.futures_executor."${deps.futures."0.3.4".futures_executor}"."std" or false) ||
-        (futures."0.3.4"."executor" or false) ||
-        (f."futures"."0.3.4"."executor" or false); }
-      { "${deps.futures."0.3.4".futures_executor}"."thread-pool" =
-        (f.futures_executor."${deps.futures."0.3.4".futures_executor}"."thread-pool" or false) ||
-        (futures."0.3.4"."thread-pool" or false) ||
-        (f."futures"."0.3.4"."thread-pool" or false); }
-      { "${deps.futures."0.3.4".futures_executor}".default = (f.futures_executor."${deps.futures."0.3.4".futures_executor}".default or false); }
+      { "${deps.futures."0.3.5".futures_executor}"."std" =
+        (f.futures_executor."${deps.futures."0.3.5".futures_executor}"."std" or false) ||
+        (futures."0.3.5"."executor" or false) ||
+        (f."futures"."0.3.5"."executor" or false); }
+      { "${deps.futures."0.3.5".futures_executor}"."thread-pool" =
+        (f.futures_executor."${deps.futures."0.3.5".futures_executor}"."thread-pool" or false) ||
+        (futures."0.3.5"."thread-pool" or false) ||
+        (f."futures"."0.3.5"."thread-pool" or false); }
+      { "${deps.futures."0.3.5".futures_executor}".default = (f.futures_executor."${deps.futures."0.3.5".futures_executor}".default or false); }
     ];
     futures_io = fold recursiveUpdate {} [
-      { "${deps.futures."0.3.4".futures_io}"."read-initializer" =
-        (f.futures_io."${deps.futures."0.3.4".futures_io}"."read-initializer" or false) ||
-        (futures."0.3.4"."read-initializer" or false) ||
-        (f."futures"."0.3.4"."read-initializer" or false); }
-      { "${deps.futures."0.3.4".futures_io}"."std" =
-        (f.futures_io."${deps.futures."0.3.4".futures_io}"."std" or false) ||
-        (futures."0.3.4"."std" or false) ||
-        (f."futures"."0.3.4"."std" or false); }
-      { "${deps.futures."0.3.4".futures_io}"."unstable" =
-        (f.futures_io."${deps.futures."0.3.4".futures_io}"."unstable" or false) ||
-        (futures."0.3.4"."unstable" or false) ||
-        (f."futures"."0.3.4"."unstable" or false); }
-      { "${deps.futures."0.3.4".futures_io}".default = (f.futures_io."${deps.futures."0.3.4".futures_io}".default or false); }
+      { "${deps.futures."0.3.5".futures_io}"."read-initializer" =
+        (f.futures_io."${deps.futures."0.3.5".futures_io}"."read-initializer" or false) ||
+        (futures."0.3.5"."read-initializer" or false) ||
+        (f."futures"."0.3.5"."read-initializer" or false); }
+      { "${deps.futures."0.3.5".futures_io}"."std" =
+        (f.futures_io."${deps.futures."0.3.5".futures_io}"."std" or false) ||
+        (futures."0.3.5"."std" or false) ||
+        (f."futures"."0.3.5"."std" or false); }
+      { "${deps.futures."0.3.5".futures_io}"."unstable" =
+        (f.futures_io."${deps.futures."0.3.5".futures_io}"."unstable" or false) ||
+        (futures."0.3.5"."unstable" or false) ||
+        (f."futures"."0.3.5"."unstable" or false); }
+      { "${deps.futures."0.3.5".futures_io}".default = (f.futures_io."${deps.futures."0.3.5".futures_io}".default or false); }
     ];
     futures_sink = fold recursiveUpdate {} [
-      { "${deps.futures."0.3.4".futures_sink}"."alloc" =
-        (f.futures_sink."${deps.futures."0.3.4".futures_sink}"."alloc" or false) ||
-        (futures."0.3.4"."alloc" or false) ||
-        (f."futures"."0.3.4"."alloc" or false); }
-      { "${deps.futures."0.3.4".futures_sink}"."std" =
-        (f.futures_sink."${deps.futures."0.3.4".futures_sink}"."std" or false) ||
-        (futures."0.3.4"."std" or false) ||
-        (f."futures"."0.3.4"."std" or false); }
-      { "${deps.futures."0.3.4".futures_sink}".default = (f.futures_sink."${deps.futures."0.3.4".futures_sink}".default or false); }
+      { "${deps.futures."0.3.5".futures_sink}"."alloc" =
+        (f.futures_sink."${deps.futures."0.3.5".futures_sink}"."alloc" or false) ||
+        (futures."0.3.5"."alloc" or false) ||
+        (f."futures"."0.3.5"."alloc" or false); }
+      { "${deps.futures."0.3.5".futures_sink}"."std" =
+        (f.futures_sink."${deps.futures."0.3.5".futures_sink}"."std" or false) ||
+        (futures."0.3.5"."std" or false) ||
+        (f."futures"."0.3.5"."std" or false); }
+      { "${deps.futures."0.3.5".futures_sink}".default = (f.futures_sink."${deps.futures."0.3.5".futures_sink}".default or false); }
     ];
     futures_task = fold recursiveUpdate {} [
-      { "${deps.futures."0.3.4".futures_task}"."alloc" =
-        (f.futures_task."${deps.futures."0.3.4".futures_task}"."alloc" or false) ||
-        (futures."0.3.4"."alloc" or false) ||
-        (f."futures"."0.3.4"."alloc" or false); }
-      { "${deps.futures."0.3.4".futures_task}"."cfg-target-has-atomic" =
-        (f.futures_task."${deps.futures."0.3.4".futures_task}"."cfg-target-has-atomic" or false) ||
-        (futures."0.3.4"."cfg-target-has-atomic" or false) ||
-        (f."futures"."0.3.4"."cfg-target-has-atomic" or false); }
-      { "${deps.futures."0.3.4".futures_task}"."std" =
-        (f.futures_task."${deps.futures."0.3.4".futures_task}"."std" or false) ||
-        (futures."0.3.4"."std" or false) ||
-        (f."futures"."0.3.4"."std" or false); }
-      { "${deps.futures."0.3.4".futures_task}"."unstable" =
-        (f.futures_task."${deps.futures."0.3.4".futures_task}"."unstable" or false) ||
-        (futures."0.3.4"."unstable" or false) ||
-        (f."futures"."0.3.4"."unstable" or false); }
-      { "${deps.futures."0.3.4".futures_task}".default = (f.futures_task."${deps.futures."0.3.4".futures_task}".default or false); }
+      { "${deps.futures."0.3.5".futures_task}"."alloc" =
+        (f.futures_task."${deps.futures."0.3.5".futures_task}"."alloc" or false) ||
+        (futures."0.3.5"."alloc" or false) ||
+        (f."futures"."0.3.5"."alloc" or false); }
+      { "${deps.futures."0.3.5".futures_task}"."cfg-target-has-atomic" =
+        (f.futures_task."${deps.futures."0.3.5".futures_task}"."cfg-target-has-atomic" or false) ||
+        (futures."0.3.5"."cfg-target-has-atomic" or false) ||
+        (f."futures"."0.3.5"."cfg-target-has-atomic" or false); }
+      { "${deps.futures."0.3.5".futures_task}"."std" =
+        (f.futures_task."${deps.futures."0.3.5".futures_task}"."std" or false) ||
+        (futures."0.3.5"."std" or false) ||
+        (f."futures"."0.3.5"."std" or false); }
+      { "${deps.futures."0.3.5".futures_task}"."unstable" =
+        (f.futures_task."${deps.futures."0.3.5".futures_task}"."unstable" or false) ||
+        (futures."0.3.5"."unstable" or false) ||
+        (f."futures"."0.3.5"."unstable" or false); }
+      { "${deps.futures."0.3.5".futures_task}".default = (f.futures_task."${deps.futures."0.3.5".futures_task}".default or false); }
     ];
     futures_util = fold recursiveUpdate {} [
-      { "${deps.futures."0.3.4".futures_util}"."alloc" =
-        (f.futures_util."${deps.futures."0.3.4".futures_util}"."alloc" or false) ||
-        (futures."0.3.4"."alloc" or false) ||
-        (f."futures"."0.3.4"."alloc" or false); }
-      { "${deps.futures."0.3.4".futures_util}"."async-await" =
-        (f.futures_util."${deps.futures."0.3.4".futures_util}"."async-await" or false) ||
-        (futures."0.3.4"."async-await" or false) ||
-        (f."futures"."0.3.4"."async-await" or false); }
-      { "${deps.futures."0.3.4".futures_util}"."bilock" =
-        (f.futures_util."${deps.futures."0.3.4".futures_util}"."bilock" or false) ||
-        (futures."0.3.4"."bilock" or false) ||
-        (f."futures"."0.3.4"."bilock" or false); }
-      { "${deps.futures."0.3.4".futures_util}"."cfg-target-has-atomic" =
-        (f.futures_util."${deps.futures."0.3.4".futures_util}"."cfg-target-has-atomic" or false) ||
-        (futures."0.3.4"."cfg-target-has-atomic" or false) ||
-        (f."futures"."0.3.4"."cfg-target-has-atomic" or false); }
-      { "${deps.futures."0.3.4".futures_util}"."compat" =
-        (f.futures_util."${deps.futures."0.3.4".futures_util}"."compat" or false) ||
-        (futures."0.3.4"."compat" or false) ||
-        (f."futures"."0.3.4"."compat" or false); }
-      { "${deps.futures."0.3.4".futures_util}"."io-compat" =
-        (f.futures_util."${deps.futures."0.3.4".futures_util}"."io-compat" or false) ||
-        (futures."0.3.4"."io-compat" or false) ||
-        (f."futures"."0.3.4"."io-compat" or false); }
-      { "${deps.futures."0.3.4".futures_util}"."read-initializer" =
-        (f.futures_util."${deps.futures."0.3.4".futures_util}"."read-initializer" or false) ||
-        (futures."0.3.4"."read-initializer" or false) ||
-        (f."futures"."0.3.4"."read-initializer" or false); }
-      { "${deps.futures."0.3.4".futures_util}"."sink" = true; }
-      { "${deps.futures."0.3.4".futures_util}"."std" =
-        (f.futures_util."${deps.futures."0.3.4".futures_util}"."std" or false) ||
-        (futures."0.3.4"."std" or false) ||
-        (f."futures"."0.3.4"."std" or false); }
-      { "${deps.futures."0.3.4".futures_util}"."unstable" =
-        (f.futures_util."${deps.futures."0.3.4".futures_util}"."unstable" or false) ||
-        (futures."0.3.4"."unstable" or false) ||
-        (f."futures"."0.3.4"."unstable" or false); }
-      { "${deps.futures."0.3.4".futures_util}".default = (f.futures_util."${deps.futures."0.3.4".futures_util}".default or false); }
+      { "${deps.futures."0.3.5".futures_util}"."alloc" =
+        (f.futures_util."${deps.futures."0.3.5".futures_util}"."alloc" or false) ||
+        (futures."0.3.5"."alloc" or false) ||
+        (f."futures"."0.3.5"."alloc" or false); }
+      { "${deps.futures."0.3.5".futures_util}"."async-await" =
+        (f.futures_util."${deps.futures."0.3.5".futures_util}"."async-await" or false) ||
+        (futures."0.3.5"."async-await" or false) ||
+        (f."futures"."0.3.5"."async-await" or false); }
+      { "${deps.futures."0.3.5".futures_util}"."bilock" =
+        (f.futures_util."${deps.futures."0.3.5".futures_util}"."bilock" or false) ||
+        (futures."0.3.5"."bilock" or false) ||
+        (f."futures"."0.3.5"."bilock" or false); }
+      { "${deps.futures."0.3.5".futures_util}"."cfg-target-has-atomic" =
+        (f.futures_util."${deps.futures."0.3.5".futures_util}"."cfg-target-has-atomic" or false) ||
+        (futures."0.3.5"."cfg-target-has-atomic" or false) ||
+        (f."futures"."0.3.5"."cfg-target-has-atomic" or false); }
+      { "${deps.futures."0.3.5".futures_util}"."compat" =
+        (f.futures_util."${deps.futures."0.3.5".futures_util}"."compat" or false) ||
+        (futures."0.3.5"."compat" or false) ||
+        (f."futures"."0.3.5"."compat" or false); }
+      { "${deps.futures."0.3.5".futures_util}"."io-compat" =
+        (f.futures_util."${deps.futures."0.3.5".futures_util}"."io-compat" or false) ||
+        (futures."0.3.5"."io-compat" or false) ||
+        (f."futures"."0.3.5"."io-compat" or false); }
+      { "${deps.futures."0.3.5".futures_util}"."read-initializer" =
+        (f.futures_util."${deps.futures."0.3.5".futures_util}"."read-initializer" or false) ||
+        (futures."0.3.5"."read-initializer" or false) ||
+        (f."futures"."0.3.5"."read-initializer" or false); }
+      { "${deps.futures."0.3.5".futures_util}"."sink" = true; }
+      { "${deps.futures."0.3.5".futures_util}"."std" =
+        (f.futures_util."${deps.futures."0.3.5".futures_util}"."std" or false) ||
+        (futures."0.3.5"."std" or false) ||
+        (f."futures"."0.3.5"."std" or false); }
+      { "${deps.futures."0.3.5".futures_util}"."unstable" =
+        (f.futures_util."${deps.futures."0.3.5".futures_util}"."unstable" or false) ||
+        (futures."0.3.5"."unstable" or false) ||
+        (f."futures"."0.3.5"."unstable" or false); }
+      { "${deps.futures."0.3.5".futures_util}"."write-all-vectored" =
+        (f.futures_util."${deps.futures."0.3.5".futures_util}"."write-all-vectored" or false) ||
+        (futures."0.3.5"."write-all-vectored" or false) ||
+        (f."futures"."0.3.5"."write-all-vectored" or false); }
+      { "${deps.futures."0.3.5".futures_util}".default = (f.futures_util."${deps.futures."0.3.5".futures_util}".default or false); }
     ];
   }) [
-    (features_.futures_channel."${deps."futures"."0.3.4"."futures_channel"}" deps)
-    (features_.futures_core."${deps."futures"."0.3.4"."futures_core"}" deps)
-    (features_.futures_executor."${deps."futures"."0.3.4"."futures_executor"}" deps)
-    (features_.futures_io."${deps."futures"."0.3.4"."futures_io"}" deps)
-    (features_.futures_sink."${deps."futures"."0.3.4"."futures_sink"}" deps)
-    (features_.futures_task."${deps."futures"."0.3.4"."futures_task"}" deps)
-    (features_.futures_util."${deps."futures"."0.3.4"."futures_util"}" deps)
+    (features_.futures_channel."${deps."futures"."0.3.5"."futures_channel"}" deps)
+    (features_.futures_core."${deps."futures"."0.3.5"."futures_core"}" deps)
+    (features_.futures_executor."${deps."futures"."0.3.5"."futures_executor"}" deps)
+    (features_.futures_io."${deps."futures"."0.3.5"."futures_io"}" deps)
+    (features_.futures_sink."${deps."futures"."0.3.5"."futures_sink"}" deps)
+    (features_.futures_task."${deps."futures"."0.3.5"."futures_task"}" deps)
+    (features_.futures_util."${deps."futures"."0.3.5"."futures_util"}" deps)
   ];
 
 
 # end
-# futures-channel-0.3.4
+# futures-channel-0.3.5
 
-  crates.futures_channel."0.3.4" = deps: { features?(features_.futures_channel."0.3.4" deps {}) }: buildRustCrate {
+  crates.futures_channel."0.3.5" = deps: { features?(features_.futures_channel."0.3.5" deps {}) }: buildRustCrate {
     crateName = "futures-channel";
-    version = "0.3.4";
+    version = "0.3.5";
     description = "Channels for asynchronous communication using futures-rs.\n";
     authors = [ "Alex Crichton <alex@alexcrichton.com>" ];
     edition = "2018";
-    sha256 = "0y193rdyniid2nzad1mhwhp5a9lplb5my25yw8lwhcfaddqzcfhz";
+    sha256 = "1xj8mzlq7ygmi5b34g7cj9lwhx0snlhirjj7grzymmh4b4rcqzcb";
     dependencies = mapFeatures features ([
-      (crates."futures_core"."${deps."futures_channel"."0.3.4"."futures_core"}" deps)
+      (crates."futures_core"."${deps."futures_channel"."0.3.5"."futures_core"}" deps)
     ]
-      ++ (if features.futures_channel."0.3.4".futures-sink or false then [ (crates.futures_sink."${deps."futures_channel"."0.3.4".futures_sink}" deps) ] else []));
-    features = mkFeatures (features."futures_channel"."0.3.4" or {});
+      ++ (if features.futures_channel."0.3.5".futures-sink or false then [ (crates.futures_sink."${deps."futures_channel"."0.3.5".futures_sink}" deps) ] else []));
+    features = mkFeatures (features."futures_channel"."0.3.5" or {});
   };
-  features_.futures_channel."0.3.4" = deps: f: updateFeatures f (rec {
+  features_.futures_channel."0.3.5" = deps: f: updateFeatures f (rec {
     futures_channel = fold recursiveUpdate {} [
-      { "0.3.4"."alloc" =
-        (f.futures_channel."0.3.4"."alloc" or false) ||
-        (f.futures_channel."0.3.4".std or false) ||
-        (futures_channel."0.3.4"."std" or false); }
-      { "0.3.4"."futures-sink" =
-        (f.futures_channel."0.3.4"."futures-sink" or false) ||
-        (f.futures_channel."0.3.4".sink or false) ||
-        (futures_channel."0.3.4"."sink" or false); }
-      { "0.3.4"."std" =
-        (f.futures_channel."0.3.4"."std" or false) ||
-        (f.futures_channel."0.3.4".default or false) ||
-        (futures_channel."0.3.4"."default" or false); }
-      { "0.3.4".default = (f.futures_channel."0.3.4".default or true); }
+      { "0.3.5"."alloc" =
+        (f.futures_channel."0.3.5"."alloc" or false) ||
+        (f.futures_channel."0.3.5".std or false) ||
+        (futures_channel."0.3.5"."std" or false); }
+      { "0.3.5"."futures-sink" =
+        (f.futures_channel."0.3.5"."futures-sink" or false) ||
+        (f.futures_channel."0.3.5".sink or false) ||
+        (futures_channel."0.3.5"."sink" or false); }
+      { "0.3.5"."std" =
+        (f.futures_channel."0.3.5"."std" or false) ||
+        (f.futures_channel."0.3.5".default or false) ||
+        (futures_channel."0.3.5"."default" or false); }
+      { "0.3.5".default = (f.futures_channel."0.3.5".default or true); }
     ];
     futures_core = fold recursiveUpdate {} [
-      { "${deps.futures_channel."0.3.4".futures_core}"."alloc" =
-        (f.futures_core."${deps.futures_channel."0.3.4".futures_core}"."alloc" or false) ||
-        (futures_channel."0.3.4"."alloc" or false) ||
-        (f."futures_channel"."0.3.4"."alloc" or false); }
-      { "${deps.futures_channel."0.3.4".futures_core}"."cfg-target-has-atomic" =
-        (f.futures_core."${deps.futures_channel."0.3.4".futures_core}"."cfg-target-has-atomic" or false) ||
-        (futures_channel."0.3.4"."cfg-target-has-atomic" or false) ||
-        (f."futures_channel"."0.3.4"."cfg-target-has-atomic" or false); }
-      { "${deps.futures_channel."0.3.4".futures_core}"."std" =
-        (f.futures_core."${deps.futures_channel."0.3.4".futures_core}"."std" or false) ||
-        (futures_channel."0.3.4"."std" or false) ||
-        (f."futures_channel"."0.3.4"."std" or false); }
-      { "${deps.futures_channel."0.3.4".futures_core}"."unstable" =
-        (f.futures_core."${deps.futures_channel."0.3.4".futures_core}"."unstable" or false) ||
-        (futures_channel."0.3.4"."unstable" or false) ||
-        (f."futures_channel"."0.3.4"."unstable" or false); }
-      { "${deps.futures_channel."0.3.4".futures_core}".default = (f.futures_core."${deps.futures_channel."0.3.4".futures_core}".default or false); }
+      { "${deps.futures_channel."0.3.5".futures_core}"."alloc" =
+        (f.futures_core."${deps.futures_channel."0.3.5".futures_core}"."alloc" or false) ||
+        (futures_channel."0.3.5"."alloc" or false) ||
+        (f."futures_channel"."0.3.5"."alloc" or false); }
+      { "${deps.futures_channel."0.3.5".futures_core}"."cfg-target-has-atomic" =
+        (f.futures_core."${deps.futures_channel."0.3.5".futures_core}"."cfg-target-has-atomic" or false) ||
+        (futures_channel."0.3.5"."cfg-target-has-atomic" or false) ||
+        (f."futures_channel"."0.3.5"."cfg-target-has-atomic" or false); }
+      { "${deps.futures_channel."0.3.5".futures_core}"."std" =
+        (f.futures_core."${deps.futures_channel."0.3.5".futures_core}"."std" or false) ||
+        (futures_channel."0.3.5"."std" or false) ||
+        (f."futures_channel"."0.3.5"."std" or false); }
+      { "${deps.futures_channel."0.3.5".futures_core}"."unstable" =
+        (f.futures_core."${deps.futures_channel."0.3.5".futures_core}"."unstable" or false) ||
+        (futures_channel."0.3.5"."unstable" or false) ||
+        (f."futures_channel"."0.3.5"."unstable" or false); }
+      { "${deps.futures_channel."0.3.5".futures_core}".default = (f.futures_core."${deps.futures_channel."0.3.5".futures_core}".default or false); }
     ];
-    futures_sink."${deps.futures_channel."0.3.4".futures_sink}".default = (f.futures_sink."${deps.futures_channel."0.3.4".futures_sink}".default or false);
+    futures_sink."${deps.futures_channel."0.3.5".futures_sink}".default = (f.futures_sink."${deps.futures_channel."0.3.5".futures_sink}".default or false);
   }) [
-    (features_.futures_core."${deps."futures_channel"."0.3.4"."futures_core"}" deps)
-    (features_.futures_sink."${deps."futures_channel"."0.3.4"."futures_sink"}" deps)
+    (features_.futures_core."${deps."futures_channel"."0.3.5"."futures_core"}" deps)
+    (features_.futures_sink."${deps."futures_channel"."0.3.5"."futures_sink"}" deps)
   ];
 
 
 # end
-# futures-core-0.3.4
+# futures-core-0.3.5
 
-  crates.futures_core."0.3.4" = deps: { features?(features_.futures_core."0.3.4" deps {}) }: buildRustCrate {
+  crates.futures_core."0.3.5" = deps: { features?(features_.futures_core."0.3.5" deps {}) }: buildRustCrate {
     crateName = "futures-core";
-    version = "0.3.4";
+    version = "0.3.5";
     description = "The core traits and types in for the `futures` library.\n";
     authors = [ "Alex Crichton <alex@alexcrichton.com>" ];
     edition = "2018";
-    sha256 = "03046fyq5s9qyfsary392jc1h65vdw4piya5ksnajd21g8ma6kdz";
-    features = mkFeatures (features."futures_core"."0.3.4" or {});
+    sha256 = "0c6my3hs93nwgb5al7jsh90y1v61z563fh974kcibw001bazbhx3";
+    features = mkFeatures (features."futures_core"."0.3.5" or {});
   };
-  features_.futures_core."0.3.4" = deps: f: updateFeatures f (rec {
+  features_.futures_core."0.3.5" = deps: f: updateFeatures f (rec {
     futures_core = fold recursiveUpdate {} [
-      { "0.3.4"."alloc" =
-        (f.futures_core."0.3.4"."alloc" or false) ||
-        (f.futures_core."0.3.4".std or false) ||
-        (futures_core."0.3.4"."std" or false); }
-      { "0.3.4"."std" =
-        (f.futures_core."0.3.4"."std" or false) ||
-        (f.futures_core."0.3.4".default or false) ||
-        (futures_core."0.3.4"."default" or false); }
-      { "0.3.4".default = (f.futures_core."0.3.4".default or true); }
+      { "0.3.5"."alloc" =
+        (f.futures_core."0.3.5"."alloc" or false) ||
+        (f.futures_core."0.3.5".std or false) ||
+        (futures_core."0.3.5"."std" or false); }
+      { "0.3.5"."std" =
+        (f.futures_core."0.3.5"."std" or false) ||
+        (f.futures_core."0.3.5".default or false) ||
+        (futures_core."0.3.5"."default" or false); }
+      { "0.3.5".default = (f.futures_core."0.3.5".default or true); }
     ];
   }) [];
 
 
 # end
-# futures-executor-0.3.4
+# futures-executor-0.3.5
 
-  crates.futures_executor."0.3.4" = deps: { features?(features_.futures_executor."0.3.4" deps {}) }: buildRustCrate {
+  crates.futures_executor."0.3.5" = deps: { features?(features_.futures_executor."0.3.5" deps {}) }: buildRustCrate {
     crateName = "futures-executor";
-    version = "0.3.4";
+    version = "0.3.5";
     description = "Executors for asynchronous tasks based on the futures-rs library.\n";
     authors = [ "Alex Crichton <alex@alexcrichton.com>" ];
     edition = "2018";
-    sha256 = "0q6jf2caqbccpj54041zmziz5ap1l5zvwhq4q46yygpvn8hwkwp9";
+    sha256 = "0dihgf7hdid26yzyp3i3zb52kg7im7ahcmzglp8sy3r6yidb6f76";
     dependencies = mapFeatures features ([
-      (crates."futures_core"."${deps."futures_executor"."0.3.4"."futures_core"}" deps)
-      (crates."futures_task"."${deps."futures_executor"."0.3.4"."futures_task"}" deps)
-      (crates."futures_util"."${deps."futures_executor"."0.3.4"."futures_util"}" deps)
+      (crates."futures_core"."${deps."futures_executor"."0.3.5"."futures_core"}" deps)
+      (crates."futures_task"."${deps."futures_executor"."0.3.5"."futures_task"}" deps)
+      (crates."futures_util"."${deps."futures_executor"."0.3.5"."futures_util"}" deps)
     ]);
-    features = mkFeatures (features."futures_executor"."0.3.4" or {});
+    features = mkFeatures (features."futures_executor"."0.3.5" or {});
   };
-  features_.futures_executor."0.3.4" = deps: f: updateFeatures f (rec {
+  features_.futures_executor."0.3.5" = deps: f: updateFeatures f (rec {
     futures_core = fold recursiveUpdate {} [
-      { "${deps.futures_executor."0.3.4".futures_core}"."std" =
-        (f.futures_core."${deps.futures_executor."0.3.4".futures_core}"."std" or false) ||
-        (futures_executor."0.3.4"."std" or false) ||
-        (f."futures_executor"."0.3.4"."std" or false); }
-      { "${deps.futures_executor."0.3.4".futures_core}".default = (f.futures_core."${deps.futures_executor."0.3.4".futures_core}".default or false); }
+      { "${deps.futures_executor."0.3.5".futures_core}"."std" =
+        (f.futures_core."${deps.futures_executor."0.3.5".futures_core}"."std" or false) ||
+        (futures_executor."0.3.5"."std" or false) ||
+        (f."futures_executor"."0.3.5"."std" or false); }
+      { "${deps.futures_executor."0.3.5".futures_core}".default = (f.futures_core."${deps.futures_executor."0.3.5".futures_core}".default or false); }
     ];
     futures_executor = fold recursiveUpdate {} [
-      { "0.3.4"."num_cpus" =
-        (f.futures_executor."0.3.4"."num_cpus" or false) ||
-        (f.futures_executor."0.3.4".thread-pool or false) ||
-        (futures_executor."0.3.4"."thread-pool" or false); }
-      { "0.3.4"."std" =
-        (f.futures_executor."0.3.4"."std" or false) ||
-        (f.futures_executor."0.3.4".default or false) ||
-        (futures_executor."0.3.4"."default" or false) ||
-        (f.futures_executor."0.3.4".thread-pool or false) ||
-        (futures_executor."0.3.4"."thread-pool" or false); }
-      { "0.3.4".default = (f.futures_executor."0.3.4".default or true); }
+      { "0.3.5"."num_cpus" =
+        (f.futures_executor."0.3.5"."num_cpus" or false) ||
+        (f.futures_executor."0.3.5".thread-pool or false) ||
+        (futures_executor."0.3.5"."thread-pool" or false); }
+      { "0.3.5"."std" =
+        (f.futures_executor."0.3.5"."std" or false) ||
+        (f.futures_executor."0.3.5".default or false) ||
+        (futures_executor."0.3.5"."default" or false) ||
+        (f.futures_executor."0.3.5".thread-pool or false) ||
+        (futures_executor."0.3.5"."thread-pool" or false); }
+      { "0.3.5".default = (f.futures_executor."0.3.5".default or true); }
     ];
     futures_task = fold recursiveUpdate {} [
-      { "${deps.futures_executor."0.3.4".futures_task}"."std" =
-        (f.futures_task."${deps.futures_executor."0.3.4".futures_task}"."std" or false) ||
-        (futures_executor."0.3.4"."std" or false) ||
-        (f."futures_executor"."0.3.4"."std" or false); }
-      { "${deps.futures_executor."0.3.4".futures_task}".default = (f.futures_task."${deps.futures_executor."0.3.4".futures_task}".default or false); }
+      { "${deps.futures_executor."0.3.5".futures_task}"."std" =
+        (f.futures_task."${deps.futures_executor."0.3.5".futures_task}"."std" or false) ||
+        (futures_executor."0.3.5"."std" or false) ||
+        (f."futures_executor"."0.3.5"."std" or false); }
+      { "${deps.futures_executor."0.3.5".futures_task}".default = (f.futures_task."${deps.futures_executor."0.3.5".futures_task}".default or false); }
     ];
     futures_util = fold recursiveUpdate {} [
-      { "${deps.futures_executor."0.3.4".futures_util}"."std" =
-        (f.futures_util."${deps.futures_executor."0.3.4".futures_util}"."std" or false) ||
-        (futures_executor."0.3.4"."std" or false) ||
-        (f."futures_executor"."0.3.4"."std" or false); }
-      { "${deps.futures_executor."0.3.4".futures_util}".default = (f.futures_util."${deps.futures_executor."0.3.4".futures_util}".default or false); }
+      { "${deps.futures_executor."0.3.5".futures_util}"."std" =
+        (f.futures_util."${deps.futures_executor."0.3.5".futures_util}"."std" or false) ||
+        (futures_executor."0.3.5"."std" or false) ||
+        (f."futures_executor"."0.3.5"."std" or false); }
+      { "${deps.futures_executor."0.3.5".futures_util}".default = (f.futures_util."${deps.futures_executor."0.3.5".futures_util}".default or false); }
     ];
   }) [
-    (features_.futures_core."${deps."futures_executor"."0.3.4"."futures_core"}" deps)
-    (features_.futures_task."${deps."futures_executor"."0.3.4"."futures_task"}" deps)
-    (features_.futures_util."${deps."futures_executor"."0.3.4"."futures_util"}" deps)
+    (features_.futures_core."${deps."futures_executor"."0.3.5"."futures_core"}" deps)
+    (features_.futures_task."${deps."futures_executor"."0.3.5"."futures_task"}" deps)
+    (features_.futures_util."${deps."futures_executor"."0.3.5"."futures_util"}" deps)
   ];
 
 
 # end
-# futures-io-0.3.4
+# futures-io-0.3.5
 
-  crates.futures_io."0.3.4" = deps: { features?(features_.futures_io."0.3.4" deps {}) }: buildRustCrate {
+  crates.futures_io."0.3.5" = deps: { features?(features_.futures_io."0.3.5" deps {}) }: buildRustCrate {
     crateName = "futures-io";
-    version = "0.3.4";
+    version = "0.3.5";
     description = "The `AsyncRead`, `AsyncWrite`, `AsyncSeek`, and `AsyncBufRead` traits for the futures-rs library.\n";
     authors = [ "Alex Crichton <alex@alexcrichton.com>" ];
     edition = "2018";
-    sha256 = "0nmhb0lfw5h79qfkklr1hrrvpzz1cdnjq7xqq60qbii71b5mp7qk";
-    features = mkFeatures (features."futures_io"."0.3.4" or {});
+    sha256 = "17372jjvs7mgyjh8xv8k5nx25dlq8ydni0ivsnshsl32ik6mi5mv";
+    features = mkFeatures (features."futures_io"."0.3.5" or {});
   };
-  features_.futures_io."0.3.4" = deps: f: updateFeatures f (rec {
+  features_.futures_io."0.3.5" = deps: f: updateFeatures f (rec {
     futures_io = fold recursiveUpdate {} [
-      { "0.3.4"."std" =
-        (f.futures_io."0.3.4"."std" or false) ||
-        (f.futures_io."0.3.4".default or false) ||
-        (futures_io."0.3.4"."default" or false); }
-      { "0.3.4".default = (f.futures_io."0.3.4".default or true); }
+      { "0.3.5"."std" =
+        (f.futures_io."0.3.5"."std" or false) ||
+        (f.futures_io."0.3.5".default or false) ||
+        (futures_io."0.3.5"."default" or false); }
+      { "0.3.5".default = (f.futures_io."0.3.5".default or true); }
     ];
   }) [];
 
 
 # end
-# futures-macro-0.3.4
+# futures-macro-0.3.5
 
-  crates.futures_macro."0.3.4" = deps: { features?(features_.futures_macro."0.3.4" deps {}) }: buildRustCrate {
+  crates.futures_macro."0.3.5" = deps: { features?(features_.futures_macro."0.3.5" deps {}) }: buildRustCrate {
     crateName = "futures-macro";
-    version = "0.3.4";
+    version = "0.3.5";
     description = "The futures-rs procedural macro implementations.\n";
     authors = [ "Taylor Cramer <cramertj@google.com>" "Taiki Endo <te316e89@gmail.com>" ];
     edition = "2018";
-    sha256 = "1b2hvhvl5f0haky329kwdlak6rcfinvnv33nxh1p3qczqqk97fqy";
+    sha256 = "0z7gxjpzb9w4ldlgrs7hqfkw4lnh1rcxbdg41wnj7v1dczxfl6j4";
     procMacro = true;
     dependencies = mapFeatures features ([
-      (crates."proc_macro_hack"."${deps."futures_macro"."0.3.4"."proc_macro_hack"}" deps)
-      (crates."proc_macro2"."${deps."futures_macro"."0.3.4"."proc_macro2"}" deps)
-      (crates."quote"."${deps."futures_macro"."0.3.4"."quote"}" deps)
-      (crates."syn"."${deps."futures_macro"."0.3.4"."syn"}" deps)
+      (crates."proc_macro_hack"."${deps."futures_macro"."0.3.5"."proc_macro_hack"}" deps)
+      (crates."proc_macro2"."${deps."futures_macro"."0.3.5"."proc_macro2"}" deps)
+      (crates."quote"."${deps."futures_macro"."0.3.5"."quote"}" deps)
+      (crates."syn"."${deps."futures_macro"."0.3.5"."syn"}" deps)
     ]);
   };
-  features_.futures_macro."0.3.4" = deps: f: updateFeatures f (rec {
-    futures_macro."0.3.4".default = (f.futures_macro."0.3.4".default or true);
-    proc_macro2."${deps.futures_macro."0.3.4".proc_macro2}".default = true;
-    proc_macro_hack."${deps.futures_macro."0.3.4".proc_macro_hack}".default = true;
-    quote."${deps.futures_macro."0.3.4".quote}".default = true;
+  features_.futures_macro."0.3.5" = deps: f: updateFeatures f (rec {
+    futures_macro."0.3.5".default = (f.futures_macro."0.3.5".default or true);
+    proc_macro2."${deps.futures_macro."0.3.5".proc_macro2}".default = true;
+    proc_macro_hack."${deps.futures_macro."0.3.5".proc_macro_hack}".default = true;
+    quote."${deps.futures_macro."0.3.5".quote}".default = true;
     syn = fold recursiveUpdate {} [
-      { "${deps.futures_macro."0.3.4".syn}"."full" = true; }
-      { "${deps.futures_macro."0.3.4".syn}".default = true; }
+      { "${deps.futures_macro."0.3.5".syn}"."full" = true; }
+      { "${deps.futures_macro."0.3.5".syn}".default = true; }
     ];
   }) [
-    (features_.proc_macro_hack."${deps."futures_macro"."0.3.4"."proc_macro_hack"}" deps)
-    (features_.proc_macro2."${deps."futures_macro"."0.3.4"."proc_macro2"}" deps)
-    (features_.quote."${deps."futures_macro"."0.3.4"."quote"}" deps)
-    (features_.syn."${deps."futures_macro"."0.3.4"."syn"}" deps)
+    (features_.proc_macro_hack."${deps."futures_macro"."0.3.5"."proc_macro_hack"}" deps)
+    (features_.proc_macro2."${deps."futures_macro"."0.3.5"."proc_macro2"}" deps)
+    (features_.quote."${deps."futures_macro"."0.3.5"."quote"}" deps)
+    (features_.syn."${deps."futures_macro"."0.3.5"."syn"}" deps)
   ];
 
 
 # end
-# futures-sink-0.3.4
+# futures-sink-0.3.5
 
-  crates.futures_sink."0.3.4" = deps: { features?(features_.futures_sink."0.3.4" deps {}) }: buildRustCrate {
+  crates.futures_sink."0.3.5" = deps: { features?(features_.futures_sink."0.3.5" deps {}) }: buildRustCrate {
     crateName = "futures-sink";
-    version = "0.3.4";
+    version = "0.3.5";
     description = "The asynchronous `Sink` trait for the futures-rs library.\n";
     authors = [ "Alex Crichton <alex@alexcrichton.com>" ];
     edition = "2018";
-    sha256 = "0363cl3srph7xzd01lq8vigh8vyx8g15ha3hv95k3vzcn4nsqdvr";
-    features = mkFeatures (features."futures_sink"."0.3.4" or {});
+    sha256 = "0lsqpq1pj6zz8vvrjprxj31zack1vcbji6xmk26ccblsl0wjvzjk";
+    features = mkFeatures (features."futures_sink"."0.3.5" or {});
   };
-  features_.futures_sink."0.3.4" = deps: f: updateFeatures f (rec {
+  features_.futures_sink."0.3.5" = deps: f: updateFeatures f (rec {
     futures_sink = fold recursiveUpdate {} [
-      { "0.3.4"."alloc" =
-        (f.futures_sink."0.3.4"."alloc" or false) ||
-        (f.futures_sink."0.3.4".std or false) ||
-        (futures_sink."0.3.4"."std" or false); }
-      { "0.3.4"."std" =
-        (f.futures_sink."0.3.4"."std" or false) ||
-        (f.futures_sink."0.3.4".default or false) ||
-        (futures_sink."0.3.4"."default" or false); }
-      { "0.3.4".default = (f.futures_sink."0.3.4".default or true); }
+      { "0.3.5"."alloc" =
+        (f.futures_sink."0.3.5"."alloc" or false) ||
+        (f.futures_sink."0.3.5".std or false) ||
+        (futures_sink."0.3.5"."std" or false); }
+      { "0.3.5"."std" =
+        (f.futures_sink."0.3.5"."std" or false) ||
+        (f.futures_sink."0.3.5".default or false) ||
+        (futures_sink."0.3.5"."default" or false); }
+      { "0.3.5".default = (f.futures_sink."0.3.5".default or true); }
     ];
   }) [];
 
 
 # end
-# futures-task-0.3.4
+# futures-task-0.3.5
 
-  crates.futures_task."0.3.4" = deps: { features?(features_.futures_task."0.3.4" deps {}) }: buildRustCrate {
+  crates.futures_task."0.3.5" = deps: { features?(features_.futures_task."0.3.5" deps {}) }: buildRustCrate {
     crateName = "futures-task";
-    version = "0.3.4";
+    version = "0.3.5";
     description = "Tools for working with tasks.\n";
     authors = [ "Alex Crichton <alex@alexcrichton.com>" ];
     edition = "2018";
-    sha256 = "0xh5apdfk9kna15yiax57601n21x7qrmbqzmf86acv6qwp474z11";
-    features = mkFeatures (features."futures_task"."0.3.4" or {});
+    sha256 = "1ihw39k1mfi2vwdz6a3v6h2g4m66zppfwm80z5ms222x3wvkv8yg";
+    dependencies = mapFeatures features ([
+    ]
+      ++ (if features.futures_task."0.3.5".once_cell or false then [ (crates.once_cell."${deps."futures_task"."0.3.5".once_cell}" deps) ] else []));
+    features = mkFeatures (features."futures_task"."0.3.5" or {});
   };
-  features_.futures_task."0.3.4" = deps: f: updateFeatures f (rec {
+  features_.futures_task."0.3.5" = deps: f: updateFeatures f (rec {
     futures_task = fold recursiveUpdate {} [
-      { "0.3.4"."alloc" =
-        (f.futures_task."0.3.4"."alloc" or false) ||
-        (f.futures_task."0.3.4".std or false) ||
-        (futures_task."0.3.4"."std" or false); }
-      { "0.3.4"."std" =
-        (f.futures_task."0.3.4"."std" or false) ||
-        (f.futures_task."0.3.4".default or false) ||
-        (futures_task."0.3.4"."default" or false); }
-      { "0.3.4".default = (f.futures_task."0.3.4".default or true); }
+      { "0.3.5"."alloc" =
+        (f.futures_task."0.3.5"."alloc" or false) ||
+        (f.futures_task."0.3.5".std or false) ||
+        (futures_task."0.3.5"."std" or false); }
+      { "0.3.5"."once_cell" =
+        (f.futures_task."0.3.5"."once_cell" or false) ||
+        (f.futures_task."0.3.5".std or false) ||
+        (futures_task."0.3.5"."std" or false); }
+      { "0.3.5"."std" =
+        (f.futures_task."0.3.5"."std" or false) ||
+        (f.futures_task."0.3.5".default or false) ||
+        (futures_task."0.3.5"."default" or false); }
+      { "0.3.5".default = (f.futures_task."0.3.5".default or true); }
     ];
-  }) [];
+    once_cell = fold recursiveUpdate {} [
+      { "${deps.futures_task."0.3.5".once_cell}"."std" = true; }
+      { "${deps.futures_task."0.3.5".once_cell}".default = (f.once_cell."${deps.futures_task."0.3.5".once_cell}".default or false); }
+    ];
+  }) [
+    (features_.once_cell."${deps."futures_task"."0.3.5"."once_cell"}" deps)
+  ];
 
 
 # end
-# futures-util-0.3.4
+# futures-util-0.3.5
 
-  crates.futures_util."0.3.4" = deps: { features?(features_.futures_util."0.3.4" deps {}) }: buildRustCrate {
+  crates.futures_util."0.3.5" = deps: { features?(features_.futures_util."0.3.5" deps {}) }: buildRustCrate {
     crateName = "futures-util";
-    version = "0.3.4";
+    version = "0.3.5";
     description = "Common utilities and extension traits for the futures-rs library.\n";
     authors = [ "Alex Crichton <alex@alexcrichton.com>" ];
     edition = "2018";
-    sha256 = "0dbra0yqszrp8rfhqr87gayyy5zskikn42sxfsargxzxwa06id4m";
+    sha256 = "0d7m5ba63lnx6q38w218bac89b0arghl4b5zmbvsplgn2dzhvw51";
     dependencies = mapFeatures features ([
-      (crates."futures_core"."${deps."futures_util"."0.3.4"."futures_core"}" deps)
-      (crates."futures_task"."${deps."futures_util"."0.3.4"."futures_task"}" deps)
-      (crates."pin_utils"."${deps."futures_util"."0.3.4"."pin_utils"}" deps)
+      (crates."futures_core"."${deps."futures_util"."0.3.5"."futures_core"}" deps)
+      (crates."futures_task"."${deps."futures_util"."0.3.5"."futures_task"}" deps)
+      (crates."pin_project"."${deps."futures_util"."0.3.5"."pin_project"}" deps)
+      (crates."pin_utils"."${deps."futures_util"."0.3.5"."pin_utils"}" deps)
     ]
-      ++ (if features.futures_util."0.3.4".futures-channel or false then [ (crates.futures_channel."${deps."futures_util"."0.3.4".futures_channel}" deps) ] else [])
-      ++ (if features.futures_util."0.3.4".futures-io or false then [ (crates.futures_io."${deps."futures_util"."0.3.4".futures_io}" deps) ] else [])
-      ++ (if features.futures_util."0.3.4".futures-macro or false then [ (crates.futures_macro."${deps."futures_util"."0.3.4".futures_macro}" deps) ] else [])
-      ++ (if features.futures_util."0.3.4".futures-sink or false then [ (crates.futures_sink."${deps."futures_util"."0.3.4".futures_sink}" deps) ] else [])
-      ++ (if features.futures_util."0.3.4".memchr or false then [ (crates.memchr."${deps."futures_util"."0.3.4".memchr}" deps) ] else [])
-      ++ (if features.futures_util."0.3.4".proc-macro-hack or false then [ (crates.proc_macro_hack."${deps."futures_util"."0.3.4".proc_macro_hack}" deps) ] else [])
-      ++ (if features.futures_util."0.3.4".proc-macro-nested or false then [ (crates.proc_macro_nested."${deps."futures_util"."0.3.4".proc_macro_nested}" deps) ] else [])
-      ++ (if features.futures_util."0.3.4".slab or false then [ (crates.slab."${deps."futures_util"."0.3.4".slab}" deps) ] else []));
-    features = mkFeatures (features."futures_util"."0.3.4" or {});
+      ++ (if features.futures_util."0.3.5".futures-channel or false then [ (crates.futures_channel."${deps."futures_util"."0.3.5".futures_channel}" deps) ] else [])
+      ++ (if features.futures_util."0.3.5".futures-io or false then [ (crates.futures_io."${deps."futures_util"."0.3.5".futures_io}" deps) ] else [])
+      ++ (if features.futures_util."0.3.5".futures-macro or false then [ (crates.futures_macro."${deps."futures_util"."0.3.5".futures_macro}" deps) ] else [])
+      ++ (if features.futures_util."0.3.5".futures-sink or false then [ (crates.futures_sink."${deps."futures_util"."0.3.5".futures_sink}" deps) ] else [])
+      ++ (if features.futures_util."0.3.5".memchr or false then [ (crates.memchr."${deps."futures_util"."0.3.5".memchr}" deps) ] else [])
+      ++ (if features.futures_util."0.3.5".proc-macro-hack or false then [ (crates.proc_macro_hack."${deps."futures_util"."0.3.5".proc_macro_hack}" deps) ] else [])
+      ++ (if features.futures_util."0.3.5".proc-macro-nested or false then [ (crates.proc_macro_nested."${deps."futures_util"."0.3.5".proc_macro_nested}" deps) ] else [])
+      ++ (if features.futures_util."0.3.5".slab or false then [ (crates.slab."${deps."futures_util"."0.3.5".slab}" deps) ] else []));
+    features = mkFeatures (features."futures_util"."0.3.5" or {});
   };
-  features_.futures_util."0.3.4" = deps: f: updateFeatures f (rec {
+  features_.futures_util."0.3.5" = deps: f: updateFeatures f (rec {
     futures_channel = fold recursiveUpdate {} [
-      { "${deps.futures_util."0.3.4".futures_channel}"."std" = true; }
-      { "${deps.futures_util."0.3.4".futures_channel}".default = (f.futures_channel."${deps.futures_util."0.3.4".futures_channel}".default or false); }
+      { "${deps.futures_util."0.3.5".futures_channel}"."std" = true; }
+      { "${deps.futures_util."0.3.5".futures_channel}".default = (f.futures_channel."${deps.futures_util."0.3.5".futures_channel}".default or false); }
     ];
     futures_core = fold recursiveUpdate {} [
-      { "${deps.futures_util."0.3.4".futures_core}"."alloc" =
-        (f.futures_core."${deps.futures_util."0.3.4".futures_core}"."alloc" or false) ||
-        (futures_util."0.3.4"."alloc" or false) ||
-        (f."futures_util"."0.3.4"."alloc" or false); }
-      { "${deps.futures_util."0.3.4".futures_core}"."cfg-target-has-atomic" =
-        (f.futures_core."${deps.futures_util."0.3.4".futures_core}"."cfg-target-has-atomic" or false) ||
-        (futures_util."0.3.4"."cfg-target-has-atomic" or false) ||
-        (f."futures_util"."0.3.4"."cfg-target-has-atomic" or false); }
-      { "${deps.futures_util."0.3.4".futures_core}"."std" =
-        (f.futures_core."${deps.futures_util."0.3.4".futures_core}"."std" or false) ||
-        (futures_util."0.3.4"."std" or false) ||
-        (f."futures_util"."0.3.4"."std" or false); }
-      { "${deps.futures_util."0.3.4".futures_core}"."unstable" =
-        (f.futures_core."${deps.futures_util."0.3.4".futures_core}"."unstable" or false) ||
-        (futures_util."0.3.4"."unstable" or false) ||
-        (f."futures_util"."0.3.4"."unstable" or false); }
-      { "${deps.futures_util."0.3.4".futures_core}".default = (f.futures_core."${deps.futures_util."0.3.4".futures_core}".default or false); }
+      { "${deps.futures_util."0.3.5".futures_core}"."alloc" =
+        (f.futures_core."${deps.futures_util."0.3.5".futures_core}"."alloc" or false) ||
+        (futures_util."0.3.5"."alloc" or false) ||
+        (f."futures_util"."0.3.5"."alloc" or false); }
+      { "${deps.futures_util."0.3.5".futures_core}"."cfg-target-has-atomic" =
+        (f.futures_core."${deps.futures_util."0.3.5".futures_core}"."cfg-target-has-atomic" or false) ||
+        (futures_util."0.3.5"."cfg-target-has-atomic" or false) ||
+        (f."futures_util"."0.3.5"."cfg-target-has-atomic" or false); }
+      { "${deps.futures_util."0.3.5".futures_core}"."std" =
+        (f.futures_core."${deps.futures_util."0.3.5".futures_core}"."std" or false) ||
+        (futures_util."0.3.5"."std" or false) ||
+        (f."futures_util"."0.3.5"."std" or false); }
+      { "${deps.futures_util."0.3.5".futures_core}"."unstable" =
+        (f.futures_core."${deps.futures_util."0.3.5".futures_core}"."unstable" or false) ||
+        (futures_util."0.3.5"."unstable" or false) ||
+        (f."futures_util"."0.3.5"."unstable" or false); }
+      { "${deps.futures_util."0.3.5".futures_core}".default = (f.futures_core."${deps.futures_util."0.3.5".futures_core}".default or false); }
     ];
     futures_io = fold recursiveUpdate {} [
-      { "${deps.futures_util."0.3.4".futures_io}"."read-initializer" =
-        (f.futures_io."${deps.futures_util."0.3.4".futures_io}"."read-initializer" or false) ||
-        (futures_util."0.3.4"."read-initializer" or false) ||
-        (f."futures_util"."0.3.4"."read-initializer" or false); }
-      { "${deps.futures_util."0.3.4".futures_io}"."std" = true; }
-      { "${deps.futures_util."0.3.4".futures_io}".default = (f.futures_io."${deps.futures_util."0.3.4".futures_io}".default or false); }
+      { "${deps.futures_util."0.3.5".futures_io}"."read-initializer" =
+        (f.futures_io."${deps.futures_util."0.3.5".futures_io}"."read-initializer" or false) ||
+        (futures_util."0.3.5"."read-initializer" or false) ||
+        (f."futures_util"."0.3.5"."read-initializer" or false); }
+      { "${deps.futures_util."0.3.5".futures_io}"."std" = true; }
+      { "${deps.futures_util."0.3.5".futures_io}".default = (f.futures_io."${deps.futures_util."0.3.5".futures_io}".default or false); }
     ];
-    futures_macro."${deps.futures_util."0.3.4".futures_macro}".default = (f.futures_macro."${deps.futures_util."0.3.4".futures_macro}".default or false);
-    futures_sink."${deps.futures_util."0.3.4".futures_sink}".default = (f.futures_sink."${deps.futures_util."0.3.4".futures_sink}".default or false);
+    futures_macro."${deps.futures_util."0.3.5".futures_macro}".default = (f.futures_macro."${deps.futures_util."0.3.5".futures_macro}".default or false);
+    futures_sink."${deps.futures_util."0.3.5".futures_sink}".default = (f.futures_sink."${deps.futures_util."0.3.5".futures_sink}".default or false);
     futures_task = fold recursiveUpdate {} [
-      { "${deps.futures_util."0.3.4".futures_task}"."alloc" =
-        (f.futures_task."${deps.futures_util."0.3.4".futures_task}"."alloc" or false) ||
-        (futures_util."0.3.4"."alloc" or false) ||
-        (f."futures_util"."0.3.4"."alloc" or false); }
-      { "${deps.futures_util."0.3.4".futures_task}"."cfg-target-has-atomic" =
-        (f.futures_task."${deps.futures_util."0.3.4".futures_task}"."cfg-target-has-atomic" or false) ||
-        (futures_util."0.3.4"."cfg-target-has-atomic" or false) ||
-        (f."futures_util"."0.3.4"."cfg-target-has-atomic" or false); }
-      { "${deps.futures_util."0.3.4".futures_task}"."std" =
-        (f.futures_task."${deps.futures_util."0.3.4".futures_task}"."std" or false) ||
-        (futures_util."0.3.4"."std" or false) ||
-        (f."futures_util"."0.3.4"."std" or false); }
-      { "${deps.futures_util."0.3.4".futures_task}"."unstable" =
-        (f.futures_task."${deps.futures_util."0.3.4".futures_task}"."unstable" or false) ||
-        (futures_util."0.3.4"."unstable" or false) ||
-        (f."futures_util"."0.3.4"."unstable" or false); }
-      { "${deps.futures_util."0.3.4".futures_task}".default = (f.futures_task."${deps.futures_util."0.3.4".futures_task}".default or false); }
+      { "${deps.futures_util."0.3.5".futures_task}"."alloc" =
+        (f.futures_task."${deps.futures_util."0.3.5".futures_task}"."alloc" or false) ||
+        (futures_util."0.3.5"."alloc" or false) ||
+        (f."futures_util"."0.3.5"."alloc" or false); }
+      { "${deps.futures_util."0.3.5".futures_task}"."cfg-target-has-atomic" =
+        (f.futures_task."${deps.futures_util."0.3.5".futures_task}"."cfg-target-has-atomic" or false) ||
+        (futures_util."0.3.5"."cfg-target-has-atomic" or false) ||
+        (f."futures_util"."0.3.5"."cfg-target-has-atomic" or false); }
+      { "${deps.futures_util."0.3.5".futures_task}"."std" =
+        (f.futures_task."${deps.futures_util."0.3.5".futures_task}"."std" or false) ||
+        (futures_util."0.3.5"."std" or false) ||
+        (f."futures_util"."0.3.5"."std" or false); }
+      { "${deps.futures_util."0.3.5".futures_task}"."unstable" =
+        (f.futures_task."${deps.futures_util."0.3.5".futures_task}"."unstable" or false) ||
+        (futures_util."0.3.5"."unstable" or false) ||
+        (f."futures_util"."0.3.5"."unstable" or false); }
+      { "${deps.futures_util."0.3.5".futures_task}".default = (f.futures_task."${deps.futures_util."0.3.5".futures_task}".default or false); }
     ];
     futures_util = fold recursiveUpdate {} [
-      { "0.3.4"."alloc" =
-        (f.futures_util."0.3.4"."alloc" or false) ||
-        (f.futures_util."0.3.4".std or false) ||
-        (futures_util."0.3.4"."std" or false); }
-      { "0.3.4"."async-await" =
-        (f.futures_util."0.3.4"."async-await" or false) ||
-        (f.futures_util."0.3.4".async-await-macro or false) ||
-        (futures_util."0.3.4"."async-await-macro" or false) ||
-        (f.futures_util."0.3.4".default or false) ||
-        (futures_util."0.3.4"."default" or false); }
-      { "0.3.4"."async-await-macro" =
-        (f.futures_util."0.3.4"."async-await-macro" or false) ||
-        (f.futures_util."0.3.4".default or false) ||
-        (futures_util."0.3.4"."default" or false); }
-      { "0.3.4"."compat" =
-        (f.futures_util."0.3.4"."compat" or false) ||
-        (f.futures_util."0.3.4".io-compat or false) ||
-        (futures_util."0.3.4"."io-compat" or false); }
-      { "0.3.4"."futures-channel" =
-        (f.futures_util."0.3.4"."futures-channel" or false) ||
-        (f.futures_util."0.3.4".channel or false) ||
-        (futures_util."0.3.4"."channel" or false); }
-      { "0.3.4"."futures-io" =
-        (f.futures_util."0.3.4"."futures-io" or false) ||
-        (f.futures_util."0.3.4".io or false) ||
-        (futures_util."0.3.4"."io" or false); }
-      { "0.3.4"."futures-macro" =
-        (f.futures_util."0.3.4"."futures-macro" or false) ||
-        (f.futures_util."0.3.4".async-await-macro or false) ||
-        (futures_util."0.3.4"."async-await-macro" or false); }
-      { "0.3.4"."futures-sink" =
-        (f.futures_util."0.3.4"."futures-sink" or false) ||
-        (f.futures_util."0.3.4".sink or false) ||
-        (futures_util."0.3.4"."sink" or false); }
-      { "0.3.4"."futures_01" =
-        (f.futures_util."0.3.4"."futures_01" or false) ||
-        (f.futures_util."0.3.4".compat or false) ||
-        (futures_util."0.3.4"."compat" or false); }
-      { "0.3.4"."io" =
-        (f.futures_util."0.3.4"."io" or false) ||
-        (f.futures_util."0.3.4".io-compat or false) ||
-        (futures_util."0.3.4"."io-compat" or false) ||
-        (f.futures_util."0.3.4".read-initializer or false) ||
-        (futures_util."0.3.4"."read-initializer" or false); }
-      { "0.3.4"."memchr" =
-        (f.futures_util."0.3.4"."memchr" or false) ||
-        (f.futures_util."0.3.4".io or false) ||
-        (futures_util."0.3.4"."io" or false); }
-      { "0.3.4"."proc-macro-hack" =
-        (f.futures_util."0.3.4"."proc-macro-hack" or false) ||
-        (f.futures_util."0.3.4".async-await-macro or false) ||
-        (futures_util."0.3.4"."async-await-macro" or false); }
-      { "0.3.4"."proc-macro-nested" =
-        (f.futures_util."0.3.4"."proc-macro-nested" or false) ||
-        (f.futures_util."0.3.4".async-await-macro or false) ||
-        (futures_util."0.3.4"."async-await-macro" or false); }
-      { "0.3.4"."slab" =
-        (f.futures_util."0.3.4"."slab" or false) ||
-        (f.futures_util."0.3.4".std or false) ||
-        (futures_util."0.3.4"."std" or false); }
-      { "0.3.4"."std" =
-        (f.futures_util."0.3.4"."std" or false) ||
-        (f.futures_util."0.3.4".channel or false) ||
-        (futures_util."0.3.4"."channel" or false) ||
-        (f.futures_util."0.3.4".compat or false) ||
-        (futures_util."0.3.4"."compat" or false) ||
-        (f.futures_util."0.3.4".default or false) ||
-        (futures_util."0.3.4"."default" or false) ||
-        (f.futures_util."0.3.4".io or false) ||
-        (futures_util."0.3.4"."io" or false); }
-      { "0.3.4"."tokio-io" =
-        (f.futures_util."0.3.4"."tokio-io" or false) ||
-        (f.futures_util."0.3.4".io-compat or false) ||
-        (futures_util."0.3.4"."io-compat" or false); }
-      { "0.3.4".default = (f.futures_util."0.3.4".default or true); }
+      { "0.3.5"."alloc" =
+        (f.futures_util."0.3.5"."alloc" or false) ||
+        (f.futures_util."0.3.5".std or false) ||
+        (futures_util."0.3.5"."std" or false); }
+      { "0.3.5"."async-await" =
+        (f.futures_util."0.3.5"."async-await" or false) ||
+        (f.futures_util."0.3.5".async-await-macro or false) ||
+        (futures_util."0.3.5"."async-await-macro" or false) ||
+        (f.futures_util."0.3.5".default or false) ||
+        (futures_util."0.3.5"."default" or false); }
+      { "0.3.5"."async-await-macro" =
+        (f.futures_util."0.3.5"."async-await-macro" or false) ||
+        (f.futures_util."0.3.5".default or false) ||
+        (futures_util."0.3.5"."default" or false); }
+      { "0.3.5"."compat" =
+        (f.futures_util."0.3.5"."compat" or false) ||
+        (f.futures_util."0.3.5".io-compat or false) ||
+        (futures_util."0.3.5"."io-compat" or false); }
+      { "0.3.5"."futures-channel" =
+        (f.futures_util."0.3.5"."futures-channel" or false) ||
+        (f.futures_util."0.3.5".channel or false) ||
+        (futures_util."0.3.5"."channel" or false); }
+      { "0.3.5"."futures-io" =
+        (f.futures_util."0.3.5"."futures-io" or false) ||
+        (f.futures_util."0.3.5".io or false) ||
+        (futures_util."0.3.5"."io" or false); }
+      { "0.3.5"."futures-macro" =
+        (f.futures_util."0.3.5"."futures-macro" or false) ||
+        (f.futures_util."0.3.5".async-await-macro or false) ||
+        (futures_util."0.3.5"."async-await-macro" or false); }
+      { "0.3.5"."futures-sink" =
+        (f.futures_util."0.3.5"."futures-sink" or false) ||
+        (f.futures_util."0.3.5".sink or false) ||
+        (futures_util."0.3.5"."sink" or false); }
+      { "0.3.5"."futures_01" =
+        (f.futures_util."0.3.5"."futures_01" or false) ||
+        (f.futures_util."0.3.5".compat or false) ||
+        (futures_util."0.3.5"."compat" or false); }
+      { "0.3.5"."io" =
+        (f.futures_util."0.3.5"."io" or false) ||
+        (f.futures_util."0.3.5".io-compat or false) ||
+        (futures_util."0.3.5"."io-compat" or false) ||
+        (f.futures_util."0.3.5".read-initializer or false) ||
+        (futures_util."0.3.5"."read-initializer" or false) ||
+        (f.futures_util."0.3.5".write-all-vectored or false) ||
+        (futures_util."0.3.5"."write-all-vectored" or false); }
+      { "0.3.5"."memchr" =
+        (f.futures_util."0.3.5"."memchr" or false) ||
+        (f.futures_util."0.3.5".io or false) ||
+        (futures_util."0.3.5"."io" or false); }
+      { "0.3.5"."proc-macro-hack" =
+        (f.futures_util."0.3.5"."proc-macro-hack" or false) ||
+        (f.futures_util."0.3.5".async-await-macro or false) ||
+        (futures_util."0.3.5"."async-await-macro" or false); }
+      { "0.3.5"."proc-macro-nested" =
+        (f.futures_util."0.3.5"."proc-macro-nested" or false) ||
+        (f.futures_util."0.3.5".async-await-macro or false) ||
+        (futures_util."0.3.5"."async-await-macro" or false); }
+      { "0.3.5"."slab" =
+        (f.futures_util."0.3.5"."slab" or false) ||
+        (f.futures_util."0.3.5".std or false) ||
+        (futures_util."0.3.5"."std" or false); }
+      { "0.3.5"."std" =
+        (f.futures_util."0.3.5"."std" or false) ||
+        (f.futures_util."0.3.5".channel or false) ||
+        (futures_util."0.3.5"."channel" or false) ||
+        (f.futures_util."0.3.5".compat or false) ||
+        (futures_util."0.3.5"."compat" or false) ||
+        (f.futures_util."0.3.5".default or false) ||
+        (futures_util."0.3.5"."default" or false) ||
+        (f.futures_util."0.3.5".io or false) ||
+        (futures_util."0.3.5"."io" or false); }
+      { "0.3.5"."tokio-io" =
+        (f.futures_util."0.3.5"."tokio-io" or false) ||
+        (f.futures_util."0.3.5".io-compat or false) ||
+        (futures_util."0.3.5"."io-compat" or false); }
+      { "0.3.5".default = (f.futures_util."0.3.5".default or true); }
     ];
-    memchr."${deps.futures_util."0.3.4".memchr}".default = true;
-    pin_utils."${deps.futures_util."0.3.4".pin_utils}".default = true;
-    proc_macro_hack."${deps.futures_util."0.3.4".proc_macro_hack}".default = true;
-    proc_macro_nested."${deps.futures_util."0.3.4".proc_macro_nested}".default = true;
-    slab."${deps.futures_util."0.3.4".slab}".default = true;
+    memchr."${deps.futures_util."0.3.5".memchr}".default = true;
+    pin_project."${deps.futures_util."0.3.5".pin_project}".default = true;
+    pin_utils."${deps.futures_util."0.3.5".pin_utils}".default = true;
+    proc_macro_hack."${deps.futures_util."0.3.5".proc_macro_hack}".default = true;
+    proc_macro_nested."${deps.futures_util."0.3.5".proc_macro_nested}".default = true;
+    slab."${deps.futures_util."0.3.5".slab}".default = true;
   }) [
-    (features_.futures_channel."${deps."futures_util"."0.3.4"."futures_channel"}" deps)
-    (features_.futures_core."${deps."futures_util"."0.3.4"."futures_core"}" deps)
-    (features_.futures_io."${deps."futures_util"."0.3.4"."futures_io"}" deps)
-    (features_.futures_macro."${deps."futures_util"."0.3.4"."futures_macro"}" deps)
-    (features_.futures_sink."${deps."futures_util"."0.3.4"."futures_sink"}" deps)
-    (features_.futures_task."${deps."futures_util"."0.3.4"."futures_task"}" deps)
-    (features_.memchr."${deps."futures_util"."0.3.4"."memchr"}" deps)
-    (features_.pin_utils."${deps."futures_util"."0.3.4"."pin_utils"}" deps)
-    (features_.proc_macro_hack."${deps."futures_util"."0.3.4"."proc_macro_hack"}" deps)
-    (features_.proc_macro_nested."${deps."futures_util"."0.3.4"."proc_macro_nested"}" deps)
-    (features_.slab."${deps."futures_util"."0.3.4"."slab"}" deps)
+    (features_.futures_channel."${deps."futures_util"."0.3.5"."futures_channel"}" deps)
+    (features_.futures_core."${deps."futures_util"."0.3.5"."futures_core"}" deps)
+    (features_.futures_io."${deps."futures_util"."0.3.5"."futures_io"}" deps)
+    (features_.futures_macro."${deps."futures_util"."0.3.5"."futures_macro"}" deps)
+    (features_.futures_sink."${deps."futures_util"."0.3.5"."futures_sink"}" deps)
+    (features_.futures_task."${deps."futures_util"."0.3.5"."futures_task"}" deps)
+    (features_.memchr."${deps."futures_util"."0.3.5"."memchr"}" deps)
+    (features_.pin_project."${deps."futures_util"."0.3.5"."pin_project"}" deps)
+    (features_.pin_utils."${deps."futures_util"."0.3.5"."pin_utils"}" deps)
+    (features_.proc_macro_hack."${deps."futures_util"."0.3.5"."proc_macro_hack"}" deps)
+    (features_.proc_macro_nested."${deps."futures_util"."0.3.5"."proc_macro_nested"}" deps)
+    (features_.slab."${deps."futures_util"."0.3.5"."slab"}" deps)
+  ];
+
+
+# end
+# generator-0.6.21
+
+  crates.generator."0.6.21" = deps: { features?(features_.generator."0.6.21" deps {}) }: buildRustCrate {
+    crateName = "generator";
+    version = "0.6.21";
+    description = "Stackfull Generator Library in Rust";
+    authors = [ "Xudong Huang <huangxu008@hotmail.com>" ];
+    edition = "2018";
+    sha256 = "1mblqpg4xcyj8w4ady9alaj4xggbj45bv93qyp4cxrx45s6lgzl3";
+    build = "build.rs";
+    dependencies = mapFeatures features ([
+      (crates."log"."${deps."generator"."0.6.21"."log"}" deps)
+    ])
+      ++ (if (kernel == "linux" || kernel == "darwin") then mapFeatures features ([
+      (crates."libc"."${deps."generator"."0.6.21"."libc"}" deps)
+    ]) else [])
+      ++ (if kernel == "windows" then mapFeatures features ([
+      (crates."winapi"."${deps."generator"."0.6.21"."winapi"}" deps)
+    ]) else []);
+
+    buildDependencies = mapFeatures features ([
+      (crates."cc"."${deps."generator"."0.6.21"."cc"}" deps)
+      (crates."rustc_version"."${deps."generator"."0.6.21"."rustc_version"}" deps)
+    ]);
+  };
+  features_.generator."0.6.21" = deps: f: updateFeatures f (rec {
+    cc."${deps.generator."0.6.21".cc}".default = true;
+    generator."0.6.21".default = (f.generator."0.6.21".default or true);
+    libc."${deps.generator."0.6.21".libc}".default = true;
+    log."${deps.generator."0.6.21".log}".default = true;
+    rustc_version."${deps.generator."0.6.21".rustc_version}".default = true;
+    winapi = fold recursiveUpdate {} [
+      { "${deps.generator."0.6.21".winapi}"."memoryapi" = true; }
+      { "${deps.generator."0.6.21".winapi}"."sysinfoapi" = true; }
+      { "${deps.generator."0.6.21".winapi}".default = true; }
+    ];
+  }) [
+    (features_.log."${deps."generator"."0.6.21"."log"}" deps)
+    (features_.cc."${deps."generator"."0.6.21"."cc"}" deps)
+    (features_.rustc_version."${deps."generator"."0.6.21"."rustc_version"}" deps)
+    (features_.libc."${deps."generator"."0.6.21"."libc"}" deps)
+    (features_.winapi."${deps."generator"."0.6.21"."winapi"}" deps)
   ];
 
 
@@ -1473,62 +1592,110 @@ rec {
 
 
 # end
-# h2-0.2.2
+# gimli-0.21.0
 
-  crates.h2."0.2.2" = deps: { features?(features_.h2."0.2.2" deps {}) }: buildRustCrate {
+  crates.gimli."0.21.0" = deps: { features?(features_.gimli."0.21.0" deps {}) }: buildRustCrate {
+    crateName = "gimli";
+    version = "0.21.0";
+    description = "A library for reading and writing the DWARF debugging format.";
+    authors = [ "Nick Fitzgerald <fitzgen@gmail.com>" "Philip Craig <philipjcraig@gmail.com>" ];
+    edition = "2018";
+    sha256 = "1gicgp0a9ipxsxh041y2mhfnmd7a3knk7s279aynmgvq4qnaf2v9";
+    dependencies = mapFeatures features ([
+]);
+    features = mkFeatures (features."gimli"."0.21.0" or {});
+  };
+  features_.gimli."0.21.0" = deps: f: updateFeatures f (rec {
+    gimli = fold recursiveUpdate {} [
+      { "0.21.0"."endian-reader" =
+        (f.gimli."0.21.0"."endian-reader" or false) ||
+        (f.gimli."0.21.0".default or false) ||
+        (gimli."0.21.0"."default" or false); }
+      { "0.21.0"."fallible-iterator" =
+        (f.gimli."0.21.0"."fallible-iterator" or false) ||
+        (f.gimli."0.21.0".default or false) ||
+        (gimli."0.21.0"."default" or false); }
+      { "0.21.0"."indexmap" =
+        (f.gimli."0.21.0"."indexmap" or false) ||
+        (f.gimli."0.21.0".write or false) ||
+        (gimli."0.21.0"."write" or false); }
+      { "0.21.0"."read" =
+        (f.gimli."0.21.0"."read" or false) ||
+        (f.gimli."0.21.0".default or false) ||
+        (gimli."0.21.0"."default" or false); }
+      { "0.21.0"."stable_deref_trait" =
+        (f.gimli."0.21.0"."stable_deref_trait" or false) ||
+        (f.gimli."0.21.0".endian-reader or false) ||
+        (gimli."0.21.0"."endian-reader" or false); }
+      { "0.21.0"."std" =
+        (f.gimli."0.21.0"."std" or false) ||
+        (f.gimli."0.21.0".default or false) ||
+        (gimli."0.21.0"."default" or false); }
+      { "0.21.0"."write" =
+        (f.gimli."0.21.0"."write" or false) ||
+        (f.gimli."0.21.0".default or false) ||
+        (gimli."0.21.0"."default" or false); }
+      { "0.21.0".default = (f.gimli."0.21.0".default or true); }
+    ];
+  }) [];
+
+
+# end
+# h2-0.2.5
+
+  crates.h2."0.2.5" = deps: { features?(features_.h2."0.2.5" deps {}) }: buildRustCrate {
     crateName = "h2";
-    version = "0.2.2";
+    version = "0.2.5";
     description = "An HTTP/2.0 client and server";
     authors = [ "Carl Lerche <me@carllerche.com>" "Sean McArthur <sean@seanmonstar.com>" ];
     edition = "2018";
-    sha256 = "1p4al8zsacjk79cfrq6iy7c3wh8wawz052klrjyspar4vbig4wng";
+    sha256 = "07b4h40dr2i57iaqfydr3sd9pkfg1px9095ccj9276kr7anycl0m";
     dependencies = mapFeatures features ([
-      (crates."bytes"."${deps."h2"."0.2.2"."bytes"}" deps)
-      (crates."fnv"."${deps."h2"."0.2.2"."fnv"}" deps)
-      (crates."futures_core"."${deps."h2"."0.2.2"."futures_core"}" deps)
-      (crates."futures_sink"."${deps."h2"."0.2.2"."futures_sink"}" deps)
-      (crates."futures_util"."${deps."h2"."0.2.2"."futures_util"}" deps)
-      (crates."http"."${deps."h2"."0.2.2"."http"}" deps)
-      (crates."indexmap"."${deps."h2"."0.2.2"."indexmap"}" deps)
-      (crates."log"."${deps."h2"."0.2.2"."log"}" deps)
-      (crates."slab"."${deps."h2"."0.2.2"."slab"}" deps)
-      (crates."tokio"."${deps."h2"."0.2.2"."tokio"}" deps)
-      (crates."tokio_util"."${deps."h2"."0.2.2"."tokio_util"}" deps)
+      (crates."bytes"."${deps."h2"."0.2.5"."bytes"}" deps)
+      (crates."fnv"."${deps."h2"."0.2.5"."fnv"}" deps)
+      (crates."futures_core"."${deps."h2"."0.2.5"."futures_core"}" deps)
+      (crates."futures_sink"."${deps."h2"."0.2.5"."futures_sink"}" deps)
+      (crates."futures_util"."${deps."h2"."0.2.5"."futures_util"}" deps)
+      (crates."http"."${deps."h2"."0.2.5"."http"}" deps)
+      (crates."indexmap"."${deps."h2"."0.2.5"."indexmap"}" deps)
+      (crates."log"."${deps."h2"."0.2.5"."log"}" deps)
+      (crates."slab"."${deps."h2"."0.2.5"."slab"}" deps)
+      (crates."tokio"."${deps."h2"."0.2.5"."tokio"}" deps)
+      (crates."tokio_util"."${deps."h2"."0.2.5"."tokio_util"}" deps)
     ]);
-    features = mkFeatures (features."h2"."0.2.2" or {});
+    features = mkFeatures (features."h2"."0.2.5" or {});
   };
-  features_.h2."0.2.2" = deps: f: updateFeatures f (rec {
-    bytes."${deps.h2."0.2.2".bytes}".default = true;
-    fnv."${deps.h2."0.2.2".fnv}".default = true;
-    futures_core."${deps.h2."0.2.2".futures_core}".default = (f.futures_core."${deps.h2."0.2.2".futures_core}".default or false);
-    futures_sink."${deps.h2."0.2.2".futures_sink}".default = (f.futures_sink."${deps.h2."0.2.2".futures_sink}".default or false);
-    futures_util."${deps.h2."0.2.2".futures_util}".default = (f.futures_util."${deps.h2."0.2.2".futures_util}".default or false);
-    h2."0.2.2".default = (f.h2."0.2.2".default or true);
-    http."${deps.h2."0.2.2".http}".default = true;
-    indexmap."${deps.h2."0.2.2".indexmap}".default = true;
-    log."${deps.h2."0.2.2".log}".default = true;
-    slab."${deps.h2."0.2.2".slab}".default = true;
+  features_.h2."0.2.5" = deps: f: updateFeatures f (rec {
+    bytes."${deps.h2."0.2.5".bytes}".default = true;
+    fnv."${deps.h2."0.2.5".fnv}".default = true;
+    futures_core."${deps.h2."0.2.5".futures_core}".default = (f.futures_core."${deps.h2."0.2.5".futures_core}".default or false);
+    futures_sink."${deps.h2."0.2.5".futures_sink}".default = (f.futures_sink."${deps.h2."0.2.5".futures_sink}".default or false);
+    futures_util."${deps.h2."0.2.5".futures_util}".default = (f.futures_util."${deps.h2."0.2.5".futures_util}".default or false);
+    h2."0.2.5".default = (f.h2."0.2.5".default or true);
+    http."${deps.h2."0.2.5".http}".default = true;
+    indexmap."${deps.h2."0.2.5".indexmap}".default = true;
+    log."${deps.h2."0.2.5".log}".default = true;
+    slab."${deps.h2."0.2.5".slab}".default = true;
     tokio = fold recursiveUpdate {} [
-      { "${deps.h2."0.2.2".tokio}"."io-util" = true; }
-      { "${deps.h2."0.2.2".tokio}"."sync" = true; }
-      { "${deps.h2."0.2.2".tokio}".default = true; }
+      { "${deps.h2."0.2.5".tokio}"."io-util" = true; }
+      { "${deps.h2."0.2.5".tokio}".default = true; }
     ];
     tokio_util = fold recursiveUpdate {} [
-      { "${deps.h2."0.2.2".tokio_util}"."codec" = true; }
-      { "${deps.h2."0.2.2".tokio_util}".default = true; }
+      { "${deps.h2."0.2.5".tokio_util}"."codec" = true; }
+      { "${deps.h2."0.2.5".tokio_util}".default = true; }
     ];
   }) [
-    (features_.bytes."${deps."h2"."0.2.2"."bytes"}" deps)
-    (features_.fnv."${deps."h2"."0.2.2"."fnv"}" deps)
-    (features_.futures_core."${deps."h2"."0.2.2"."futures_core"}" deps)
-    (features_.futures_sink."${deps."h2"."0.2.2"."futures_sink"}" deps)
-    (features_.futures_util."${deps."h2"."0.2.2"."futures_util"}" deps)
-    (features_.http."${deps."h2"."0.2.2"."http"}" deps)
-    (features_.indexmap."${deps."h2"."0.2.2"."indexmap"}" deps)
-    (features_.log."${deps."h2"."0.2.2"."log"}" deps)
-    (features_.slab."${deps."h2"."0.2.2"."slab"}" deps)
-    (features_.tokio."${deps."h2"."0.2.2"."tokio"}" deps)
-    (features_.tokio_util."${deps."h2"."0.2.2"."tokio_util"}" deps)
+    (features_.bytes."${deps."h2"."0.2.5"."bytes"}" deps)
+    (features_.fnv."${deps."h2"."0.2.5"."fnv"}" deps)
+    (features_.futures_core."${deps."h2"."0.2.5"."futures_core"}" deps)
+    (features_.futures_sink."${deps."h2"."0.2.5"."futures_sink"}" deps)
+    (features_.futures_util."${deps."h2"."0.2.5"."futures_util"}" deps)
+    (features_.http."${deps."h2"."0.2.5"."http"}" deps)
+    (features_.indexmap."${deps."h2"."0.2.5"."indexmap"}" deps)
+    (features_.log."${deps."h2"."0.2.5"."log"}" deps)
+    (features_.slab."${deps."h2"."0.2.5"."slab"}" deps)
+    (features_.tokio."${deps."h2"."0.2.5"."tokio"}" deps)
+    (features_.tokio_util."${deps."h2"."0.2.5"."tokio_util"}" deps)
   ];
 
 
@@ -1554,36 +1721,37 @@ rec {
 
 
 # end
-# hermit-abi-0.1.8
+# hermit-abi-0.1.14
 
-  crates.hermit_abi."0.1.8" = deps: { features?(features_.hermit_abi."0.1.8" deps {}) }: buildRustCrate {
+  crates.hermit_abi."0.1.14" = deps: { features?(features_.hermit_abi."0.1.14" deps {}) }: buildRustCrate {
     crateName = "hermit-abi";
-    version = "0.1.8";
+    version = "0.1.14";
     description = "hermit-abi is small interface to call functions from the unikernel RustyHermit.\nIt is used to build the target `x86_64-unknown-hermit`.\n";
     authors = [ "Stefan Lankes" ];
-    sha256 = "1298mrpr19rabpx8a6p6gpiws2nwwdhj4jg0zxd5wim42s7hawr5";
+    edition = "2018";
+    sha256 = "0daamdm4shifwf3sbagagwrkq157r3xxrg8nkfspabnjnj79n6rf";
     dependencies = mapFeatures features ([
-      (crates."libc"."${deps."hermit_abi"."0.1.8"."libc"}" deps)
+      (crates."libc"."${deps."hermit_abi"."0.1.14"."libc"}" deps)
     ]);
-    features = mkFeatures (features."hermit_abi"."0.1.8" or {});
+    features = mkFeatures (features."hermit_abi"."0.1.14" or {});
   };
-  features_.hermit_abi."0.1.8" = deps: f: updateFeatures f (rec {
+  features_.hermit_abi."0.1.14" = deps: f: updateFeatures f (rec {
     hermit_abi = fold recursiveUpdate {} [
-      { "0.1.8"."core" =
-        (f.hermit_abi."0.1.8"."core" or false) ||
-        (f.hermit_abi."0.1.8".rustc-dep-of-std or false) ||
-        (hermit_abi."0.1.8"."rustc-dep-of-std" or false); }
-      { "0.1.8".default = (f.hermit_abi."0.1.8".default or true); }
+      { "0.1.14"."core" =
+        (f.hermit_abi."0.1.14"."core" or false) ||
+        (f.hermit_abi."0.1.14".rustc-dep-of-std or false) ||
+        (hermit_abi."0.1.14"."rustc-dep-of-std" or false); }
+      { "0.1.14".default = (f.hermit_abi."0.1.14".default or true); }
     ];
     libc = fold recursiveUpdate {} [
-      { "${deps.hermit_abi."0.1.8".libc}"."rustc-dep-of-std" =
-        (f.libc."${deps.hermit_abi."0.1.8".libc}"."rustc-dep-of-std" or false) ||
-        (hermit_abi."0.1.8"."rustc-dep-of-std" or false) ||
-        (f."hermit_abi"."0.1.8"."rustc-dep-of-std" or false); }
-      { "${deps.hermit_abi."0.1.8".libc}".default = (f.libc."${deps.hermit_abi."0.1.8".libc}".default or false); }
+      { "${deps.hermit_abi."0.1.14".libc}"."rustc-dep-of-std" =
+        (f.libc."${deps.hermit_abi."0.1.14".libc}"."rustc-dep-of-std" or false) ||
+        (hermit_abi."0.1.14"."rustc-dep-of-std" or false) ||
+        (f."hermit_abi"."0.1.14"."rustc-dep-of-std" or false); }
+      { "${deps.hermit_abi."0.1.14".libc}".default = (f.libc."${deps.hermit_abi."0.1.14".libc}".default or false); }
     ];
   }) [
-    (features_.libc."${deps."hermit_abi"."0.1.8"."libc"}" deps)
+    (features_.libc."${deps."hermit_abi"."0.1.14"."libc"}" deps)
   ];
 
 
@@ -1638,30 +1806,30 @@ rec {
 
 
 # end
-# http-0.2.0
+# http-0.2.1
 
-  crates.http."0.2.0" = deps: { features?(features_.http."0.2.0" deps {}) }: buildRustCrate {
+  crates.http."0.2.1" = deps: { features?(features_.http."0.2.1" deps {}) }: buildRustCrate {
     crateName = "http";
-    version = "0.2.0";
+    version = "0.2.1";
     description = "A set of types for representing HTTP requests and responses.\n";
     authors = [ "Alex Crichton <alex@alexcrichton.com>" "Carl Lerche <me@carllerche.com>" "Sean McArthur <sean@seanmonstar.com>" ];
     edition = "2018";
-    sha256 = "0n2nk147bscbgs02rmfzlfwbyq5rlc2xwbw39v0p4hsprra16clz";
+    sha256 = "0sfvplqd5dasbhc8gi11k0aygaqrfrj3vnzf2zh8kx7lhbcxbapv";
     dependencies = mapFeatures features ([
-      (crates."bytes"."${deps."http"."0.2.0"."bytes"}" deps)
-      (crates."fnv"."${deps."http"."0.2.0"."fnv"}" deps)
-      (crates."itoa"."${deps."http"."0.2.0"."itoa"}" deps)
+      (crates."bytes"."${deps."http"."0.2.1"."bytes"}" deps)
+      (crates."fnv"."${deps."http"."0.2.1"."fnv"}" deps)
+      (crates."itoa"."${deps."http"."0.2.1"."itoa"}" deps)
     ]);
   };
-  features_.http."0.2.0" = deps: f: updateFeatures f (rec {
-    bytes."${deps.http."0.2.0".bytes}".default = true;
-    fnv."${deps.http."0.2.0".fnv}".default = true;
-    http."0.2.0".default = (f.http."0.2.0".default or true);
-    itoa."${deps.http."0.2.0".itoa}".default = true;
+  features_.http."0.2.1" = deps: f: updateFeatures f (rec {
+    bytes."${deps.http."0.2.1".bytes}".default = true;
+    fnv."${deps.http."0.2.1".fnv}".default = true;
+    http."0.2.1".default = (f.http."0.2.1".default or true);
+    itoa."${deps.http."0.2.1".itoa}".default = true;
   }) [
-    (features_.bytes."${deps."http"."0.2.0"."bytes"}" deps)
-    (features_.fnv."${deps."http"."0.2.0"."fnv"}" deps)
-    (features_.itoa."${deps."http"."0.2.0"."itoa"}" deps)
+    (features_.bytes."${deps."http"."0.2.1"."bytes"}" deps)
+    (features_.fnv."${deps."http"."0.2.1"."fnv"}" deps)
+    (features_.itoa."${deps."http"."0.2.1"."itoa"}" deps)
   ];
 
 
@@ -1736,131 +1904,131 @@ rec {
 
 
 # end
-# hyper-0.13.4
+# hyper-0.13.6
 
-  crates.hyper."0.13.4" = deps: { features?(features_.hyper."0.13.4" deps {}) }: buildRustCrate {
+  crates.hyper."0.13.6" = deps: { features?(features_.hyper."0.13.6" deps {}) }: buildRustCrate {
     crateName = "hyper";
-    version = "0.13.4";
+    version = "0.13.6";
     description = "A fast and correct HTTP library.";
     authors = [ "Sean McArthur <sean@seanmonstar.com>" ];
     edition = "2018";
-    sha256 = "1556mfxbmn99vhc08pqmgfvz44j9scpxxl5bsph8mg64zd3gcdyc";
+    sha256 = "0svffg3r95jbgzk1pyhr8y799l9fpmdqkj5yyjrmviqryhqlq0qc";
     dependencies = mapFeatures features ([
-      (crates."bytes"."${deps."hyper"."0.13.4"."bytes"}" deps)
-      (crates."futures_channel"."${deps."hyper"."0.13.4"."futures_channel"}" deps)
-      (crates."futures_core"."${deps."hyper"."0.13.4"."futures_core"}" deps)
-      (crates."futures_util"."${deps."hyper"."0.13.4"."futures_util"}" deps)
-      (crates."h2"."${deps."hyper"."0.13.4"."h2"}" deps)
-      (crates."http"."${deps."hyper"."0.13.4"."http"}" deps)
-      (crates."http_body"."${deps."hyper"."0.13.4"."http_body"}" deps)
-      (crates."httparse"."${deps."hyper"."0.13.4"."httparse"}" deps)
-      (crates."itoa"."${deps."hyper"."0.13.4"."itoa"}" deps)
-      (crates."log"."${deps."hyper"."0.13.4"."log"}" deps)
-      (crates."pin_project"."${deps."hyper"."0.13.4"."pin_project"}" deps)
-      (crates."time"."${deps."hyper"."0.13.4"."time"}" deps)
-      (crates."tokio"."${deps."hyper"."0.13.4"."tokio"}" deps)
-      (crates."tower_service"."${deps."hyper"."0.13.4"."tower_service"}" deps)
-      (crates."want"."${deps."hyper"."0.13.4"."want"}" deps)
+      (crates."bytes"."${deps."hyper"."0.13.6"."bytes"}" deps)
+      (crates."futures_channel"."${deps."hyper"."0.13.6"."futures_channel"}" deps)
+      (crates."futures_core"."${deps."hyper"."0.13.6"."futures_core"}" deps)
+      (crates."futures_util"."${deps."hyper"."0.13.6"."futures_util"}" deps)
+      (crates."h2"."${deps."hyper"."0.13.6"."h2"}" deps)
+      (crates."http"."${deps."hyper"."0.13.6"."http"}" deps)
+      (crates."http_body"."${deps."hyper"."0.13.6"."http_body"}" deps)
+      (crates."httparse"."${deps."hyper"."0.13.6"."httparse"}" deps)
+      (crates."itoa"."${deps."hyper"."0.13.6"."itoa"}" deps)
+      (crates."log"."${deps."hyper"."0.13.6"."log"}" deps)
+      (crates."pin_project"."${deps."hyper"."0.13.6"."pin_project"}" deps)
+      (crates."time"."${deps."hyper"."0.13.6"."time"}" deps)
+      (crates."tokio"."${deps."hyper"."0.13.6"."tokio"}" deps)
+      (crates."tower_service"."${deps."hyper"."0.13.6"."tower_service"}" deps)
+      (crates."want"."${deps."hyper"."0.13.6"."want"}" deps)
     ]
-      ++ (if features.hyper."0.13.4".net2 or false then [ (crates.net2."${deps."hyper"."0.13.4".net2}" deps) ] else []));
-    features = mkFeatures (features."hyper"."0.13.4" or {});
+      ++ (if features.hyper."0.13.6".socket2 or false then [ (crates.socket2."${deps."hyper"."0.13.6".socket2}" deps) ] else []));
+    features = mkFeatures (features."hyper"."0.13.6" or {});
   };
-  features_.hyper."0.13.4" = deps: f: updateFeatures f (rec {
-    bytes."${deps.hyper."0.13.4".bytes}".default = true;
-    futures_channel."${deps.hyper."0.13.4".futures_channel}".default = true;
-    futures_core."${deps.hyper."0.13.4".futures_core}".default = (f.futures_core."${deps.hyper."0.13.4".futures_core}".default or false);
-    futures_util."${deps.hyper."0.13.4".futures_util}".default = (f.futures_util."${deps.hyper."0.13.4".futures_util}".default or false);
-    h2."${deps.hyper."0.13.4".h2}".default = true;
-    http."${deps.hyper."0.13.4".http}".default = true;
-    http_body."${deps.hyper."0.13.4".http_body}".default = true;
-    httparse."${deps.hyper."0.13.4".httparse}".default = true;
+  features_.hyper."0.13.6" = deps: f: updateFeatures f (rec {
+    bytes."${deps.hyper."0.13.6".bytes}".default = true;
+    futures_channel."${deps.hyper."0.13.6".futures_channel}".default = true;
+    futures_core."${deps.hyper."0.13.6".futures_core}".default = (f.futures_core."${deps.hyper."0.13.6".futures_core}".default or false);
+    futures_util."${deps.hyper."0.13.6".futures_util}".default = (f.futures_util."${deps.hyper."0.13.6".futures_util}".default or false);
+    h2."${deps.hyper."0.13.6".h2}".default = true;
+    http."${deps.hyper."0.13.6".http}".default = true;
+    http_body."${deps.hyper."0.13.6".http_body}".default = true;
+    httparse."${deps.hyper."0.13.6".httparse}".default = true;
     hyper = fold recursiveUpdate {} [
-      { "0.13.4"."net2" =
-        (f.hyper."0.13.4"."net2" or false) ||
-        (f.hyper."0.13.4".tcp or false) ||
-        (hyper."0.13.4"."tcp" or false); }
-      { "0.13.4"."runtime" =
-        (f.hyper."0.13.4"."runtime" or false) ||
-        (f.hyper."0.13.4".default or false) ||
-        (hyper."0.13.4"."default" or false); }
-      { "0.13.4"."stream" =
-        (f.hyper."0.13.4"."stream" or false) ||
-        (f.hyper."0.13.4".default or false) ||
-        (hyper."0.13.4"."default" or false); }
-      { "0.13.4"."tcp" =
-        (f.hyper."0.13.4"."tcp" or false) ||
-        (f.hyper."0.13.4".runtime or false) ||
-        (hyper."0.13.4"."runtime" or false); }
-      { "0.13.4".default = (f.hyper."0.13.4".default or true); }
+      { "0.13.6"."runtime" =
+        (f.hyper."0.13.6"."runtime" or false) ||
+        (f.hyper."0.13.6".default or false) ||
+        (hyper."0.13.6"."default" or false); }
+      { "0.13.6"."socket2" =
+        (f.hyper."0.13.6"."socket2" or false) ||
+        (f.hyper."0.13.6".tcp or false) ||
+        (hyper."0.13.6"."tcp" or false); }
+      { "0.13.6"."stream" =
+        (f.hyper."0.13.6"."stream" or false) ||
+        (f.hyper."0.13.6".default or false) ||
+        (hyper."0.13.6"."default" or false); }
+      { "0.13.6"."tcp" =
+        (f.hyper."0.13.6"."tcp" or false) ||
+        (f.hyper."0.13.6".runtime or false) ||
+        (hyper."0.13.6"."runtime" or false); }
+      { "0.13.6".default = (f.hyper."0.13.6".default or true); }
     ];
-    itoa."${deps.hyper."0.13.4".itoa}".default = true;
-    log."${deps.hyper."0.13.4".log}".default = true;
-    net2."${deps.hyper."0.13.4".net2}".default = true;
-    pin_project."${deps.hyper."0.13.4".pin_project}".default = true;
-    time."${deps.hyper."0.13.4".time}".default = true;
+    itoa."${deps.hyper."0.13.6".itoa}".default = true;
+    log."${deps.hyper."0.13.6".log}".default = true;
+    pin_project."${deps.hyper."0.13.6".pin_project}".default = true;
+    socket2."${deps.hyper."0.13.6".socket2}".default = true;
+    time."${deps.hyper."0.13.6".time}".default = true;
     tokio = fold recursiveUpdate {} [
-      { "${deps.hyper."0.13.4".tokio}"."blocking" =
-        (f.tokio."${deps.hyper."0.13.4".tokio}"."blocking" or false) ||
-        (hyper."0.13.4"."tcp" or false) ||
-        (f."hyper"."0.13.4"."tcp" or false); }
-      { "${deps.hyper."0.13.4".tokio}"."rt-core" =
-        (f.tokio."${deps.hyper."0.13.4".tokio}"."rt-core" or false) ||
-        (hyper."0.13.4"."runtime" or false) ||
-        (f."hyper"."0.13.4"."runtime" or false); }
-      { "${deps.hyper."0.13.4".tokio}"."sync" = true; }
-      { "${deps.hyper."0.13.4".tokio}".default = true; }
+      { "${deps.hyper."0.13.6".tokio}"."blocking" =
+        (f.tokio."${deps.hyper."0.13.6".tokio}"."blocking" or false) ||
+        (hyper."0.13.6"."tcp" or false) ||
+        (f."hyper"."0.13.6"."tcp" or false); }
+      { "${deps.hyper."0.13.6".tokio}"."rt-core" =
+        (f.tokio."${deps.hyper."0.13.6".tokio}"."rt-core" or false) ||
+        (hyper."0.13.6"."runtime" or false) ||
+        (f."hyper"."0.13.6"."runtime" or false); }
+      { "${deps.hyper."0.13.6".tokio}"."sync" = true; }
+      { "${deps.hyper."0.13.6".tokio}".default = true; }
     ];
-    tower_service."${deps.hyper."0.13.4".tower_service}".default = true;
-    want."${deps.hyper."0.13.4".want}".default = true;
+    tower_service."${deps.hyper."0.13.6".tower_service}".default = true;
+    want."${deps.hyper."0.13.6".want}".default = true;
   }) [
-    (features_.bytes."${deps."hyper"."0.13.4"."bytes"}" deps)
-    (features_.futures_channel."${deps."hyper"."0.13.4"."futures_channel"}" deps)
-    (features_.futures_core."${deps."hyper"."0.13.4"."futures_core"}" deps)
-    (features_.futures_util."${deps."hyper"."0.13.4"."futures_util"}" deps)
-    (features_.h2."${deps."hyper"."0.13.4"."h2"}" deps)
-    (features_.http."${deps."hyper"."0.13.4"."http"}" deps)
-    (features_.http_body."${deps."hyper"."0.13.4"."http_body"}" deps)
-    (features_.httparse."${deps."hyper"."0.13.4"."httparse"}" deps)
-    (features_.itoa."${deps."hyper"."0.13.4"."itoa"}" deps)
-    (features_.log."${deps."hyper"."0.13.4"."log"}" deps)
-    (features_.net2."${deps."hyper"."0.13.4"."net2"}" deps)
-    (features_.pin_project."${deps."hyper"."0.13.4"."pin_project"}" deps)
-    (features_.time."${deps."hyper"."0.13.4"."time"}" deps)
-    (features_.tokio."${deps."hyper"."0.13.4"."tokio"}" deps)
-    (features_.tower_service."${deps."hyper"."0.13.4"."tower_service"}" deps)
-    (features_.want."${deps."hyper"."0.13.4"."want"}" deps)
+    (features_.bytes."${deps."hyper"."0.13.6"."bytes"}" deps)
+    (features_.futures_channel."${deps."hyper"."0.13.6"."futures_channel"}" deps)
+    (features_.futures_core."${deps."hyper"."0.13.6"."futures_core"}" deps)
+    (features_.futures_util."${deps."hyper"."0.13.6"."futures_util"}" deps)
+    (features_.h2."${deps."hyper"."0.13.6"."h2"}" deps)
+    (features_.http."${deps."hyper"."0.13.6"."http"}" deps)
+    (features_.http_body."${deps."hyper"."0.13.6"."http_body"}" deps)
+    (features_.httparse."${deps."hyper"."0.13.6"."httparse"}" deps)
+    (features_.itoa."${deps."hyper"."0.13.6"."itoa"}" deps)
+    (features_.log."${deps."hyper"."0.13.6"."log"}" deps)
+    (features_.pin_project."${deps."hyper"."0.13.6"."pin_project"}" deps)
+    (features_.socket2."${deps."hyper"."0.13.6"."socket2"}" deps)
+    (features_.time."${deps."hyper"."0.13.6"."time"}" deps)
+    (features_.tokio."${deps."hyper"."0.13.6"."tokio"}" deps)
+    (features_.tower_service."${deps."hyper"."0.13.6"."tower_service"}" deps)
+    (features_.want."${deps."hyper"."0.13.6"."want"}" deps)
   ];
 
 
 # end
-# indexmap-1.3.2
+# indexmap-1.4.0
 
-  crates.indexmap."1.3.2" = deps: { features?(features_.indexmap."1.3.2" deps {}) }: buildRustCrate {
+  crates.indexmap."1.4.0" = deps: { features?(features_.indexmap."1.4.0" deps {}) }: buildRustCrate {
     crateName = "indexmap";
-    version = "1.3.2";
+    version = "1.4.0";
     description = "A hash table with consistent order and fast iteration.\n\nThe indexmap is a hash table where the iteration order of the key-value\npairs is independent of the hash values of the keys. It has the usual\nhash table functionality, it preserves insertion order except after\nremovals, and it allows lookup of its elements by either hash table key\nor numerical index. A corresponding hash set type is also provided.\n\nThis crate was initially published under the name ordermap, but it was renamed to\nindexmap.\n";
     authors = [ "bluss" "Josh Stone <cuviper@gmail.com>" ];
-    sha256 = "0dkidxq5q2a17symqni0k6m2jfap339bxnd3dd83dr556jh5dz89";
+    sha256 = "1gkrissvxfqwnw2s7fcwmzvhr197xi4smc1qjm0472d2ivgrqqn9";
     build = "build.rs";
     dependencies = mapFeatures features ([
 ]);
 
     buildDependencies = mapFeatures features ([
-      (crates."autocfg"."${deps."indexmap"."1.3.2"."autocfg"}" deps)
+      (crates."autocfg"."${deps."indexmap"."1.4.0"."autocfg"}" deps)
     ]);
-    features = mkFeatures (features."indexmap"."1.3.2" or {});
+    features = mkFeatures (features."indexmap"."1.4.0" or {});
   };
-  features_.indexmap."1.3.2" = deps: f: updateFeatures f (rec {
-    autocfg."${deps.indexmap."1.3.2".autocfg}".default = true;
+  features_.indexmap."1.4.0" = deps: f: updateFeatures f (rec {
+    autocfg."${deps.indexmap."1.4.0".autocfg}".default = true;
     indexmap = fold recursiveUpdate {} [
-      { "1.3.2"."serde" =
-        (f.indexmap."1.3.2"."serde" or false) ||
-        (f.indexmap."1.3.2".serde-1 or false) ||
-        (indexmap."1.3.2"."serde-1" or false); }
-      { "1.3.2".default = (f.indexmap."1.3.2".default or true); }
+      { "1.4.0"."serde" =
+        (f.indexmap."1.4.0"."serde" or false) ||
+        (f.indexmap."1.4.0".serde-1 or false) ||
+        (indexmap."1.4.0"."serde-1" or false); }
+      { "1.4.0".default = (f.indexmap."1.4.0".default or true); }
     ];
   }) [
-    (features_.autocfg."${deps."indexmap"."1.3.2"."autocfg"}" deps)
+    (features_.autocfg."${deps."indexmap"."1.4.0"."autocfg"}" deps)
   ];
 
 
@@ -1914,23 +2082,23 @@ rec {
 
 
 # end
-# itoa-0.4.5
+# itoa-0.4.6
 
-  crates.itoa."0.4.5" = deps: { features?(features_.itoa."0.4.5" deps {}) }: buildRustCrate {
+  crates.itoa."0.4.6" = deps: { features?(features_.itoa."0.4.6" deps {}) }: buildRustCrate {
     crateName = "itoa";
-    version = "0.4.5";
+    version = "0.4.6";
     description = "Fast functions for printing integer primitives to an io::Write";
     authors = [ "David Tolnay <dtolnay@gmail.com>" ];
-    sha256 = "102dgh2d1779jyi63kgah61d4d92ql05ydmq7iwlcykdv9pabnpx";
-    features = mkFeatures (features."itoa"."0.4.5" or {});
+    sha256 = "1pl959kjafa0riia6s3mvxw8jv4af66620z1rggjiqj7bcx9b5kk";
+    features = mkFeatures (features."itoa"."0.4.6" or {});
   };
-  features_.itoa."0.4.5" = deps: f: updateFeatures f (rec {
+  features_.itoa."0.4.6" = deps: f: updateFeatures f (rec {
     itoa = fold recursiveUpdate {} [
-      { "0.4.5"."std" =
-        (f.itoa."0.4.5"."std" or false) ||
-        (f.itoa."0.4.5".default or false) ||
-        (itoa."0.4.5"."default" or false); }
-      { "0.4.5".default = (f.itoa."0.4.5".default or true); }
+      { "0.4.6"."std" =
+        (f.itoa."0.4.6"."std" or false) ||
+        (f.itoa."0.4.6".default or false) ||
+        (itoa."0.4.6"."default" or false); }
+      { "0.4.6".default = (f.itoa."0.4.6".default or true); }
     ];
   }) [];
 
@@ -1989,68 +2157,68 @@ rec {
 
 
 # end
-# libc-0.2.68
+# libc-0.2.71
 
-  crates.libc."0.2.68" = deps: { features?(features_.libc."0.2.68" deps {}) }: buildRustCrate {
+  crates.libc."0.2.71" = deps: { features?(features_.libc."0.2.71" deps {}) }: buildRustCrate {
     crateName = "libc";
-    version = "0.2.68";
+    version = "0.2.71";
     description = "Raw FFI bindings to platform libraries like libc.\n";
     authors = [ "The Rust Project Developers" ];
-    sha256 = "1ypl20mr7rr5c08z9ygl8zf1z63i7mh63dd62jshcdifnwhm37ph";
+    sha256 = "1j84p6skj6n2m9kjr8k20l07gi1pvraz4k6cl329qia5l4fg7qmz";
     build = "build.rs";
     dependencies = mapFeatures features ([
 ]);
-    features = mkFeatures (features."libc"."0.2.68" or {});
+    features = mkFeatures (features."libc"."0.2.71" or {});
   };
-  features_.libc."0.2.68" = deps: f: updateFeatures f (rec {
+  features_.libc."0.2.71" = deps: f: updateFeatures f (rec {
     libc = fold recursiveUpdate {} [
-      { "0.2.68"."align" =
-        (f.libc."0.2.68"."align" or false) ||
-        (f.libc."0.2.68".rustc-dep-of-std or false) ||
-        (libc."0.2.68"."rustc-dep-of-std" or false); }
-      { "0.2.68"."rustc-std-workspace-core" =
-        (f.libc."0.2.68"."rustc-std-workspace-core" or false) ||
-        (f.libc."0.2.68".rustc-dep-of-std or false) ||
-        (libc."0.2.68"."rustc-dep-of-std" or false); }
-      { "0.2.68"."std" =
-        (f.libc."0.2.68"."std" or false) ||
-        (f.libc."0.2.68".default or false) ||
-        (libc."0.2.68"."default" or false) ||
-        (f.libc."0.2.68".use_std or false) ||
-        (libc."0.2.68"."use_std" or false); }
-      { "0.2.68".default = (f.libc."0.2.68".default or true); }
+      { "0.2.71"."align" =
+        (f.libc."0.2.71"."align" or false) ||
+        (f.libc."0.2.71".rustc-dep-of-std or false) ||
+        (libc."0.2.71"."rustc-dep-of-std" or false); }
+      { "0.2.71"."rustc-std-workspace-core" =
+        (f.libc."0.2.71"."rustc-std-workspace-core" or false) ||
+        (f.libc."0.2.71".rustc-dep-of-std or false) ||
+        (libc."0.2.71"."rustc-dep-of-std" or false); }
+      { "0.2.71"."std" =
+        (f.libc."0.2.71"."std" or false) ||
+        (f.libc."0.2.71".default or false) ||
+        (libc."0.2.71"."default" or false) ||
+        (f.libc."0.2.71".use_std or false) ||
+        (libc."0.2.71"."use_std" or false); }
+      { "0.2.71".default = (f.libc."0.2.71".default or true); }
     ];
   }) [];
 
 
 # end
-# linked-hash-map-0.5.2
+# linked-hash-map-0.5.3
 
-  crates.linked_hash_map."0.5.2" = deps: { features?(features_.linked_hash_map."0.5.2" deps {}) }: buildRustCrate {
+  crates.linked_hash_map."0.5.3" = deps: { features?(features_.linked_hash_map."0.5.3" deps {}) }: buildRustCrate {
     crateName = "linked-hash-map";
-    version = "0.5.2";
+    version = "0.5.3";
     description = "A HashMap wrapper that holds key-value pairs in insertion order";
     authors = [ "Stepan Koltsov <stepan.koltsov@gmail.com>" "Andrew Paseltiner <apaseltiner@gmail.com>" ];
-    sha256 = "17bpcphlhrxknzvikmihiqm690wwyr0zridyilh1dlxgmrxng7pd";
+    sha256 = "0dn7dy6s98b29zh9z0gdpl30spq02v9gkpywmd342f935dkhpb86";
     dependencies = mapFeatures features ([
 ]);
-    features = mkFeatures (features."linked_hash_map"."0.5.2" or {});
+    features = mkFeatures (features."linked_hash_map"."0.5.3" or {});
   };
-  features_.linked_hash_map."0.5.2" = deps: f: updateFeatures f (rec {
+  features_.linked_hash_map."0.5.3" = deps: f: updateFeatures f (rec {
     linked_hash_map = fold recursiveUpdate {} [
-      { "0.5.2"."heapsize" =
-        (f.linked_hash_map."0.5.2"."heapsize" or false) ||
-        (f.linked_hash_map."0.5.2".heapsize_impl or false) ||
-        (linked_hash_map."0.5.2"."heapsize_impl" or false); }
-      { "0.5.2"."serde" =
-        (f.linked_hash_map."0.5.2"."serde" or false) ||
-        (f.linked_hash_map."0.5.2".serde_impl or false) ||
-        (linked_hash_map."0.5.2"."serde_impl" or false); }
-      { "0.5.2"."serde_test" =
-        (f.linked_hash_map."0.5.2"."serde_test" or false) ||
-        (f.linked_hash_map."0.5.2".serde_impl or false) ||
-        (linked_hash_map."0.5.2"."serde_impl" or false); }
-      { "0.5.2".default = (f.linked_hash_map."0.5.2".default or true); }
+      { "0.5.3"."heapsize" =
+        (f.linked_hash_map."0.5.3"."heapsize" or false) ||
+        (f.linked_hash_map."0.5.3".heapsize_impl or false) ||
+        (linked_hash_map."0.5.3"."heapsize_impl" or false); }
+      { "0.5.3"."serde" =
+        (f.linked_hash_map."0.5.3"."serde" or false) ||
+        (f.linked_hash_map."0.5.3".serde_impl or false) ||
+        (linked_hash_map."0.5.3"."serde_impl" or false); }
+      { "0.5.3"."serde_test" =
+        (f.linked_hash_map."0.5.3"."serde_test" or false) ||
+        (f.linked_hash_map."0.5.3".serde_impl or false) ||
+        (linked_hash_map."0.5.3"."serde_impl" or false); }
+      { "0.5.3".default = (f.linked_hash_map."0.5.3".default or true); }
     ];
   }) [];
 
@@ -2081,6 +2249,49 @@ rec {
     ];
   }) [
     (features_.cfg_if."${deps."log"."0.4.8"."cfg_if"}" deps)
+  ];
+
+
+# end
+# loom-0.3.4
+
+  crates.loom."0.3.4" = deps: { features?(features_.loom."0.3.4" deps {}) }: buildRustCrate {
+    crateName = "loom";
+    version = "0.3.4";
+    description = "Permutation testing for concurrent code";
+    authors = [ "Carl Lerche <me@carllerche.com>" ];
+    edition = "2018";
+    sha256 = "0fqi14w71fj5fsf9bsv58fzcjk39f9zbqaznbyk4l94fmsyrps8s";
+    dependencies = mapFeatures features ([
+      (crates."cfg_if"."${deps."loom"."0.3.4"."cfg_if"}" deps)
+      (crates."generator"."${deps."loom"."0.3.4"."generator"}" deps)
+      (crates."scoped_tls"."${deps."loom"."0.3.4"."scoped_tls"}" deps)
+    ]);
+    features = mkFeatures (features."loom"."0.3.4" or {});
+  };
+  features_.loom."0.3.4" = deps: f: updateFeatures f (rec {
+    cfg_if."${deps.loom."0.3.4".cfg_if}".default = true;
+    generator."${deps.loom."0.3.4".generator}".default = true;
+    loom = fold recursiveUpdate {} [
+      { "0.3.4"."futures-util" =
+        (f.loom."0.3.4"."futures-util" or false) ||
+        (f.loom."0.3.4".futures or false) ||
+        (loom."0.3.4"."futures" or false); }
+      { "0.3.4"."serde" =
+        (f.loom."0.3.4"."serde" or false) ||
+        (f.loom."0.3.4".checkpoint or false) ||
+        (loom."0.3.4"."checkpoint" or false); }
+      { "0.3.4"."serde_json" =
+        (f.loom."0.3.4"."serde_json" or false) ||
+        (f.loom."0.3.4".checkpoint or false) ||
+        (loom."0.3.4"."checkpoint" or false); }
+      { "0.3.4".default = (f.loom."0.3.4".default or true); }
+    ];
+    scoped_tls."${deps.loom."0.3.4".scoped_tls}".default = true;
+  }) [
+    (features_.cfg_if."${deps."loom"."0.3.4"."cfg_if"}" deps)
+    (features_.generator."${deps."loom"."0.3.4"."generator"}" deps)
+    (features_.scoped_tls."${deps."loom"."0.3.4"."scoped_tls"}" deps)
   ];
 
 
@@ -2134,66 +2345,88 @@ rec {
 
 
 # end
-# mio-0.6.21
+# miniz_oxide-0.3.7
 
-  crates.mio."0.6.21" = deps: { features?(features_.mio."0.6.21" deps {}) }: buildRustCrate {
+  crates.miniz_oxide."0.3.7" = deps: { features?(features_.miniz_oxide."0.3.7" deps {}) }: buildRustCrate {
+    crateName = "miniz_oxide";
+    version = "0.3.7";
+    description = "DEFLATE compression and decompression library rewritten in Rust based on miniz";
+    authors = [ "Frommi <daniil.liferenko@gmail.com>" "oyvindln <oyvindln@users.noreply.github.com>" ];
+    edition = "2018";
+    sha256 = "00k6xi4k833anfkn8y8a67mf7wz3wz2v46davflvr0bjfxya9kxb";
+    dependencies = mapFeatures features ([
+      (crates."adler32"."${deps."miniz_oxide"."0.3.7"."adler32"}" deps)
+    ]);
+  };
+  features_.miniz_oxide."0.3.7" = deps: f: updateFeatures f (rec {
+    adler32."${deps.miniz_oxide."0.3.7".adler32}".default = true;
+    miniz_oxide."0.3.7".default = (f.miniz_oxide."0.3.7".default or true);
+  }) [
+    (features_.adler32."${deps."miniz_oxide"."0.3.7"."adler32"}" deps)
+  ];
+
+
+# end
+# mio-0.6.22
+
+  crates.mio."0.6.22" = deps: { features?(features_.mio."0.6.22" deps {}) }: buildRustCrate {
     crateName = "mio";
-    version = "0.6.21";
+    version = "0.6.22";
     description = "Lightweight non-blocking IO";
     authors = [ "Carl Lerche <me@carllerche.com>" ];
-    sha256 = "08z31q5fx4irmp3hsvlzqy541swda8ixhs69adm95j97xz5ikmys";
+    sha256 = "1lf8mwxq5lblz3496zfh5qqmnsl7hrjzycqhkjhpsn3mlmg6ms9m";
     dependencies = mapFeatures features ([
-      (crates."cfg_if"."${deps."mio"."0.6.21"."cfg_if"}" deps)
-      (crates."iovec"."${deps."mio"."0.6.21"."iovec"}" deps)
-      (crates."log"."${deps."mio"."0.6.21"."log"}" deps)
-      (crates."net2"."${deps."mio"."0.6.21"."net2"}" deps)
-      (crates."slab"."${deps."mio"."0.6.21"."slab"}" deps)
+      (crates."cfg_if"."${deps."mio"."0.6.22"."cfg_if"}" deps)
+      (crates."iovec"."${deps."mio"."0.6.22"."iovec"}" deps)
+      (crates."log"."${deps."mio"."0.6.22"."log"}" deps)
+      (crates."net2"."${deps."mio"."0.6.22"."net2"}" deps)
+      (crates."slab"."${deps."mio"."0.6.22"."slab"}" deps)
     ])
       ++ (if kernel == "fuchsia" then mapFeatures features ([
-      (crates."fuchsia_zircon"."${deps."mio"."0.6.21"."fuchsia_zircon"}" deps)
-      (crates."fuchsia_zircon_sys"."${deps."mio"."0.6.21"."fuchsia_zircon_sys"}" deps)
+      (crates."fuchsia_zircon"."${deps."mio"."0.6.22"."fuchsia_zircon"}" deps)
+      (crates."fuchsia_zircon_sys"."${deps."mio"."0.6.22"."fuchsia_zircon_sys"}" deps)
     ]) else [])
       ++ (if (kernel == "linux" || kernel == "darwin") then mapFeatures features ([
-      (crates."libc"."${deps."mio"."0.6.21"."libc"}" deps)
+      (crates."libc"."${deps."mio"."0.6.22"."libc"}" deps)
     ]) else [])
       ++ (if kernel == "windows" then mapFeatures features ([
-      (crates."kernel32_sys"."${deps."mio"."0.6.21"."kernel32_sys"}" deps)
-      (crates."miow"."${deps."mio"."0.6.21"."miow"}" deps)
-      (crates."winapi"."${deps."mio"."0.6.21"."winapi"}" deps)
+      (crates."kernel32_sys"."${deps."mio"."0.6.22"."kernel32_sys"}" deps)
+      (crates."miow"."${deps."mio"."0.6.22"."miow"}" deps)
+      (crates."winapi"."${deps."mio"."0.6.22"."winapi"}" deps)
     ]) else []);
-    features = mkFeatures (features."mio"."0.6.21" or {});
+    features = mkFeatures (features."mio"."0.6.22" or {});
   };
-  features_.mio."0.6.21" = deps: f: updateFeatures f (rec {
-    cfg_if."${deps.mio."0.6.21".cfg_if}".default = true;
-    fuchsia_zircon."${deps.mio."0.6.21".fuchsia_zircon}".default = true;
-    fuchsia_zircon_sys."${deps.mio."0.6.21".fuchsia_zircon_sys}".default = true;
-    iovec."${deps.mio."0.6.21".iovec}".default = true;
-    kernel32_sys."${deps.mio."0.6.21".kernel32_sys}".default = true;
-    libc."${deps.mio."0.6.21".libc}".default = true;
-    log."${deps.mio."0.6.21".log}".default = true;
+  features_.mio."0.6.22" = deps: f: updateFeatures f (rec {
+    cfg_if."${deps.mio."0.6.22".cfg_if}".default = true;
+    fuchsia_zircon."${deps.mio."0.6.22".fuchsia_zircon}".default = true;
+    fuchsia_zircon_sys."${deps.mio."0.6.22".fuchsia_zircon_sys}".default = true;
+    iovec."${deps.mio."0.6.22".iovec}".default = true;
+    kernel32_sys."${deps.mio."0.6.22".kernel32_sys}".default = true;
+    libc."${deps.mio."0.6.22".libc}".default = true;
+    log."${deps.mio."0.6.22".log}".default = true;
     mio = fold recursiveUpdate {} [
-      { "0.6.21"."with-deprecated" =
-        (f.mio."0.6.21"."with-deprecated" or false) ||
-        (f.mio."0.6.21".default or false) ||
-        (mio."0.6.21"."default" or false); }
-      { "0.6.21".default = (f.mio."0.6.21".default or true); }
+      { "0.6.22"."with-deprecated" =
+        (f.mio."0.6.22"."with-deprecated" or false) ||
+        (f.mio."0.6.22".default or false) ||
+        (mio."0.6.22"."default" or false); }
+      { "0.6.22".default = (f.mio."0.6.22".default or true); }
     ];
-    miow."${deps.mio."0.6.21".miow}".default = true;
-    net2."${deps.mio."0.6.21".net2}".default = true;
-    slab."${deps.mio."0.6.21".slab}".default = true;
-    winapi."${deps.mio."0.6.21".winapi}".default = true;
+    miow."${deps.mio."0.6.22".miow}".default = true;
+    net2."${deps.mio."0.6.22".net2}".default = true;
+    slab."${deps.mio."0.6.22".slab}".default = true;
+    winapi."${deps.mio."0.6.22".winapi}".default = true;
   }) [
-    (features_.cfg_if."${deps."mio"."0.6.21"."cfg_if"}" deps)
-    (features_.iovec."${deps."mio"."0.6.21"."iovec"}" deps)
-    (features_.log."${deps."mio"."0.6.21"."log"}" deps)
-    (features_.net2."${deps."mio"."0.6.21"."net2"}" deps)
-    (features_.slab."${deps."mio"."0.6.21"."slab"}" deps)
-    (features_.fuchsia_zircon."${deps."mio"."0.6.21"."fuchsia_zircon"}" deps)
-    (features_.fuchsia_zircon_sys."${deps."mio"."0.6.21"."fuchsia_zircon_sys"}" deps)
-    (features_.libc."${deps."mio"."0.6.21"."libc"}" deps)
-    (features_.kernel32_sys."${deps."mio"."0.6.21"."kernel32_sys"}" deps)
-    (features_.miow."${deps."mio"."0.6.21"."miow"}" deps)
-    (features_.winapi."${deps."mio"."0.6.21"."winapi"}" deps)
+    (features_.cfg_if."${deps."mio"."0.6.22"."cfg_if"}" deps)
+    (features_.iovec."${deps."mio"."0.6.22"."iovec"}" deps)
+    (features_.log."${deps."mio"."0.6.22"."log"}" deps)
+    (features_.net2."${deps."mio"."0.6.22"."net2"}" deps)
+    (features_.slab."${deps."mio"."0.6.22"."slab"}" deps)
+    (features_.fuchsia_zircon."${deps."mio"."0.6.22"."fuchsia_zircon"}" deps)
+    (features_.fuchsia_zircon_sys."${deps."mio"."0.6.22"."fuchsia_zircon_sys"}" deps)
+    (features_.libc."${deps."mio"."0.6.22"."libc"}" deps)
+    (features_.kernel32_sys."${deps."mio"."0.6.22"."kernel32_sys"}" deps)
+    (features_.miow."${deps."mio"."0.6.22"."miow"}" deps)
+    (features_.winapi."${deps."mio"."0.6.22"."winapi"}" deps)
   ];
 
 
@@ -2234,29 +2467,29 @@ rec {
 
 
 # end
-# mio-uds-0.6.7
+# mio-uds-0.6.8
 
-  crates.mio_uds."0.6.7" = deps: { features?(features_.mio_uds."0.6.7" deps {}) }: buildRustCrate {
+  crates.mio_uds."0.6.8" = deps: { features?(features_.mio_uds."0.6.8" deps {}) }: buildRustCrate {
     crateName = "mio-uds";
-    version = "0.6.7";
+    version = "0.6.8";
     description = "Unix domain socket bindings for mio\n";
     authors = [ "Alex Crichton <alex@alexcrichton.com>" ];
-    sha256 = "1gff9908pvvysv7zgxvyxy7x34fnhs088cr0j8mgwj8j24mswrhm";
+    sha256 = "1rvf8ir04x88n3xmkp9sxif7a8ng4gw8c9pkbxxl03g7588p9ywc";
     dependencies = (if (kernel == "linux" || kernel == "darwin") then mapFeatures features ([
-      (crates."iovec"."${deps."mio_uds"."0.6.7"."iovec"}" deps)
-      (crates."libc"."${deps."mio_uds"."0.6.7"."libc"}" deps)
-      (crates."mio"."${deps."mio_uds"."0.6.7"."mio"}" deps)
+      (crates."iovec"."${deps."mio_uds"."0.6.8"."iovec"}" deps)
+      (crates."libc"."${deps."mio_uds"."0.6.8"."libc"}" deps)
+      (crates."mio"."${deps."mio_uds"."0.6.8"."mio"}" deps)
     ]) else []);
   };
-  features_.mio_uds."0.6.7" = deps: f: updateFeatures f (rec {
-    iovec."${deps.mio_uds."0.6.7".iovec}".default = true;
-    libc."${deps.mio_uds."0.6.7".libc}".default = true;
-    mio."${deps.mio_uds."0.6.7".mio}".default = true;
-    mio_uds."0.6.7".default = (f.mio_uds."0.6.7".default or true);
+  features_.mio_uds."0.6.8" = deps: f: updateFeatures f (rec {
+    iovec."${deps.mio_uds."0.6.8".iovec}".default = true;
+    libc."${deps.mio_uds."0.6.8".libc}".default = true;
+    mio."${deps.mio_uds."0.6.8".mio}".default = true;
+    mio_uds."0.6.8".default = (f.mio_uds."0.6.8".default or true);
   }) [
-    (features_.iovec."${deps."mio_uds"."0.6.7"."iovec"}" deps)
-    (features_.libc."${deps."mio_uds"."0.6.7"."libc"}" deps)
-    (features_.mio."${deps."mio_uds"."0.6.7"."mio"}" deps)
+    (features_.iovec."${deps."mio_uds"."0.6.8"."iovec"}" deps)
+    (features_.libc."${deps."mio_uds"."0.6.8"."libc"}" deps)
+    (features_.mio."${deps."mio_uds"."0.6.8"."mio"}" deps)
   ];
 
 
@@ -2291,113 +2524,114 @@ rec {
 
 
 # end
-# miow-0.3.3
+# miow-0.3.5
 
-  crates.miow."0.3.3" = deps: { features?(features_.miow."0.3.3" deps {}) }: buildRustCrate {
+  crates.miow."0.3.5" = deps: { features?(features_.miow."0.3.5" deps {}) }: buildRustCrate {
     crateName = "miow";
-    version = "0.3.3";
+    version = "0.3.5";
     description = "A zero overhead I/O library for Windows, focusing on IOCP and Async I/O\nabstractions.\n";
     authors = [ "Alex Crichton <alex@alexcrichton.com>" ];
-    sha256 = "1mlk5mn00cl6bmf8qlpc6r85dxf4l45vbkbzshsr1mrkb3hn1j57";
+    edition = "2018";
+    sha256 = "1d3h0dvffjr341hrc8hf0imqz9v87md0plm2avyhdbdg0aw9mb6f";
     dependencies = mapFeatures features ([
-      (crates."socket2"."${deps."miow"."0.3.3"."socket2"}" deps)
-      (crates."winapi"."${deps."miow"."0.3.3"."winapi"}" deps)
+      (crates."socket2"."${deps."miow"."0.3.5"."socket2"}" deps)
+      (crates."winapi"."${deps."miow"."0.3.5"."winapi"}" deps)
     ]);
   };
-  features_.miow."0.3.3" = deps: f: updateFeatures f (rec {
-    miow."0.3.3".default = (f.miow."0.3.3".default or true);
-    socket2."${deps.miow."0.3.3".socket2}".default = true;
+  features_.miow."0.3.5" = deps: f: updateFeatures f (rec {
+    miow."0.3.5".default = (f.miow."0.3.5".default or true);
+    socket2."${deps.miow."0.3.5".socket2}".default = true;
     winapi = fold recursiveUpdate {} [
-      { "${deps.miow."0.3.3".winapi}"."fileapi" = true; }
-      { "${deps.miow."0.3.3".winapi}"."handleapi" = true; }
-      { "${deps.miow."0.3.3".winapi}"."ioapiset" = true; }
-      { "${deps.miow."0.3.3".winapi}"."minwindef" = true; }
-      { "${deps.miow."0.3.3".winapi}"."namedpipeapi" = true; }
-      { "${deps.miow."0.3.3".winapi}"."ntdef" = true; }
-      { "${deps.miow."0.3.3".winapi}"."std" = true; }
-      { "${deps.miow."0.3.3".winapi}"."synchapi" = true; }
-      { "${deps.miow."0.3.3".winapi}"."winerror" = true; }
-      { "${deps.miow."0.3.3".winapi}"."winsock2" = true; }
-      { "${deps.miow."0.3.3".winapi}"."ws2def" = true; }
-      { "${deps.miow."0.3.3".winapi}"."ws2ipdef" = true; }
-      { "${deps.miow."0.3.3".winapi}".default = true; }
+      { "${deps.miow."0.3.5".winapi}"."fileapi" = true; }
+      { "${deps.miow."0.3.5".winapi}"."handleapi" = true; }
+      { "${deps.miow."0.3.5".winapi}"."ioapiset" = true; }
+      { "${deps.miow."0.3.5".winapi}"."minwindef" = true; }
+      { "${deps.miow."0.3.5".winapi}"."namedpipeapi" = true; }
+      { "${deps.miow."0.3.5".winapi}"."ntdef" = true; }
+      { "${deps.miow."0.3.5".winapi}"."std" = true; }
+      { "${deps.miow."0.3.5".winapi}"."synchapi" = true; }
+      { "${deps.miow."0.3.5".winapi}"."winerror" = true; }
+      { "${deps.miow."0.3.5".winapi}"."winsock2" = true; }
+      { "${deps.miow."0.3.5".winapi}"."ws2def" = true; }
+      { "${deps.miow."0.3.5".winapi}"."ws2ipdef" = true; }
+      { "${deps.miow."0.3.5".winapi}".default = true; }
     ];
   }) [
-    (features_.socket2."${deps."miow"."0.3.3"."socket2"}" deps)
-    (features_.winapi."${deps."miow"."0.3.3"."winapi"}" deps)
+    (features_.socket2."${deps."miow"."0.3.5"."socket2"}" deps)
+    (features_.winapi."${deps."miow"."0.3.5"."winapi"}" deps)
   ];
 
 
 # end
-# multimap-0.8.0
+# multimap-0.8.1
 
-  crates.multimap."0.8.0" = deps: { features?(features_.multimap."0.8.0" deps {}) }: buildRustCrate {
+  crates.multimap."0.8.1" = deps: { features?(features_.multimap."0.8.1" deps {}) }: buildRustCrate {
     crateName = "multimap";
-    version = "0.8.0";
+    version = "0.8.1";
     description = "A multimap implementation.";
     authors = [ "Håvar Nøvik <havar.novik@gmail.com>" ];
-    sha256 = "0dzl7am1y5fann3fbhqzg23vi64srlwlv1xl1g4rk1z4lq1kwf7r";
+    sha256 = "1bmmdwxz481ggj7xk0jq4g0g7wkf9crzzzacpsbqslibnc2i2wqg";
     dependencies = mapFeatures features ([
 ]);
-    features = mkFeatures (features."multimap"."0.8.0" or {});
+    features = mkFeatures (features."multimap"."0.8.1" or {});
   };
-  features_.multimap."0.8.0" = deps: f: updateFeatures f (rec {
+  features_.multimap."0.8.1" = deps: f: updateFeatures f (rec {
     multimap = fold recursiveUpdate {} [
-      { "0.8.0"."serde" =
-        (f.multimap."0.8.0"."serde" or false) ||
-        (f.multimap."0.8.0".serde_impl or false) ||
-        (multimap."0.8.0"."serde_impl" or false); }
-      { "0.8.0"."serde_impl" =
-        (f.multimap."0.8.0"."serde_impl" or false) ||
-        (f.multimap."0.8.0".default or false) ||
-        (multimap."0.8.0"."default" or false); }
-      { "0.8.0".default = (f.multimap."0.8.0".default or true); }
+      { "0.8.1"."serde" =
+        (f.multimap."0.8.1"."serde" or false) ||
+        (f.multimap."0.8.1".serde_impl or false) ||
+        (multimap."0.8.1"."serde_impl" or false); }
+      { "0.8.1"."serde_impl" =
+        (f.multimap."0.8.1"."serde_impl" or false) ||
+        (f.multimap."0.8.1".default or false) ||
+        (multimap."0.8.1"."default" or false); }
+      { "0.8.1".default = (f.multimap."0.8.1".default or true); }
     ];
   }) [];
 
 
 # end
-# net2-0.2.33
+# net2-0.2.34
 
-  crates.net2."0.2.33" = deps: { features?(features_.net2."0.2.33" deps {}) }: buildRustCrate {
+  crates.net2."0.2.34" = deps: { features?(features_.net2."0.2.34" deps {}) }: buildRustCrate {
     crateName = "net2";
-    version = "0.2.33";
+    version = "0.2.34";
     description = "Extensions to the standard library's networking types as proposed in RFC 1158.\n";
     authors = [ "Alex Crichton <alex@alexcrichton.com>" ];
-    sha256 = "1qnmajafgybj5wyxz9iffa8x5wgbwd2znfklmhqj7vl6lw1m65mq";
+    sha256 = "1rmlndwwj31hy7zgr6maqh8dsp830zwpzwjkp409jhi0xc888d5d";
     dependencies = mapFeatures features ([
-      (crates."cfg_if"."${deps."net2"."0.2.33"."cfg_if"}" deps)
+      (crates."cfg_if"."${deps."net2"."0.2.34"."cfg_if"}" deps)
     ])
-      ++ (if kernel == "redox" || (kernel == "linux" || kernel == "darwin") then mapFeatures features ([
-      (crates."libc"."${deps."net2"."0.2.33"."libc"}" deps)
+      ++ (if kernel == "redox" || (kernel == "linux" || kernel == "darwin") || kernel == "wasi" then mapFeatures features ([
+      (crates."libc"."${deps."net2"."0.2.34"."libc"}" deps)
     ]) else [])
       ++ (if kernel == "windows" then mapFeatures features ([
-      (crates."winapi"."${deps."net2"."0.2.33"."winapi"}" deps)
+      (crates."winapi"."${deps."net2"."0.2.34"."winapi"}" deps)
     ]) else []);
-    features = mkFeatures (features."net2"."0.2.33" or {});
+    features = mkFeatures (features."net2"."0.2.34" or {});
   };
-  features_.net2."0.2.33" = deps: f: updateFeatures f (rec {
-    cfg_if."${deps.net2."0.2.33".cfg_if}".default = true;
-    libc."${deps.net2."0.2.33".libc}".default = true;
+  features_.net2."0.2.34" = deps: f: updateFeatures f (rec {
+    cfg_if."${deps.net2."0.2.34".cfg_if}".default = true;
+    libc."${deps.net2."0.2.34".libc}".default = true;
     net2 = fold recursiveUpdate {} [
-      { "0.2.33"."duration" =
-        (f.net2."0.2.33"."duration" or false) ||
-        (f.net2."0.2.33".default or false) ||
-        (net2."0.2.33"."default" or false); }
-      { "0.2.33".default = (f.net2."0.2.33".default or true); }
+      { "0.2.34"."duration" =
+        (f.net2."0.2.34"."duration" or false) ||
+        (f.net2."0.2.34".default or false) ||
+        (net2."0.2.34"."default" or false); }
+      { "0.2.34".default = (f.net2."0.2.34".default or true); }
     ];
     winapi = fold recursiveUpdate {} [
-      { "${deps.net2."0.2.33".winapi}"."handleapi" = true; }
-      { "${deps.net2."0.2.33".winapi}"."winsock2" = true; }
-      { "${deps.net2."0.2.33".winapi}"."ws2def" = true; }
-      { "${deps.net2."0.2.33".winapi}"."ws2ipdef" = true; }
-      { "${deps.net2."0.2.33".winapi}"."ws2tcpip" = true; }
-      { "${deps.net2."0.2.33".winapi}".default = true; }
+      { "${deps.net2."0.2.34".winapi}"."handleapi" = true; }
+      { "${deps.net2."0.2.34".winapi}"."winsock2" = true; }
+      { "${deps.net2."0.2.34".winapi}"."ws2def" = true; }
+      { "${deps.net2."0.2.34".winapi}"."ws2ipdef" = true; }
+      { "${deps.net2."0.2.34".winapi}"."ws2tcpip" = true; }
+      { "${deps.net2."0.2.34".winapi}".default = true; }
     ];
   }) [
-    (features_.cfg_if."${deps."net2"."0.2.33"."cfg_if"}" deps)
-    (features_.libc."${deps."net2"."0.2.33"."libc"}" deps)
-    (features_.winapi."${deps."net2"."0.2.33"."winapi"}" deps)
+    (features_.cfg_if."${deps."net2"."0.2.34"."cfg_if"}" deps)
+    (features_.libc."${deps."net2"."0.2.34"."libc"}" deps)
+    (features_.winapi."${deps."net2"."0.2.34"."winapi"}" deps)
   ];
 
 
@@ -2441,29 +2675,171 @@ rec {
 
 
 # end
-# num_cpus-1.12.0
+# num_cpus-1.13.0
 
-  crates.num_cpus."1.12.0" = deps: { features?(features_.num_cpus."1.12.0" deps {}) }: buildRustCrate {
+  crates.num_cpus."1.13.0" = deps: { features?(features_.num_cpus."1.13.0" deps {}) }: buildRustCrate {
     crateName = "num_cpus";
-    version = "1.12.0";
+    version = "1.13.0";
     description = "Get the number of CPUs on a machine.";
     authors = [ "Sean McArthur <sean@seanmonstar.com>" ];
-    sha256 = "053115487n4v2v045gjp0wh0q3lziribn67hwxjdddqq95l2m45m";
+    sha256 = "15pqq0ldi8zrqbr3cn539xlzl2hhyhka5d1z6ix0vk15qzj3nw46";
     dependencies = mapFeatures features ([
-      (crates."libc"."${deps."num_cpus"."1.12.0"."libc"}" deps)
+      (crates."libc"."${deps."num_cpus"."1.13.0"."libc"}" deps)
     ])
       ++ (if cpu == "x86_64" || cpu == "aarch64" && kernel == "hermit" then mapFeatures features ([
-      (crates."hermit_abi"."${deps."num_cpus"."1.12.0"."hermit_abi"}" deps)
+      (crates."hermit_abi"."${deps."num_cpus"."1.13.0"."hermit_abi"}" deps)
     ]) else []);
   };
-  features_.num_cpus."1.12.0" = deps: f: updateFeatures f (rec {
-    hermit_abi."${deps.num_cpus."1.12.0".hermit_abi}".default = true;
-    libc."${deps.num_cpus."1.12.0".libc}".default = true;
-    num_cpus."1.12.0".default = (f.num_cpus."1.12.0".default or true);
+  features_.num_cpus."1.13.0" = deps: f: updateFeatures f (rec {
+    hermit_abi."${deps.num_cpus."1.13.0".hermit_abi}".default = true;
+    libc."${deps.num_cpus."1.13.0".libc}".default = true;
+    num_cpus."1.13.0".default = (f.num_cpus."1.13.0".default or true);
   }) [
-    (features_.libc."${deps."num_cpus"."1.12.0"."libc"}" deps)
-    (features_.hermit_abi."${deps."num_cpus"."1.12.0"."hermit_abi"}" deps)
+    (features_.libc."${deps."num_cpus"."1.13.0"."libc"}" deps)
+    (features_.hermit_abi."${deps."num_cpus"."1.13.0"."hermit_abi"}" deps)
   ];
+
+
+# end
+# object-0.20.0
+
+  crates.object."0.20.0" = deps: { features?(features_.object."0.20.0" deps {}) }: buildRustCrate {
+    crateName = "object";
+    version = "0.20.0";
+    description = "A unified interface for reading and writing object file formats.";
+    authors = [ "Nick Fitzgerald <fitzgen@gmail.com>" "Philip Craig <philipjcraig@gmail.com>" ];
+    edition = "2018";
+    sha256 = "0hrfb6g7jc62lfcp8bqmwz449d1v5bxzj2dchd2r3wksyhb2292a";
+    dependencies = mapFeatures features ([
+]);
+    features = mkFeatures (features."object"."0.20.0" or {});
+  };
+  features_.object."0.20.0" = deps: f: updateFeatures f (rec {
+    object = fold recursiveUpdate {} [
+      { "0.20.0"."alloc" =
+        (f.object."0.20.0"."alloc" or false) ||
+        (f.object."0.20.0".rustc-dep-of-std or false) ||
+        (object."0.20.0"."rustc-dep-of-std" or false); }
+      { "0.20.0"."coff" =
+        (f.object."0.20.0"."coff" or false) ||
+        (f.object."0.20.0".pe or false) ||
+        (object."0.20.0"."pe" or false) ||
+        (f.object."0.20.0".read or false) ||
+        (object."0.20.0"."read" or false) ||
+        (f.object."0.20.0".write or false) ||
+        (object."0.20.0"."write" or false); }
+      { "0.20.0"."compiler_builtins" =
+        (f.object."0.20.0"."compiler_builtins" or false) ||
+        (f.object."0.20.0".rustc-dep-of-std or false) ||
+        (object."0.20.0"."rustc-dep-of-std" or false); }
+      { "0.20.0"."compression" =
+        (f.object."0.20.0"."compression" or false) ||
+        (f.object."0.20.0".all or false) ||
+        (object."0.20.0"."all" or false) ||
+        (f.object."0.20.0".default or false) ||
+        (object."0.20.0"."default" or false); }
+      { "0.20.0"."core" =
+        (f.object."0.20.0"."core" or false) ||
+        (f.object."0.20.0".rustc-dep-of-std or false) ||
+        (object."0.20.0"."rustc-dep-of-std" or false); }
+      { "0.20.0"."crc32fast" =
+        (f.object."0.20.0"."crc32fast" or false) ||
+        (f.object."0.20.0".write_core or false) ||
+        (object."0.20.0"."write_core" or false); }
+      { "0.20.0"."default" =
+        (f.object."0.20.0"."default" or false) ||
+        (f.object."0.20.0".all or false) ||
+        (object."0.20.0"."all" or false); }
+      { "0.20.0"."elf" =
+        (f.object."0.20.0"."elf" or false) ||
+        (f.object."0.20.0".read or false) ||
+        (object."0.20.0"."read" or false) ||
+        (f.object."0.20.0".write or false) ||
+        (object."0.20.0"."write" or false); }
+      { "0.20.0"."flate2" =
+        (f.object."0.20.0"."flate2" or false) ||
+        (f.object."0.20.0".compression or false) ||
+        (object."0.20.0"."compression" or false); }
+      { "0.20.0"."indexmap" =
+        (f.object."0.20.0"."indexmap" or false) ||
+        (f.object."0.20.0".write_core or false) ||
+        (object."0.20.0"."write_core" or false); }
+      { "0.20.0"."macho" =
+        (f.object."0.20.0"."macho" or false) ||
+        (f.object."0.20.0".read or false) ||
+        (object."0.20.0"."read" or false) ||
+        (f.object."0.20.0".write or false) ||
+        (object."0.20.0"."write" or false); }
+      { "0.20.0"."pe" =
+        (f.object."0.20.0"."pe" or false) ||
+        (f.object."0.20.0".read or false) ||
+        (object."0.20.0"."read" or false); }
+      { "0.20.0"."read" =
+        (f.object."0.20.0"."read" or false) ||
+        (f.object."0.20.0".all or false) ||
+        (object."0.20.0"."all" or false) ||
+        (f.object."0.20.0".default or false) ||
+        (object."0.20.0"."default" or false); }
+      { "0.20.0"."read_core" =
+        (f.object."0.20.0"."read_core" or false) ||
+        (f.object."0.20.0".read or false) ||
+        (object."0.20.0"."read" or false); }
+      { "0.20.0"."std" =
+        (f.object."0.20.0"."std" or false) ||
+        (f.object."0.20.0".all or false) ||
+        (object."0.20.0"."all" or false) ||
+        (f.object."0.20.0".compression or false) ||
+        (object."0.20.0"."compression" or false) ||
+        (f.object."0.20.0".write_core or false) ||
+        (object."0.20.0"."write_core" or false); }
+      { "0.20.0"."unaligned" =
+        (f.object."0.20.0"."unaligned" or false) ||
+        (f.object."0.20.0".read or false) ||
+        (object."0.20.0"."read" or false); }
+      { "0.20.0"."wasm" =
+        (f.object."0.20.0"."wasm" or false) ||
+        (f.object."0.20.0".read or false) ||
+        (object."0.20.0"."read" or false); }
+      { "0.20.0"."wasmparser" =
+        (f.object."0.20.0"."wasmparser" or false) ||
+        (f.object."0.20.0".wasm or false) ||
+        (object."0.20.0"."wasm" or false); }
+      { "0.20.0"."write" =
+        (f.object."0.20.0"."write" or false) ||
+        (f.object."0.20.0".all or false) ||
+        (object."0.20.0"."all" or false); }
+      { "0.20.0"."write_core" =
+        (f.object."0.20.0"."write_core" or false) ||
+        (f.object."0.20.0".write or false) ||
+        (object."0.20.0"."write" or false); }
+      { "0.20.0".default = (f.object."0.20.0".default or true); }
+    ];
+  }) [];
+
+
+# end
+# once_cell-1.4.0
+
+  crates.once_cell."1.4.0" = deps: { features?(features_.once_cell."1.4.0" deps {}) }: buildRustCrate {
+    crateName = "once_cell";
+    version = "1.4.0";
+    description = "Single assignment cells and lazy values.";
+    authors = [ "Aleksey Kladov <aleksey.kladov@gmail.com>" ];
+    edition = "2018";
+    sha256 = "0crhwic0xann3c2kqmaplmz1q74a3l2ilp3v7pfsw0xj8z2zvh39";
+    dependencies = mapFeatures features ([
+]);
+    features = mkFeatures (features."once_cell"."1.4.0" or {});
+  };
+  features_.once_cell."1.4.0" = deps: f: updateFeatures f (rec {
+    once_cell = fold recursiveUpdate {} [
+      { "1.4.0"."std" =
+        (f.once_cell."1.4.0"."std" or false) ||
+        (f.once_cell."1.4.0".default or false) ||
+        (once_cell."1.4.0"."default" or false); }
+      { "1.4.0".default = (f.once_cell."1.4.0".default or true); }
+    ];
+  }) [];
 
 
 # end
@@ -2483,155 +2859,155 @@ rec {
 
 
 # end
-# petgraph-0.5.0
+# petgraph-0.5.1
 
-  crates.petgraph."0.5.0" = deps: { features?(features_.petgraph."0.5.0" deps {}) }: buildRustCrate {
+  crates.petgraph."0.5.1" = deps: { features?(features_.petgraph."0.5.1" deps {}) }: buildRustCrate {
     crateName = "petgraph";
-    version = "0.5.0";
+    version = "0.5.1";
     description = "Graph data structure library. Provides graph types and graph algorithms.";
     authors = [ "bluss" "mitchmindtree" ];
     edition = "2018";
-    sha256 = "1mfsm000j4glvjfpiviqdmrs48hna3m0w3pgsra29jsvnvywbvgi";
+    sha256 = "0pa3aqjma31mw9b200h2hpq0dfq0bv4wq3q5f3id88fbn4yfnd2k";
     dependencies = mapFeatures features ([
-      (crates."fixedbitset"."${deps."petgraph"."0.5.0"."fixedbitset"}" deps)
-      (crates."indexmap"."${deps."petgraph"."0.5.0"."indexmap"}" deps)
+      (crates."fixedbitset"."${deps."petgraph"."0.5.1"."fixedbitset"}" deps)
+      (crates."indexmap"."${deps."petgraph"."0.5.1"."indexmap"}" deps)
     ]);
-    features = mkFeatures (features."petgraph"."0.5.0" or {});
+    features = mkFeatures (features."petgraph"."0.5.1" or {});
   };
-  features_.petgraph."0.5.0" = deps: f: updateFeatures f (rec {
-    fixedbitset."${deps.petgraph."0.5.0".fixedbitset}".default = (f.fixedbitset."${deps.petgraph."0.5.0".fixedbitset}".default or false);
-    indexmap."${deps.petgraph."0.5.0".indexmap}".default = true;
+  features_.petgraph."0.5.1" = deps: f: updateFeatures f (rec {
+    fixedbitset."${deps.petgraph."0.5.1".fixedbitset}".default = (f.fixedbitset."${deps.petgraph."0.5.1".fixedbitset}".default or false);
+    indexmap."${deps.petgraph."0.5.1".indexmap}".default = true;
     petgraph = fold recursiveUpdate {} [
-      { "0.5.0"."generate" =
-        (f.petgraph."0.5.0"."generate" or false) ||
-        (f.petgraph."0.5.0".unstable or false) ||
-        (petgraph."0.5.0"."unstable" or false); }
-      { "0.5.0"."graphmap" =
-        (f.petgraph."0.5.0"."graphmap" or false) ||
-        (f.petgraph."0.5.0".all or false) ||
-        (petgraph."0.5.0"."all" or false) ||
-        (f.petgraph."0.5.0".default or false) ||
-        (petgraph."0.5.0"."default" or false); }
-      { "0.5.0"."matrix_graph" =
-        (f.petgraph."0.5.0"."matrix_graph" or false) ||
-        (f.petgraph."0.5.0".all or false) ||
-        (petgraph."0.5.0"."all" or false) ||
-        (f.petgraph."0.5.0".default or false) ||
-        (petgraph."0.5.0"."default" or false); }
-      { "0.5.0"."quickcheck" =
-        (f.petgraph."0.5.0"."quickcheck" or false) ||
-        (f.petgraph."0.5.0".all or false) ||
-        (petgraph."0.5.0"."all" or false); }
-      { "0.5.0"."serde" =
-        (f.petgraph."0.5.0"."serde" or false) ||
-        (f.petgraph."0.5.0".serde-1 or false) ||
-        (petgraph."0.5.0"."serde-1" or false); }
-      { "0.5.0"."serde_derive" =
-        (f.petgraph."0.5.0"."serde_derive" or false) ||
-        (f.petgraph."0.5.0".serde-1 or false) ||
-        (petgraph."0.5.0"."serde-1" or false); }
-      { "0.5.0"."stable_graph" =
-        (f.petgraph."0.5.0"."stable_graph" or false) ||
-        (f.petgraph."0.5.0".all or false) ||
-        (petgraph."0.5.0"."all" or false) ||
-        (f.petgraph."0.5.0".default or false) ||
-        (petgraph."0.5.0"."default" or false); }
-      { "0.5.0"."unstable" =
-        (f.petgraph."0.5.0"."unstable" or false) ||
-        (f.petgraph."0.5.0".all or false) ||
-        (petgraph."0.5.0"."all" or false); }
-      { "0.5.0".default = (f.petgraph."0.5.0".default or true); }
+      { "0.5.1"."generate" =
+        (f.petgraph."0.5.1"."generate" or false) ||
+        (f.petgraph."0.5.1".unstable or false) ||
+        (petgraph."0.5.1"."unstable" or false); }
+      { "0.5.1"."graphmap" =
+        (f.petgraph."0.5.1"."graphmap" or false) ||
+        (f.petgraph."0.5.1".all or false) ||
+        (petgraph."0.5.1"."all" or false) ||
+        (f.petgraph."0.5.1".default or false) ||
+        (petgraph."0.5.1"."default" or false); }
+      { "0.5.1"."matrix_graph" =
+        (f.petgraph."0.5.1"."matrix_graph" or false) ||
+        (f.petgraph."0.5.1".all or false) ||
+        (petgraph."0.5.1"."all" or false) ||
+        (f.petgraph."0.5.1".default or false) ||
+        (petgraph."0.5.1"."default" or false); }
+      { "0.5.1"."quickcheck" =
+        (f.petgraph."0.5.1"."quickcheck" or false) ||
+        (f.petgraph."0.5.1".all or false) ||
+        (petgraph."0.5.1"."all" or false); }
+      { "0.5.1"."serde" =
+        (f.petgraph."0.5.1"."serde" or false) ||
+        (f.petgraph."0.5.1".serde-1 or false) ||
+        (petgraph."0.5.1"."serde-1" or false); }
+      { "0.5.1"."serde_derive" =
+        (f.petgraph."0.5.1"."serde_derive" or false) ||
+        (f.petgraph."0.5.1".serde-1 or false) ||
+        (petgraph."0.5.1"."serde-1" or false); }
+      { "0.5.1"."stable_graph" =
+        (f.petgraph."0.5.1"."stable_graph" or false) ||
+        (f.petgraph."0.5.1".all or false) ||
+        (petgraph."0.5.1"."all" or false) ||
+        (f.petgraph."0.5.1".default or false) ||
+        (petgraph."0.5.1"."default" or false); }
+      { "0.5.1"."unstable" =
+        (f.petgraph."0.5.1"."unstable" or false) ||
+        (f.petgraph."0.5.1".all or false) ||
+        (petgraph."0.5.1"."all" or false); }
+      { "0.5.1".default = (f.petgraph."0.5.1".default or true); }
     ];
   }) [
-    (features_.fixedbitset."${deps."petgraph"."0.5.0"."fixedbitset"}" deps)
-    (features_.indexmap."${deps."petgraph"."0.5.0"."indexmap"}" deps)
+    (features_.fixedbitset."${deps."petgraph"."0.5.1"."fixedbitset"}" deps)
+    (features_.indexmap."${deps."petgraph"."0.5.1"."indexmap"}" deps)
   ];
 
 
 # end
-# pin-project-0.4.8
+# pin-project-0.4.22
 
-  crates.pin_project."0.4.8" = deps: { features?(features_.pin_project."0.4.8" deps {}) }: buildRustCrate {
+  crates.pin_project."0.4.22" = deps: { features?(features_.pin_project."0.4.22" deps {}) }: buildRustCrate {
     crateName = "pin-project";
-    version = "0.4.8";
+    version = "0.4.22";
     description = "A crate for safe and ergonomic pin-projection.\n";
     authors = [ "Taiki Endo <te316e89@gmail.com>" ];
     edition = "2018";
-    sha256 = "0wb1j947sinyr5sqc5wjxljs250rpfsm7aazy0mswg9jcv1v4zss";
+    sha256 = "0hg8z5k8v1m66yhddz8y7kzbznq48sag0afsillcwii8d334vlwf";
     dependencies = mapFeatures features ([
-      (crates."pin_project_internal"."${deps."pin_project"."0.4.8"."pin_project_internal"}" deps)
+      (crates."pin_project_internal"."${deps."pin_project"."0.4.22"."pin_project_internal"}" deps)
     ]);
   };
-  features_.pin_project."0.4.8" = deps: f: updateFeatures f (rec {
-    pin_project."0.4.8".default = (f.pin_project."0.4.8".default or true);
-    pin_project_internal."${deps.pin_project."0.4.8".pin_project_internal}".default = (f.pin_project_internal."${deps.pin_project."0.4.8".pin_project_internal}".default or false);
+  features_.pin_project."0.4.22" = deps: f: updateFeatures f (rec {
+    pin_project."0.4.22".default = (f.pin_project."0.4.22".default or true);
+    pin_project_internal."${deps.pin_project."0.4.22".pin_project_internal}".default = (f.pin_project_internal."${deps.pin_project."0.4.22".pin_project_internal}".default or false);
   }) [
-    (features_.pin_project_internal."${deps."pin_project"."0.4.8"."pin_project_internal"}" deps)
+    (features_.pin_project_internal."${deps."pin_project"."0.4.22"."pin_project_internal"}" deps)
   ];
 
 
 # end
-# pin-project-internal-0.4.8
+# pin-project-internal-0.4.22
 
-  crates.pin_project_internal."0.4.8" = deps: { features?(features_.pin_project_internal."0.4.8" deps {}) }: buildRustCrate {
+  crates.pin_project_internal."0.4.22" = deps: { features?(features_.pin_project_internal."0.4.22" deps {}) }: buildRustCrate {
     crateName = "pin-project-internal";
-    version = "0.4.8";
+    version = "0.4.22";
     description = "An internal crate to support pin_project - do not use directly\n";
     authors = [ "Taiki Endo <te316e89@gmail.com>" ];
     edition = "2018";
-    sha256 = "11gzk6fx0s6cyh5fhzwvfy6ds864szw93df8xb7m3s4f2kiblr0n";
+    sha256 = "0l2wcdx8zhkazibwd3s72z7fj9gwybzcdgl87976s6i8vl03v9bg";
     procMacro = true;
     dependencies = mapFeatures features ([
-      (crates."proc_macro2"."${deps."pin_project_internal"."0.4.8"."proc_macro2"}" deps)
-      (crates."quote"."${deps."pin_project_internal"."0.4.8"."quote"}" deps)
-      (crates."syn"."${deps."pin_project_internal"."0.4.8"."syn"}" deps)
+      (crates."proc_macro2"."${deps."pin_project_internal"."0.4.22"."proc_macro2"}" deps)
+      (crates."quote"."${deps."pin_project_internal"."0.4.22"."quote"}" deps)
+      (crates."syn"."${deps."pin_project_internal"."0.4.22"."syn"}" deps)
     ]);
   };
-  features_.pin_project_internal."0.4.8" = deps: f: updateFeatures f (rec {
-    pin_project_internal."0.4.8".default = (f.pin_project_internal."0.4.8".default or true);
-    proc_macro2."${deps.pin_project_internal."0.4.8".proc_macro2}".default = true;
-    quote."${deps.pin_project_internal."0.4.8".quote}".default = true;
+  features_.pin_project_internal."0.4.22" = deps: f: updateFeatures f (rec {
+    pin_project_internal."0.4.22".default = (f.pin_project_internal."0.4.22".default or true);
+    proc_macro2."${deps.pin_project_internal."0.4.22".proc_macro2}".default = true;
+    quote."${deps.pin_project_internal."0.4.22".quote}".default = true;
     syn = fold recursiveUpdate {} [
-      { "${deps.pin_project_internal."0.4.8".syn}"."full" = true; }
-      { "${deps.pin_project_internal."0.4.8".syn}"."visit-mut" = true; }
-      { "${deps.pin_project_internal."0.4.8".syn}".default = true; }
+      { "${deps.pin_project_internal."0.4.22".syn}"."full" = true; }
+      { "${deps.pin_project_internal."0.4.22".syn}"."visit-mut" = true; }
+      { "${deps.pin_project_internal."0.4.22".syn}".default = true; }
     ];
   }) [
-    (features_.proc_macro2."${deps."pin_project_internal"."0.4.8"."proc_macro2"}" deps)
-    (features_.quote."${deps."pin_project_internal"."0.4.8"."quote"}" deps)
-    (features_.syn."${deps."pin_project_internal"."0.4.8"."syn"}" deps)
+    (features_.proc_macro2."${deps."pin_project_internal"."0.4.22"."proc_macro2"}" deps)
+    (features_.quote."${deps."pin_project_internal"."0.4.22"."quote"}" deps)
+    (features_.syn."${deps."pin_project_internal"."0.4.22"."syn"}" deps)
   ];
 
 
 # end
-# pin-project-lite-0.1.4
+# pin-project-lite-0.1.7
 
-  crates.pin_project_lite."0.1.4" = deps: { features?(features_.pin_project_lite."0.1.4" deps {}) }: buildRustCrate {
+  crates.pin_project_lite."0.1.7" = deps: { features?(features_.pin_project_lite."0.1.7" deps {}) }: buildRustCrate {
     crateName = "pin-project-lite";
-    version = "0.1.4";
+    version = "0.1.7";
     description = "A lightweight version of pin-project written with declarative macros.\n";
     authors = [ "Taiki Endo <te316e89@gmail.com>" ];
     edition = "2018";
-    sha256 = "01pjrqsjxh1ypqcy07wk7jwmns89mkq8zgjmanjnzx261sw69s79";
+    sha256 = "0amvx6lib9hzidiivyiv77ny5xsvn99c0n01f07x43q856n0f9j1";
   };
-  features_.pin_project_lite."0.1.4" = deps: f: updateFeatures f (rec {
-    pin_project_lite."0.1.4".default = (f.pin_project_lite."0.1.4".default or true);
+  features_.pin_project_lite."0.1.7" = deps: f: updateFeatures f (rec {
+    pin_project_lite."0.1.7".default = (f.pin_project_lite."0.1.7".default or true);
   }) [];
 
 
 # end
-# pin-utils-0.1.0-alpha.4
+# pin-utils-0.1.0
 
-  crates.pin_utils."0.1.0-alpha.4" = deps: { features?(features_.pin_utils."0.1.0-alpha.4" deps {}) }: buildRustCrate {
+  crates.pin_utils."0.1.0" = deps: { features?(features_.pin_utils."0.1.0" deps {}) }: buildRustCrate {
     crateName = "pin-utils";
-    version = "0.1.0-alpha.4";
+    version = "0.1.0";
     description = "Utilities for pinning\n";
     authors = [ "Josef Brandl <mail@josefbrandl.de>" ];
     edition = "2018";
-    sha256 = "1fl7h1f6gr7qj903k3ir2vw993gbj4dd775s0idq4pzsbjqjj3x1";
+    sha256 = "0cskzbx38gqdj7ij3i73xf7f54sccnd2pb4jq4ka5l1fb3kvpxjz";
   };
-  features_.pin_utils."0.1.0-alpha.4" = deps: f: updateFeatures f (rec {
-    pin_utils."0.1.0-alpha.4".default = (f.pin_utils."0.1.0-alpha.4".default or true);
+  features_.pin_utils."0.1.0" = deps: f: updateFeatures f (rec {
+    pin_utils."0.1.0".default = (f.pin_utils."0.1.0".default or true);
   }) [];
 
 
@@ -2651,90 +3027,86 @@ rec {
 
 
 # end
-# ppv-lite86-0.2.6
+# ppv-lite86-0.2.8
 
-  crates.ppv_lite86."0.2.6" = deps: { features?(features_.ppv_lite86."0.2.6" deps {}) }: buildRustCrate {
+  crates.ppv_lite86."0.2.8" = deps: { features?(features_.ppv_lite86."0.2.8" deps {}) }: buildRustCrate {
     crateName = "ppv-lite86";
-    version = "0.2.6";
+    version = "0.2.8";
     description = "Implementation of the crypto-simd API for x86";
     authors = [ "The CryptoCorrosion Contributors" ];
     edition = "2018";
-    sha256 = "1mlbp0713frbyvcbjmc5vl062b0vr58agkv3ar2qqi5plgy9b7ib";
-    features = mkFeatures (features."ppv_lite86"."0.2.6" or {});
+    sha256 = "1kc3bpc9rrqk1yd0d6k4jqabwycjdqgl88d3jfz3hks5rjln19ig";
+    features = mkFeatures (features."ppv_lite86"."0.2.8" or {});
   };
-  features_.ppv_lite86."0.2.6" = deps: f: updateFeatures f (rec {
+  features_.ppv_lite86."0.2.8" = deps: f: updateFeatures f (rec {
     ppv_lite86 = fold recursiveUpdate {} [
-      { "0.2.6"."simd" =
-        (f.ppv_lite86."0.2.6"."simd" or false) ||
-        (f.ppv_lite86."0.2.6".default or false) ||
-        (ppv_lite86."0.2.6"."default" or false); }
-      { "0.2.6"."std" =
-        (f.ppv_lite86."0.2.6"."std" or false) ||
-        (f.ppv_lite86."0.2.6".default or false) ||
-        (ppv_lite86."0.2.6"."default" or false); }
-      { "0.2.6".default = (f.ppv_lite86."0.2.6".default or true); }
+      { "0.2.8"."std" =
+        (f.ppv_lite86."0.2.8"."std" or false) ||
+        (f.ppv_lite86."0.2.8".default or false) ||
+        (ppv_lite86."0.2.8"."default" or false); }
+      { "0.2.8".default = (f.ppv_lite86."0.2.8".default or true); }
     ];
   }) [];
 
 
 # end
-# proc-macro-hack-0.5.14
+# proc-macro-hack-0.5.16
 
-  crates.proc_macro_hack."0.5.14" = deps: { features?(features_.proc_macro_hack."0.5.14" deps {}) }: buildRustCrate {
+  crates.proc_macro_hack."0.5.16" = deps: { features?(features_.proc_macro_hack."0.5.16" deps {}) }: buildRustCrate {
     crateName = "proc-macro-hack";
-    version = "0.5.14";
+    version = "0.5.16";
     description = "Procedural macros in expression position";
     authors = [ "David Tolnay <dtolnay@gmail.com>" ];
     edition = "2018";
-    sha256 = "08dyyxwasmcw2n8yfjs0v7hyg1hi9j3qqn04i2g309sqi4cvi51b";
+    sha256 = "1w1hs8i970x0yl8j13dvcfgxlh9rml6f97qw1lqflw4vyldrlmf8";
     procMacro = true;
   };
-  features_.proc_macro_hack."0.5.14" = deps: f: updateFeatures f (rec {
-    proc_macro_hack."0.5.14".default = (f.proc_macro_hack."0.5.14".default or true);
+  features_.proc_macro_hack."0.5.16" = deps: f: updateFeatures f (rec {
+    proc_macro_hack."0.5.16".default = (f.proc_macro_hack."0.5.16".default or true);
   }) [];
 
 
 # end
-# proc-macro-nested-0.1.4
+# proc-macro-nested-0.1.6
 
-  crates.proc_macro_nested."0.1.4" = deps: { features?(features_.proc_macro_nested."0.1.4" deps {}) }: buildRustCrate {
+  crates.proc_macro_nested."0.1.6" = deps: { features?(features_.proc_macro_nested."0.1.6" deps {}) }: buildRustCrate {
     crateName = "proc-macro-nested";
-    version = "0.1.4";
+    version = "0.1.6";
     description = "Support for nested proc-macro-hack invocations";
     authors = [ "David Tolnay <dtolnay@gmail.com>" ];
-    sha256 = "1vb6rxh3004by7z27mbyrp7iv477vp43n70hiy4gryv1y41sfry2";
+    sha256 = "1ac4xgwcdw3qcjv1raqc2hvizlrwgv9l19s77bb129n9w5fwnv62";
   };
-  features_.proc_macro_nested."0.1.4" = deps: f: updateFeatures f (rec {
-    proc_macro_nested."0.1.4".default = (f.proc_macro_nested."0.1.4".default or true);
+  features_.proc_macro_nested."0.1.6" = deps: f: updateFeatures f (rec {
+    proc_macro_nested."0.1.6".default = (f.proc_macro_nested."0.1.6".default or true);
   }) [];
 
 
 # end
-# proc-macro2-1.0.9
+# proc-macro2-1.0.18
 
-  crates.proc_macro2."1.0.9" = deps: { features?(features_.proc_macro2."1.0.9" deps {}) }: buildRustCrate {
+  crates.proc_macro2."1.0.18" = deps: { features?(features_.proc_macro2."1.0.18" deps {}) }: buildRustCrate {
     crateName = "proc-macro2";
-    version = "1.0.9";
-    description = "A stable implementation of the upcoming new `proc_macro` API. Comes with an\noption, off by default, to also reimplement itself in terms of the upstream\nunstable API.\n";
-    authors = [ "Alex Crichton <alex@alexcrichton.com>" ];
+    version = "1.0.18";
+    description = "A substitute implementation of the compiler's `proc_macro` API to decouple\ntoken-based libraries from the procedural macro use case.\n";
+    authors = [ "Alex Crichton <alex@alexcrichton.com>" "David Tolnay <dtolnay@gmail.com>" ];
     edition = "2018";
-    sha256 = "1kyip1rs0j3v1wafjn4ss03djs05ffxs2y7c2zi5064skhpxfzav";
+    sha256 = "0hrajl05zc25z6v9gj902jzwlrczrsgpfkrdsblams7sjbvgdp63";
     dependencies = mapFeatures features ([
-      (crates."unicode_xid"."${deps."proc_macro2"."1.0.9"."unicode_xid"}" deps)
+      (crates."unicode_xid"."${deps."proc_macro2"."1.0.18"."unicode_xid"}" deps)
     ]);
-    features = mkFeatures (features."proc_macro2"."1.0.9" or {});
+    features = mkFeatures (features."proc_macro2"."1.0.18" or {});
   };
-  features_.proc_macro2."1.0.9" = deps: f: updateFeatures f (rec {
+  features_.proc_macro2."1.0.18" = deps: f: updateFeatures f (rec {
     proc_macro2 = fold recursiveUpdate {} [
-      { "1.0.9"."proc-macro" =
-        (f.proc_macro2."1.0.9"."proc-macro" or false) ||
-        (f.proc_macro2."1.0.9".default or false) ||
-        (proc_macro2."1.0.9"."default" or false); }
-      { "1.0.9".default = (f.proc_macro2."1.0.9".default or true); }
+      { "1.0.18"."proc-macro" =
+        (f.proc_macro2."1.0.18"."proc-macro" or false) ||
+        (f.proc_macro2."1.0.18".default or false) ||
+        (proc_macro2."1.0.18"."default" or false); }
+      { "1.0.18".default = (f.proc_macro2."1.0.18".default or true); }
     ];
-    unicode_xid."${deps.proc_macro2."1.0.9".unicode_xid}".default = true;
+    unicode_xid."${deps.proc_macro2."1.0.18".unicode_xid}".default = true;
   }) [
-    (features_.unicode_xid."${deps."proc_macro2"."1.0.9"."unicode_xid"}" deps)
+    (features_.unicode_xid."${deps."proc_macro2"."1.0.18"."unicode_xid"}" deps)
   ];
 
 
@@ -2900,37 +3272,37 @@ rec {
 
 
 # end
-# quote-1.0.3
+# quote-1.0.7
 
-  crates.quote."1.0.3" = deps: { features?(features_.quote."1.0.3" deps {}) }: buildRustCrate {
+  crates.quote."1.0.7" = deps: { features?(features_.quote."1.0.7" deps {}) }: buildRustCrate {
     crateName = "quote";
-    version = "1.0.3";
+    version = "1.0.7";
     description = "Quasi-quoting macro quote!(...)";
     authors = [ "David Tolnay <dtolnay@gmail.com>" ];
     edition = "2018";
-    sha256 = "093chkpg7dc8f86kz0hlxzyfxvbix3xpkmlbhilf0wji228ad35c";
+    sha256 = "0n4qkwj9zwbbgraxc5wnly466dzwyzxlpw396h5m4yazp0sai6ha";
     dependencies = mapFeatures features ([
-      (crates."proc_macro2"."${deps."quote"."1.0.3"."proc_macro2"}" deps)
+      (crates."proc_macro2"."${deps."quote"."1.0.7"."proc_macro2"}" deps)
     ]);
-    features = mkFeatures (features."quote"."1.0.3" or {});
+    features = mkFeatures (features."quote"."1.0.7" or {});
   };
-  features_.quote."1.0.3" = deps: f: updateFeatures f (rec {
+  features_.quote."1.0.7" = deps: f: updateFeatures f (rec {
     proc_macro2 = fold recursiveUpdate {} [
-      { "${deps.quote."1.0.3".proc_macro2}"."proc-macro" =
-        (f.proc_macro2."${deps.quote."1.0.3".proc_macro2}"."proc-macro" or false) ||
-        (quote."1.0.3"."proc-macro" or false) ||
-        (f."quote"."1.0.3"."proc-macro" or false); }
-      { "${deps.quote."1.0.3".proc_macro2}".default = (f.proc_macro2."${deps.quote."1.0.3".proc_macro2}".default or false); }
+      { "${deps.quote."1.0.7".proc_macro2}"."proc-macro" =
+        (f.proc_macro2."${deps.quote."1.0.7".proc_macro2}"."proc-macro" or false) ||
+        (quote."1.0.7"."proc-macro" or false) ||
+        (f."quote"."1.0.7"."proc-macro" or false); }
+      { "${deps.quote."1.0.7".proc_macro2}".default = (f.proc_macro2."${deps.quote."1.0.7".proc_macro2}".default or false); }
     ];
     quote = fold recursiveUpdate {} [
-      { "1.0.3"."proc-macro" =
-        (f.quote."1.0.3"."proc-macro" or false) ||
-        (f.quote."1.0.3".default or false) ||
-        (quote."1.0.3"."default" or false); }
-      { "1.0.3".default = (f.quote."1.0.3".default or true); }
+      { "1.0.7"."proc-macro" =
+        (f.quote."1.0.7"."proc-macro" or false) ||
+        (f.quote."1.0.7".default or false) ||
+        (quote."1.0.7"."default" or false); }
+      { "1.0.7".default = (f.quote."1.0.7".default or true); }
     ];
   }) [
-    (features_.proc_macro2."${deps."quote"."1.0.3"."proc_macro2"}" deps)
+    (features_.proc_macro2."${deps."quote"."1.0.7"."proc_macro2"}" deps)
   ];
 
 
@@ -3177,217 +3549,225 @@ rec {
 
 
 # end
-# regex-1.3.6
+# regex-1.3.9
 
-  crates.regex."1.3.6" = deps: { features?(features_.regex."1.3.6" deps {}) }: buildRustCrate {
+  crates.regex."1.3.9" = deps: { features?(features_.regex."1.3.9" deps {}) }: buildRustCrate {
     crateName = "regex";
-    version = "1.3.6";
+    version = "1.3.9";
     description = "An implementation of regular expressions for Rust. This implementation uses\nfinite automata and guarantees linear time matching on all inputs.\n";
     authors = [ "The Rust Project Developers" ];
-    sha256 = "1ymfjn2wf5pq2fkgnkh1jif8iqw1ivhdmgdf04xv18czkz1an5g4";
+    sha256 = "14x6jp4rmi5j5vfbvh8pl6l5sw7141brci6zksh6ljs2ihqcl290";
     dependencies = mapFeatures features ([
-      (crates."regex_syntax"."${deps."regex"."1.3.6"."regex_syntax"}" deps)
+      (crates."regex_syntax"."${deps."regex"."1.3.9"."regex_syntax"}" deps)
     ]
-      ++ (if features.regex."1.3.6".aho-corasick or false then [ (crates.aho_corasick."${deps."regex"."1.3.6".aho_corasick}" deps) ] else [])
-      ++ (if features.regex."1.3.6".memchr or false then [ (crates.memchr."${deps."regex"."1.3.6".memchr}" deps) ] else [])
-      ++ (if features.regex."1.3.6".thread_local or false then [ (crates.thread_local."${deps."regex"."1.3.6".thread_local}" deps) ] else []));
-    features = mkFeatures (features."regex"."1.3.6" or {});
+      ++ (if features.regex."1.3.9".aho-corasick or false then [ (crates.aho_corasick."${deps."regex"."1.3.9".aho_corasick}" deps) ] else [])
+      ++ (if features.regex."1.3.9".memchr or false then [ (crates.memchr."${deps."regex"."1.3.9".memchr}" deps) ] else [])
+      ++ (if features.regex."1.3.9".thread_local or false then [ (crates.thread_local."${deps."regex"."1.3.9".thread_local}" deps) ] else []));
+    features = mkFeatures (features."regex"."1.3.9" or {});
   };
-  features_.regex."1.3.6" = deps: f: updateFeatures f (rec {
-    aho_corasick."${deps.regex."1.3.6".aho_corasick}".default = true;
-    memchr."${deps.regex."1.3.6".memchr}".default = true;
+  features_.regex."1.3.9" = deps: f: updateFeatures f (rec {
+    aho_corasick."${deps.regex."1.3.9".aho_corasick}".default = true;
+    memchr."${deps.regex."1.3.9".memchr}".default = true;
     regex = fold recursiveUpdate {} [
-      { "1.3.6"."aho-corasick" =
-        (f.regex."1.3.6"."aho-corasick" or false) ||
-        (f.regex."1.3.6".perf-literal or false) ||
-        (regex."1.3.6"."perf-literal" or false); }
-      { "1.3.6"."memchr" =
-        (f.regex."1.3.6"."memchr" or false) ||
-        (f.regex."1.3.6".perf-literal or false) ||
-        (regex."1.3.6"."perf-literal" or false); }
-      { "1.3.6"."pattern" =
-        (f.regex."1.3.6"."pattern" or false) ||
-        (f.regex."1.3.6".unstable or false) ||
-        (regex."1.3.6"."unstable" or false); }
-      { "1.3.6"."perf" =
-        (f.regex."1.3.6"."perf" or false) ||
-        (f.regex."1.3.6".default or false) ||
-        (regex."1.3.6"."default" or false); }
-      { "1.3.6"."perf-cache" =
-        (f.regex."1.3.6"."perf-cache" or false) ||
-        (f.regex."1.3.6".perf or false) ||
-        (regex."1.3.6"."perf" or false); }
-      { "1.3.6"."perf-dfa" =
-        (f.regex."1.3.6"."perf-dfa" or false) ||
-        (f.regex."1.3.6".perf or false) ||
-        (regex."1.3.6"."perf" or false); }
-      { "1.3.6"."perf-inline" =
-        (f.regex."1.3.6"."perf-inline" or false) ||
-        (f.regex."1.3.6".perf or false) ||
-        (regex."1.3.6"."perf" or false); }
-      { "1.3.6"."perf-literal" =
-        (f.regex."1.3.6"."perf-literal" or false) ||
-        (f.regex."1.3.6".perf or false) ||
-        (regex."1.3.6"."perf" or false); }
-      { "1.3.6"."std" =
-        (f.regex."1.3.6"."std" or false) ||
-        (f.regex."1.3.6".default or false) ||
-        (regex."1.3.6"."default" or false) ||
-        (f.regex."1.3.6".use_std or false) ||
-        (regex."1.3.6"."use_std" or false); }
-      { "1.3.6"."thread_local" =
-        (f.regex."1.3.6"."thread_local" or false) ||
-        (f.regex."1.3.6".perf-cache or false) ||
-        (regex."1.3.6"."perf-cache" or false); }
-      { "1.3.6"."unicode" =
-        (f.regex."1.3.6"."unicode" or false) ||
-        (f.regex."1.3.6".default or false) ||
-        (regex."1.3.6"."default" or false); }
-      { "1.3.6"."unicode-age" =
-        (f.regex."1.3.6"."unicode-age" or false) ||
-        (f.regex."1.3.6".unicode or false) ||
-        (regex."1.3.6"."unicode" or false); }
-      { "1.3.6"."unicode-bool" =
-        (f.regex."1.3.6"."unicode-bool" or false) ||
-        (f.regex."1.3.6".unicode or false) ||
-        (regex."1.3.6"."unicode" or false); }
-      { "1.3.6"."unicode-case" =
-        (f.regex."1.3.6"."unicode-case" or false) ||
-        (f.regex."1.3.6".unicode or false) ||
-        (regex."1.3.6"."unicode" or false); }
-      { "1.3.6"."unicode-gencat" =
-        (f.regex."1.3.6"."unicode-gencat" or false) ||
-        (f.regex."1.3.6".unicode or false) ||
-        (regex."1.3.6"."unicode" or false); }
-      { "1.3.6"."unicode-perl" =
-        (f.regex."1.3.6"."unicode-perl" or false) ||
-        (f.regex."1.3.6".unicode or false) ||
-        (regex."1.3.6"."unicode" or false); }
-      { "1.3.6"."unicode-script" =
-        (f.regex."1.3.6"."unicode-script" or false) ||
-        (f.regex."1.3.6".unicode or false) ||
-        (regex."1.3.6"."unicode" or false); }
-      { "1.3.6"."unicode-segment" =
-        (f.regex."1.3.6"."unicode-segment" or false) ||
-        (f.regex."1.3.6".unicode or false) ||
-        (regex."1.3.6"."unicode" or false); }
-      { "1.3.6".default = (f.regex."1.3.6".default or true); }
+      { "1.3.9"."aho-corasick" =
+        (f.regex."1.3.9"."aho-corasick" or false) ||
+        (f.regex."1.3.9".perf-literal or false) ||
+        (regex."1.3.9"."perf-literal" or false); }
+      { "1.3.9"."memchr" =
+        (f.regex."1.3.9"."memchr" or false) ||
+        (f.regex."1.3.9".perf-literal or false) ||
+        (regex."1.3.9"."perf-literal" or false); }
+      { "1.3.9"."pattern" =
+        (f.regex."1.3.9"."pattern" or false) ||
+        (f.regex."1.3.9".unstable or false) ||
+        (regex."1.3.9"."unstable" or false); }
+      { "1.3.9"."perf" =
+        (f.regex."1.3.9"."perf" or false) ||
+        (f.regex."1.3.9".default or false) ||
+        (regex."1.3.9"."default" or false); }
+      { "1.3.9"."perf-cache" =
+        (f.regex."1.3.9"."perf-cache" or false) ||
+        (f.regex."1.3.9".perf or false) ||
+        (regex."1.3.9"."perf" or false); }
+      { "1.3.9"."perf-dfa" =
+        (f.regex."1.3.9"."perf-dfa" or false) ||
+        (f.regex."1.3.9".perf or false) ||
+        (regex."1.3.9"."perf" or false); }
+      { "1.3.9"."perf-inline" =
+        (f.regex."1.3.9"."perf-inline" or false) ||
+        (f.regex."1.3.9".perf or false) ||
+        (regex."1.3.9"."perf" or false); }
+      { "1.3.9"."perf-literal" =
+        (f.regex."1.3.9"."perf-literal" or false) ||
+        (f.regex."1.3.9".perf or false) ||
+        (regex."1.3.9"."perf" or false); }
+      { "1.3.9"."std" =
+        (f.regex."1.3.9"."std" or false) ||
+        (f.regex."1.3.9".default or false) ||
+        (regex."1.3.9"."default" or false) ||
+        (f.regex."1.3.9".use_std or false) ||
+        (regex."1.3.9"."use_std" or false); }
+      { "1.3.9"."thread_local" =
+        (f.regex."1.3.9"."thread_local" or false) ||
+        (f.regex."1.3.9".perf-cache or false) ||
+        (regex."1.3.9"."perf-cache" or false); }
+      { "1.3.9"."unicode" =
+        (f.regex."1.3.9"."unicode" or false) ||
+        (f.regex."1.3.9".default or false) ||
+        (regex."1.3.9"."default" or false); }
+      { "1.3.9"."unicode-age" =
+        (f.regex."1.3.9"."unicode-age" or false) ||
+        (f.regex."1.3.9".unicode or false) ||
+        (regex."1.3.9"."unicode" or false); }
+      { "1.3.9"."unicode-bool" =
+        (f.regex."1.3.9"."unicode-bool" or false) ||
+        (f.regex."1.3.9".unicode or false) ||
+        (regex."1.3.9"."unicode" or false); }
+      { "1.3.9"."unicode-case" =
+        (f.regex."1.3.9"."unicode-case" or false) ||
+        (f.regex."1.3.9".unicode or false) ||
+        (regex."1.3.9"."unicode" or false); }
+      { "1.3.9"."unicode-gencat" =
+        (f.regex."1.3.9"."unicode-gencat" or false) ||
+        (f.regex."1.3.9".unicode or false) ||
+        (regex."1.3.9"."unicode" or false); }
+      { "1.3.9"."unicode-perl" =
+        (f.regex."1.3.9"."unicode-perl" or false) ||
+        (f.regex."1.3.9".unicode or false) ||
+        (regex."1.3.9"."unicode" or false); }
+      { "1.3.9"."unicode-script" =
+        (f.regex."1.3.9"."unicode-script" or false) ||
+        (f.regex."1.3.9".unicode or false) ||
+        (regex."1.3.9"."unicode" or false); }
+      { "1.3.9"."unicode-segment" =
+        (f.regex."1.3.9"."unicode-segment" or false) ||
+        (f.regex."1.3.9".unicode or false) ||
+        (regex."1.3.9"."unicode" or false); }
+      { "1.3.9".default = (f.regex."1.3.9".default or true); }
     ];
     regex_syntax = fold recursiveUpdate {} [
-      { "${deps.regex."1.3.6".regex_syntax}"."unicode-age" =
-        (f.regex_syntax."${deps.regex."1.3.6".regex_syntax}"."unicode-age" or false) ||
-        (regex."1.3.6"."unicode-age" or false) ||
-        (f."regex"."1.3.6"."unicode-age" or false); }
-      { "${deps.regex."1.3.6".regex_syntax}"."unicode-bool" =
-        (f.regex_syntax."${deps.regex."1.3.6".regex_syntax}"."unicode-bool" or false) ||
-        (regex."1.3.6"."unicode-bool" or false) ||
-        (f."regex"."1.3.6"."unicode-bool" or false); }
-      { "${deps.regex."1.3.6".regex_syntax}"."unicode-case" =
-        (f.regex_syntax."${deps.regex."1.3.6".regex_syntax}"."unicode-case" or false) ||
-        (regex."1.3.6"."unicode-case" or false) ||
-        (f."regex"."1.3.6"."unicode-case" or false); }
-      { "${deps.regex."1.3.6".regex_syntax}"."unicode-gencat" =
-        (f.regex_syntax."${deps.regex."1.3.6".regex_syntax}"."unicode-gencat" or false) ||
-        (regex."1.3.6"."unicode-gencat" or false) ||
-        (f."regex"."1.3.6"."unicode-gencat" or false); }
-      { "${deps.regex."1.3.6".regex_syntax}"."unicode-perl" =
-        (f.regex_syntax."${deps.regex."1.3.6".regex_syntax}"."unicode-perl" or false) ||
-        (regex."1.3.6"."unicode-perl" or false) ||
-        (f."regex"."1.3.6"."unicode-perl" or false); }
-      { "${deps.regex."1.3.6".regex_syntax}"."unicode-script" =
-        (f.regex_syntax."${deps.regex."1.3.6".regex_syntax}"."unicode-script" or false) ||
-        (regex."1.3.6"."unicode-script" or false) ||
-        (f."regex"."1.3.6"."unicode-script" or false); }
-      { "${deps.regex."1.3.6".regex_syntax}"."unicode-segment" =
-        (f.regex_syntax."${deps.regex."1.3.6".regex_syntax}"."unicode-segment" or false) ||
-        (regex."1.3.6"."unicode-segment" or false) ||
-        (f."regex"."1.3.6"."unicode-segment" or false); }
-      { "${deps.regex."1.3.6".regex_syntax}".default = (f.regex_syntax."${deps.regex."1.3.6".regex_syntax}".default or false); }
+      { "${deps.regex."1.3.9".regex_syntax}"."default" =
+        (f.regex_syntax."${deps.regex."1.3.9".regex_syntax}"."default" or false) ||
+        (regex."1.3.9"."default" or false) ||
+        (f."regex"."1.3.9"."default" or false); }
+      { "${deps.regex."1.3.9".regex_syntax}"."unicode" =
+        (f.regex_syntax."${deps.regex."1.3.9".regex_syntax}"."unicode" or false) ||
+        (regex."1.3.9"."unicode" or false) ||
+        (f."regex"."1.3.9"."unicode" or false); }
+      { "${deps.regex."1.3.9".regex_syntax}"."unicode-age" =
+        (f.regex_syntax."${deps.regex."1.3.9".regex_syntax}"."unicode-age" or false) ||
+        (regex."1.3.9"."unicode-age" or false) ||
+        (f."regex"."1.3.9"."unicode-age" or false); }
+      { "${deps.regex."1.3.9".regex_syntax}"."unicode-bool" =
+        (f.regex_syntax."${deps.regex."1.3.9".regex_syntax}"."unicode-bool" or false) ||
+        (regex."1.3.9"."unicode-bool" or false) ||
+        (f."regex"."1.3.9"."unicode-bool" or false); }
+      { "${deps.regex."1.3.9".regex_syntax}"."unicode-case" =
+        (f.regex_syntax."${deps.regex."1.3.9".regex_syntax}"."unicode-case" or false) ||
+        (regex."1.3.9"."unicode-case" or false) ||
+        (f."regex"."1.3.9"."unicode-case" or false); }
+      { "${deps.regex."1.3.9".regex_syntax}"."unicode-gencat" =
+        (f.regex_syntax."${deps.regex."1.3.9".regex_syntax}"."unicode-gencat" or false) ||
+        (regex."1.3.9"."unicode-gencat" or false) ||
+        (f."regex"."1.3.9"."unicode-gencat" or false); }
+      { "${deps.regex."1.3.9".regex_syntax}"."unicode-perl" =
+        (f.regex_syntax."${deps.regex."1.3.9".regex_syntax}"."unicode-perl" or false) ||
+        (regex."1.3.9"."unicode-perl" or false) ||
+        (f."regex"."1.3.9"."unicode-perl" or false); }
+      { "${deps.regex."1.3.9".regex_syntax}"."unicode-script" =
+        (f.regex_syntax."${deps.regex."1.3.9".regex_syntax}"."unicode-script" or false) ||
+        (regex."1.3.9"."unicode-script" or false) ||
+        (f."regex"."1.3.9"."unicode-script" or false); }
+      { "${deps.regex."1.3.9".regex_syntax}"."unicode-segment" =
+        (f.regex_syntax."${deps.regex."1.3.9".regex_syntax}"."unicode-segment" or false) ||
+        (regex."1.3.9"."unicode-segment" or false) ||
+        (f."regex"."1.3.9"."unicode-segment" or false); }
+      { "${deps.regex."1.3.9".regex_syntax}".default = (f.regex_syntax."${deps.regex."1.3.9".regex_syntax}".default or false); }
     ];
-    thread_local."${deps.regex."1.3.6".thread_local}".default = true;
+    thread_local."${deps.regex."1.3.9".thread_local}".default = true;
   }) [
-    (features_.aho_corasick."${deps."regex"."1.3.6"."aho_corasick"}" deps)
-    (features_.memchr."${deps."regex"."1.3.6"."memchr"}" deps)
-    (features_.regex_syntax."${deps."regex"."1.3.6"."regex_syntax"}" deps)
-    (features_.thread_local."${deps."regex"."1.3.6"."thread_local"}" deps)
+    (features_.aho_corasick."${deps."regex"."1.3.9"."aho_corasick"}" deps)
+    (features_.memchr."${deps."regex"."1.3.9"."memchr"}" deps)
+    (features_.regex_syntax."${deps."regex"."1.3.9"."regex_syntax"}" deps)
+    (features_.thread_local."${deps."regex"."1.3.9"."thread_local"}" deps)
   ];
 
 
 # end
-# regex-syntax-0.6.17
+# regex-syntax-0.6.18
 
-  crates.regex_syntax."0.6.17" = deps: { features?(features_.regex_syntax."0.6.17" deps {}) }: buildRustCrate {
+  crates.regex_syntax."0.6.18" = deps: { features?(features_.regex_syntax."0.6.18" deps {}) }: buildRustCrate {
     crateName = "regex-syntax";
-    version = "0.6.17";
+    version = "0.6.18";
     description = "A regular expression parser.";
     authors = [ "The Rust Project Developers" ];
-    sha256 = "0jvwz9bfycw52mf0djnmvwzx6v3jcvcwaz0zf9ikajrl00ahfx3a";
-    features = mkFeatures (features."regex_syntax"."0.6.17" or {});
+    sha256 = "0ppcp93sr1j7gi2r4fyksic8fw3nkdmfzd7gqxvhhgx7iivn7qz5";
+    features = mkFeatures (features."regex_syntax"."0.6.18" or {});
   };
-  features_.regex_syntax."0.6.17" = deps: f: updateFeatures f (rec {
+  features_.regex_syntax."0.6.18" = deps: f: updateFeatures f (rec {
     regex_syntax = fold recursiveUpdate {} [
-      { "0.6.17"."unicode" =
-        (f.regex_syntax."0.6.17"."unicode" or false) ||
-        (f.regex_syntax."0.6.17".default or false) ||
-        (regex_syntax."0.6.17"."default" or false); }
-      { "0.6.17"."unicode-age" =
-        (f.regex_syntax."0.6.17"."unicode-age" or false) ||
-        (f.regex_syntax."0.6.17".unicode or false) ||
-        (regex_syntax."0.6.17"."unicode" or false); }
-      { "0.6.17"."unicode-bool" =
-        (f.regex_syntax."0.6.17"."unicode-bool" or false) ||
-        (f.regex_syntax."0.6.17".unicode or false) ||
-        (regex_syntax."0.6.17"."unicode" or false); }
-      { "0.6.17"."unicode-case" =
-        (f.regex_syntax."0.6.17"."unicode-case" or false) ||
-        (f.regex_syntax."0.6.17".unicode or false) ||
-        (regex_syntax."0.6.17"."unicode" or false); }
-      { "0.6.17"."unicode-gencat" =
-        (f.regex_syntax."0.6.17"."unicode-gencat" or false) ||
-        (f.regex_syntax."0.6.17".unicode or false) ||
-        (regex_syntax."0.6.17"."unicode" or false); }
-      { "0.6.17"."unicode-perl" =
-        (f.regex_syntax."0.6.17"."unicode-perl" or false) ||
-        (f.regex_syntax."0.6.17".unicode or false) ||
-        (regex_syntax."0.6.17"."unicode" or false); }
-      { "0.6.17"."unicode-script" =
-        (f.regex_syntax."0.6.17"."unicode-script" or false) ||
-        (f.regex_syntax."0.6.17".unicode or false) ||
-        (regex_syntax."0.6.17"."unicode" or false); }
-      { "0.6.17"."unicode-segment" =
-        (f.regex_syntax."0.6.17"."unicode-segment" or false) ||
-        (f.regex_syntax."0.6.17".unicode or false) ||
-        (regex_syntax."0.6.17"."unicode" or false); }
-      { "0.6.17".default = (f.regex_syntax."0.6.17".default or true); }
+      { "0.6.18"."unicode" =
+        (f.regex_syntax."0.6.18"."unicode" or false) ||
+        (f.regex_syntax."0.6.18".default or false) ||
+        (regex_syntax."0.6.18"."default" or false); }
+      { "0.6.18"."unicode-age" =
+        (f.regex_syntax."0.6.18"."unicode-age" or false) ||
+        (f.regex_syntax."0.6.18".unicode or false) ||
+        (regex_syntax."0.6.18"."unicode" or false); }
+      { "0.6.18"."unicode-bool" =
+        (f.regex_syntax."0.6.18"."unicode-bool" or false) ||
+        (f.regex_syntax."0.6.18".unicode or false) ||
+        (regex_syntax."0.6.18"."unicode" or false); }
+      { "0.6.18"."unicode-case" =
+        (f.regex_syntax."0.6.18"."unicode-case" or false) ||
+        (f.regex_syntax."0.6.18".unicode or false) ||
+        (regex_syntax."0.6.18"."unicode" or false); }
+      { "0.6.18"."unicode-gencat" =
+        (f.regex_syntax."0.6.18"."unicode-gencat" or false) ||
+        (f.regex_syntax."0.6.18".unicode or false) ||
+        (regex_syntax."0.6.18"."unicode" or false); }
+      { "0.6.18"."unicode-perl" =
+        (f.regex_syntax."0.6.18"."unicode-perl" or false) ||
+        (f.regex_syntax."0.6.18".unicode or false) ||
+        (regex_syntax."0.6.18"."unicode" or false); }
+      { "0.6.18"."unicode-script" =
+        (f.regex_syntax."0.6.18"."unicode-script" or false) ||
+        (f.regex_syntax."0.6.18".unicode or false) ||
+        (regex_syntax."0.6.18"."unicode" or false); }
+      { "0.6.18"."unicode-segment" =
+        (f.regex_syntax."0.6.18"."unicode-segment" or false) ||
+        (f.regex_syntax."0.6.18".unicode or false) ||
+        (regex_syntax."0.6.18"."unicode" or false); }
+      { "0.6.18".default = (f.regex_syntax."0.6.18".default or true); }
     ];
   }) [];
 
 
 # end
-# remove_dir_all-0.5.2
+# remove_dir_all-0.5.3
 
-  crates.remove_dir_all."0.5.2" = deps: { features?(features_.remove_dir_all."0.5.2" deps {}) }: buildRustCrate {
+  crates.remove_dir_all."0.5.3" = deps: { features?(features_.remove_dir_all."0.5.3" deps {}) }: buildRustCrate {
     crateName = "remove_dir_all";
-    version = "0.5.2";
+    version = "0.5.3";
     description = "A safe, reliable implementation of remove_dir_all for Windows";
     authors = [ "Aaronepower <theaaronepower@gmail.com>" ];
-    sha256 = "04sxg2ppvxiljc2i13bwvpbi540rf9d2a89cq0wmqf9pjvr3a1wm";
+    sha256 = "0djicj9b4sighqykdd9sfysbzp97fwc0m6nwbzq4qdbbpf97klll";
     dependencies = (if kernel == "windows" then mapFeatures features ([
-      (crates."winapi"."${deps."remove_dir_all"."0.5.2"."winapi"}" deps)
+      (crates."winapi"."${deps."remove_dir_all"."0.5.3"."winapi"}" deps)
     ]) else []);
   };
-  features_.remove_dir_all."0.5.2" = deps: f: updateFeatures f (rec {
-    remove_dir_all."0.5.2".default = (f.remove_dir_all."0.5.2".default or true);
+  features_.remove_dir_all."0.5.3" = deps: f: updateFeatures f (rec {
+    remove_dir_all."0.5.3".default = (f.remove_dir_all."0.5.3".default or true);
     winapi = fold recursiveUpdate {} [
-      { "${deps.remove_dir_all."0.5.2".winapi}"."errhandlingapi" = true; }
-      { "${deps.remove_dir_all."0.5.2".winapi}"."fileapi" = true; }
-      { "${deps.remove_dir_all."0.5.2".winapi}"."std" = true; }
-      { "${deps.remove_dir_all."0.5.2".winapi}"."winbase" = true; }
-      { "${deps.remove_dir_all."0.5.2".winapi}"."winerror" = true; }
-      { "${deps.remove_dir_all."0.5.2".winapi}".default = true; }
+      { "${deps.remove_dir_all."0.5.3".winapi}"."errhandlingapi" = true; }
+      { "${deps.remove_dir_all."0.5.3".winapi}"."fileapi" = true; }
+      { "${deps.remove_dir_all."0.5.3".winapi}"."std" = true; }
+      { "${deps.remove_dir_all."0.5.3".winapi}"."winbase" = true; }
+      { "${deps.remove_dir_all."0.5.3".winapi}"."winerror" = true; }
+      { "${deps.remove_dir_all."0.5.3".winapi}".default = true; }
     ];
   }) [
-    (features_.winapi."${deps."remove_dir_all"."0.5.2"."winapi"}" deps)
+    (features_.winapi."${deps."remove_dir_all"."0.5.3"."winapi"}" deps)
   ];
 
 
@@ -3420,94 +3800,174 @@ rec {
 
 
 # end
-# serde-1.0.105
+# rustc_version-0.2.3
 
-  crates.serde."1.0.105" = deps: { features?(features_.serde."1.0.105" deps {}) }: buildRustCrate {
+  crates.rustc_version."0.2.3" = deps: { features?(features_.rustc_version."0.2.3" deps {}) }: buildRustCrate {
+    crateName = "rustc_version";
+    version = "0.2.3";
+    description = "A library for querying the version of a installed rustc compiler";
+    authors = [ "Marvin Löbel <loebel.marvin@gmail.com>" ];
+    sha256 = "0rgwzbgs3i9fqjm1p4ra3n7frafmpwl29c8lw85kv1rxn7n2zaa7";
+    dependencies = mapFeatures features ([
+      (crates."semver"."${deps."rustc_version"."0.2.3"."semver"}" deps)
+    ]);
+  };
+  features_.rustc_version."0.2.3" = deps: f: updateFeatures f (rec {
+    rustc_version."0.2.3".default = (f.rustc_version."0.2.3".default or true);
+    semver."${deps.rustc_version."0.2.3".semver}".default = true;
+  }) [
+    (features_.semver."${deps."rustc_version"."0.2.3"."semver"}" deps)
+  ];
+
+
+# end
+# scoped-tls-0.1.2
+
+  crates.scoped_tls."0.1.2" = deps: { features?(features_.scoped_tls."0.1.2" deps {}) }: buildRustCrate {
+    crateName = "scoped-tls";
+    version = "0.1.2";
+    description = "Library implementation of the standard library's old `scoped_thread_local!`\nmacro for providing scoped access to thread local storage (TLS) so any type can\nbe stored into TLS.\n";
+    authors = [ "Alex Crichton <alex@alexcrichton.com>" ];
+    sha256 = "0nblksgki698cqsclsnd6f1pq4yy34350dn2slaah9dlmx9z5xla";
+    features = mkFeatures (features."scoped_tls"."0.1.2" or {});
+  };
+  features_.scoped_tls."0.1.2" = deps: f: updateFeatures f (rec {
+    scoped_tls."0.1.2".default = (f.scoped_tls."0.1.2".default or true);
+  }) [];
+
+
+# end
+# semver-0.9.0
+
+  crates.semver."0.9.0" = deps: { features?(features_.semver."0.9.0" deps {}) }: buildRustCrate {
+    crateName = "semver";
+    version = "0.9.0";
+    description = "Semantic version parsing and comparison.\n";
+    authors = [ "Steve Klabnik <steve@steveklabnik.com>" "The Rust Project Developers" ];
+    sha256 = "0azak2lb2wc36s3x15az886kck7rpnksrw14lalm157rg9sc9z63";
+    dependencies = mapFeatures features ([
+      (crates."semver_parser"."${deps."semver"."0.9.0"."semver_parser"}" deps)
+    ]);
+    features = mkFeatures (features."semver"."0.9.0" or {});
+  };
+  features_.semver."0.9.0" = deps: f: updateFeatures f (rec {
+    semver = fold recursiveUpdate {} [
+      { "0.9.0"."serde" =
+        (f.semver."0.9.0"."serde" or false) ||
+        (f.semver."0.9.0".ci or false) ||
+        (semver."0.9.0"."ci" or false); }
+      { "0.9.0".default = (f.semver."0.9.0".default or true); }
+    ];
+    semver_parser."${deps.semver."0.9.0".semver_parser}".default = true;
+  }) [
+    (features_.semver_parser."${deps."semver"."0.9.0"."semver_parser"}" deps)
+  ];
+
+
+# end
+# semver-parser-0.7.0
+
+  crates.semver_parser."0.7.0" = deps: { features?(features_.semver_parser."0.7.0" deps {}) }: buildRustCrate {
+    crateName = "semver-parser";
+    version = "0.7.0";
+    description = "Parsing of the semver spec.\n";
+    authors = [ "Steve Klabnik <steve@steveklabnik.com>" ];
+    sha256 = "1da66c8413yakx0y15k8c055yna5lyb6fr0fw9318kdwkrk5k12h";
+  };
+  features_.semver_parser."0.7.0" = deps: f: updateFeatures f (rec {
+    semver_parser."0.7.0".default = (f.semver_parser."0.7.0".default or true);
+  }) [];
+
+
+# end
+# serde-1.0.114
+
+  crates.serde."1.0.114" = deps: { features?(features_.serde."1.0.114" deps {}) }: buildRustCrate {
     crateName = "serde";
-    version = "1.0.105";
+    version = "1.0.114";
     description = "A generic serialization/deserialization framework";
     authors = [ "Erick Tryzelaar <erick.tryzelaar@gmail.com>" "David Tolnay <dtolnay@gmail.com>" ];
-    sha256 = "17dl5caqh51ypvf1sc1qfkzmr8xyfcsafylndslyxgnlrq04p43i";
+    sha256 = "108wasih2s7d77qhfw2wjda54r309jvhr83ifvvzdp3vjahrfk8i";
     build = "build.rs";
     dependencies = mapFeatures features ([
 ]);
-    features = mkFeatures (features."serde"."1.0.105" or {});
+    features = mkFeatures (features."serde"."1.0.114" or {});
   };
-  features_.serde."1.0.105" = deps: f: updateFeatures f (rec {
+  features_.serde."1.0.114" = deps: f: updateFeatures f (rec {
     serde = fold recursiveUpdate {} [
-      { "1.0.105"."serde_derive" =
-        (f.serde."1.0.105"."serde_derive" or false) ||
-        (f.serde."1.0.105".derive or false) ||
-        (serde."1.0.105"."derive" or false); }
-      { "1.0.105"."std" =
-        (f.serde."1.0.105"."std" or false) ||
-        (f.serde."1.0.105".default or false) ||
-        (serde."1.0.105"."default" or false); }
-      { "1.0.105".default = (f.serde."1.0.105".default or true); }
+      { "1.0.114"."serde_derive" =
+        (f.serde."1.0.114"."serde_derive" or false) ||
+        (f.serde."1.0.114".derive or false) ||
+        (serde."1.0.114"."derive" or false); }
+      { "1.0.114"."std" =
+        (f.serde."1.0.114"."std" or false) ||
+        (f.serde."1.0.114".default or false) ||
+        (serde."1.0.114"."default" or false); }
+      { "1.0.114".default = (f.serde."1.0.114".default or true); }
     ];
   }) [];
 
 
 # end
-# serde_derive-1.0.105
+# serde_derive-1.0.114
 
-  crates.serde_derive."1.0.105" = deps: { features?(features_.serde_derive."1.0.105" deps {}) }: buildRustCrate {
+  crates.serde_derive."1.0.114" = deps: { features?(features_.serde_derive."1.0.114" deps {}) }: buildRustCrate {
     crateName = "serde_derive";
-    version = "1.0.105";
+    version = "1.0.114";
     description = "Macros 1.1 implementation of #[derive(Serialize, Deserialize)]";
     authors = [ "Erick Tryzelaar <erick.tryzelaar@gmail.com>" "David Tolnay <dtolnay@gmail.com>" ];
-    sha256 = "05k5lp59fmsc4kk09flq0yxy6qd8npm6084m5vl803ahk7w613rc";
+    sha256 = "1inmayqc8z5siy2pwa7c4gclz7y70618zl3q9byvgy5mnzpbcjfv";
     procMacro = true;
     dependencies = mapFeatures features ([
-      (crates."proc_macro2"."${deps."serde_derive"."1.0.105"."proc_macro2"}" deps)
-      (crates."quote"."${deps."serde_derive"."1.0.105"."quote"}" deps)
-      (crates."syn"."${deps."serde_derive"."1.0.105"."syn"}" deps)
+      (crates."proc_macro2"."${deps."serde_derive"."1.0.114"."proc_macro2"}" deps)
+      (crates."quote"."${deps."serde_derive"."1.0.114"."quote"}" deps)
+      (crates."syn"."${deps."serde_derive"."1.0.114"."syn"}" deps)
     ]);
-    features = mkFeatures (features."serde_derive"."1.0.105" or {});
+    features = mkFeatures (features."serde_derive"."1.0.114" or {});
   };
-  features_.serde_derive."1.0.105" = deps: f: updateFeatures f (rec {
-    proc_macro2."${deps.serde_derive."1.0.105".proc_macro2}".default = true;
-    quote."${deps.serde_derive."1.0.105".quote}".default = true;
-    serde_derive."1.0.105".default = (f.serde_derive."1.0.105".default or true);
+  features_.serde_derive."1.0.114" = deps: f: updateFeatures f (rec {
+    proc_macro2."${deps.serde_derive."1.0.114".proc_macro2}".default = true;
+    quote."${deps.serde_derive."1.0.114".quote}".default = true;
+    serde_derive."1.0.114".default = (f.serde_derive."1.0.114".default or true);
     syn = fold recursiveUpdate {} [
-      { "${deps.serde_derive."1.0.105".syn}"."visit" = true; }
-      { "${deps.serde_derive."1.0.105".syn}".default = true; }
+      { "${deps.serde_derive."1.0.114".syn}"."visit" = true; }
+      { "${deps.serde_derive."1.0.114".syn}".default = true; }
     ];
   }) [
-    (features_.proc_macro2."${deps."serde_derive"."1.0.105"."proc_macro2"}" deps)
-    (features_.quote."${deps."serde_derive"."1.0.105"."quote"}" deps)
-    (features_.syn."${deps."serde_derive"."1.0.105"."syn"}" deps)
+    (features_.proc_macro2."${deps."serde_derive"."1.0.114"."proc_macro2"}" deps)
+    (features_.quote."${deps."serde_derive"."1.0.114"."quote"}" deps)
+    (features_.syn."${deps."serde_derive"."1.0.114"."syn"}" deps)
   ];
 
 
 # end
-# serde_yaml-0.8.11
+# serde_yaml-0.8.13
 
-  crates.serde_yaml."0.8.11" = deps: { features?(features_.serde_yaml."0.8.11" deps {}) }: buildRustCrate {
+  crates.serde_yaml."0.8.13" = deps: { features?(features_.serde_yaml."0.8.13" deps {}) }: buildRustCrate {
     crateName = "serde_yaml";
-    version = "0.8.11";
+    version = "0.8.13";
     description = "YAML support for Serde";
     authors = [ "David Tolnay <dtolnay@gmail.com>" ];
     edition = "2018";
-    sha256 = "0727jwg07binrwimzxqpbpp26lyssiy9krrn73sdhal75ba4mzyn";
+    sha256 = "1ch4hd03jpwmyg5h83fs324wmjl84vnh2sb37i4aq7a74fnc6n87";
     dependencies = mapFeatures features ([
-      (crates."dtoa"."${deps."serde_yaml"."0.8.11"."dtoa"}" deps)
-      (crates."linked_hash_map"."${deps."serde_yaml"."0.8.11"."linked_hash_map"}" deps)
-      (crates."serde"."${deps."serde_yaml"."0.8.11"."serde"}" deps)
-      (crates."yaml_rust"."${deps."serde_yaml"."0.8.11"."yaml_rust"}" deps)
+      (crates."dtoa"."${deps."serde_yaml"."0.8.13"."dtoa"}" deps)
+      (crates."linked_hash_map"."${deps."serde_yaml"."0.8.13"."linked_hash_map"}" deps)
+      (crates."serde"."${deps."serde_yaml"."0.8.13"."serde"}" deps)
+      (crates."yaml_rust"."${deps."serde_yaml"."0.8.13"."yaml_rust"}" deps)
     ]);
   };
-  features_.serde_yaml."0.8.11" = deps: f: updateFeatures f (rec {
-    dtoa."${deps.serde_yaml."0.8.11".dtoa}".default = true;
-    linked_hash_map."${deps.serde_yaml."0.8.11".linked_hash_map}".default = true;
-    serde."${deps.serde_yaml."0.8.11".serde}".default = true;
-    serde_yaml."0.8.11".default = (f.serde_yaml."0.8.11".default or true);
-    yaml_rust."${deps.serde_yaml."0.8.11".yaml_rust}".default = true;
+  features_.serde_yaml."0.8.13" = deps: f: updateFeatures f (rec {
+    dtoa."${deps.serde_yaml."0.8.13".dtoa}".default = true;
+    linked_hash_map."${deps.serde_yaml."0.8.13".linked_hash_map}".default = true;
+    serde."${deps.serde_yaml."0.8.13".serde}".default = true;
+    serde_yaml."0.8.13".default = (f.serde_yaml."0.8.13".default or true);
+    yaml_rust."${deps.serde_yaml."0.8.13".yaml_rust}".default = true;
   }) [
-    (features_.dtoa."${deps."serde_yaml"."0.8.11"."dtoa"}" deps)
-    (features_.linked_hash_map."${deps."serde_yaml"."0.8.11"."linked_hash_map"}" deps)
-    (features_.serde."${deps."serde_yaml"."0.8.11"."serde"}" deps)
-    (features_.yaml_rust."${deps."serde_yaml"."0.8.11"."yaml_rust"}" deps)
+    (features_.dtoa."${deps."serde_yaml"."0.8.13"."dtoa"}" deps)
+    (features_.linked_hash_map."${deps."serde_yaml"."0.8.13"."linked_hash_map"}" deps)
+    (features_.serde."${deps."serde_yaml"."0.8.13"."serde"}" deps)
+    (features_.yaml_rust."${deps."serde_yaml"."0.8.13"."yaml_rust"}" deps)
   ];
 
 
@@ -3551,174 +4011,174 @@ rec {
 
 
 # end
-# socket2-0.3.11
+# socket2-0.3.12
 
-  crates.socket2."0.3.11" = deps: { features?(features_.socket2."0.3.11" deps {}) }: buildRustCrate {
+  crates.socket2."0.3.12" = deps: { features?(features_.socket2."0.3.12" deps {}) }: buildRustCrate {
     crateName = "socket2";
-    version = "0.3.11";
+    version = "0.3.12";
     description = "Utilities for handling networking sockets with a maximal amount of configuration\npossible intended.\n";
     authors = [ "Alex Crichton <alex@alexcrichton.com>" ];
     edition = "2018";
-    sha256 = "06v07j2i8miv484vdgbj0k6npk6115x756yi0x3gvd3424nj3yjx";
+    sha256 = "1raci7p3yi5yhcyz2sybn63px0kdy5wv7wjkcyhwhvzfxs9kd3gw";
     dependencies = (if (kernel == "linux" || kernel == "darwin") || kernel == "redox" then mapFeatures features ([
-      (crates."cfg_if"."${deps."socket2"."0.3.11"."cfg_if"}" deps)
-      (crates."libc"."${deps."socket2"."0.3.11"."libc"}" deps)
+      (crates."cfg_if"."${deps."socket2"."0.3.12"."cfg_if"}" deps)
+      (crates."libc"."${deps."socket2"."0.3.12"."libc"}" deps)
     ]) else [])
       ++ (if kernel == "redox" then mapFeatures features ([
-      (crates."redox_syscall"."${deps."socket2"."0.3.11"."redox_syscall"}" deps)
+      (crates."redox_syscall"."${deps."socket2"."0.3.12"."redox_syscall"}" deps)
     ]) else [])
       ++ (if kernel == "windows" then mapFeatures features ([
-      (crates."winapi"."${deps."socket2"."0.3.11"."winapi"}" deps)
+      (crates."winapi"."${deps."socket2"."0.3.12"."winapi"}" deps)
     ]) else []);
-    features = mkFeatures (features."socket2"."0.3.11" or {});
+    features = mkFeatures (features."socket2"."0.3.12" or {});
   };
-  features_.socket2."0.3.11" = deps: f: updateFeatures f (rec {
-    cfg_if."${deps.socket2."0.3.11".cfg_if}".default = true;
-    libc."${deps.socket2."0.3.11".libc}".default = true;
-    redox_syscall."${deps.socket2."0.3.11".redox_syscall}".default = true;
-    socket2."0.3.11".default = (f.socket2."0.3.11".default or true);
+  features_.socket2."0.3.12" = deps: f: updateFeatures f (rec {
+    cfg_if."${deps.socket2."0.3.12".cfg_if}".default = true;
+    libc."${deps.socket2."0.3.12".libc}".default = true;
+    redox_syscall."${deps.socket2."0.3.12".redox_syscall}".default = true;
+    socket2."0.3.12".default = (f.socket2."0.3.12".default or true);
     winapi = fold recursiveUpdate {} [
-      { "${deps.socket2."0.3.11".winapi}"."handleapi" = true; }
-      { "${deps.socket2."0.3.11".winapi}"."minwindef" = true; }
-      { "${deps.socket2."0.3.11".winapi}"."ws2def" = true; }
-      { "${deps.socket2."0.3.11".winapi}"."ws2ipdef" = true; }
-      { "${deps.socket2."0.3.11".winapi}"."ws2tcpip" = true; }
-      { "${deps.socket2."0.3.11".winapi}".default = true; }
+      { "${deps.socket2."0.3.12".winapi}"."handleapi" = true; }
+      { "${deps.socket2."0.3.12".winapi}"."minwindef" = true; }
+      { "${deps.socket2."0.3.12".winapi}"."ws2def" = true; }
+      { "${deps.socket2."0.3.12".winapi}"."ws2ipdef" = true; }
+      { "${deps.socket2."0.3.12".winapi}"."ws2tcpip" = true; }
+      { "${deps.socket2."0.3.12".winapi}".default = true; }
     ];
   }) [
-    (features_.cfg_if."${deps."socket2"."0.3.11"."cfg_if"}" deps)
-    (features_.libc."${deps."socket2"."0.3.11"."libc"}" deps)
-    (features_.redox_syscall."${deps."socket2"."0.3.11"."redox_syscall"}" deps)
-    (features_.winapi."${deps."socket2"."0.3.11"."winapi"}" deps)
+    (features_.cfg_if."${deps."socket2"."0.3.12"."cfg_if"}" deps)
+    (features_.libc."${deps."socket2"."0.3.12"."libc"}" deps)
+    (features_.redox_syscall."${deps."socket2"."0.3.12"."redox_syscall"}" deps)
+    (features_.winapi."${deps."socket2"."0.3.12"."winapi"}" deps)
   ];
 
 
 # end
-# syn-1.0.17
+# syn-1.0.33
 
-  crates.syn."1.0.17" = deps: { features?(features_.syn."1.0.17" deps {}) }: buildRustCrate {
+  crates.syn."1.0.33" = deps: { features?(features_.syn."1.0.33" deps {}) }: buildRustCrate {
     crateName = "syn";
-    version = "1.0.17";
+    version = "1.0.33";
     description = "Parser for Rust source code";
     authors = [ "David Tolnay <dtolnay@gmail.com>" ];
     edition = "2018";
-    sha256 = "1vd0ixzqffdr6cb49fvwcrhrbd5a9zlrzkifp166fz0ci940ga6h";
+    sha256 = "07pjc1qr1vwxl28x3j5n6fa22pkhqvld7r6khkfm8gsq6j7arxfz";
     dependencies = mapFeatures features ([
-      (crates."proc_macro2"."${deps."syn"."1.0.17"."proc_macro2"}" deps)
-      (crates."unicode_xid"."${deps."syn"."1.0.17"."unicode_xid"}" deps)
+      (crates."proc_macro2"."${deps."syn"."1.0.33"."proc_macro2"}" deps)
+      (crates."unicode_xid"."${deps."syn"."1.0.33"."unicode_xid"}" deps)
     ]
-      ++ (if features.syn."1.0.17".quote or false then [ (crates.quote."${deps."syn"."1.0.17".quote}" deps) ] else []));
-    features = mkFeatures (features."syn"."1.0.17" or {});
+      ++ (if features.syn."1.0.33".quote or false then [ (crates.quote."${deps."syn"."1.0.33".quote}" deps) ] else []));
+    features = mkFeatures (features."syn"."1.0.33" or {});
   };
-  features_.syn."1.0.17" = deps: f: updateFeatures f (rec {
+  features_.syn."1.0.33" = deps: f: updateFeatures f (rec {
     proc_macro2 = fold recursiveUpdate {} [
-      { "${deps.syn."1.0.17".proc_macro2}"."proc-macro" =
-        (f.proc_macro2."${deps.syn."1.0.17".proc_macro2}"."proc-macro" or false) ||
-        (syn."1.0.17"."proc-macro" or false) ||
-        (f."syn"."1.0.17"."proc-macro" or false); }
-      { "${deps.syn."1.0.17".proc_macro2}".default = (f.proc_macro2."${deps.syn."1.0.17".proc_macro2}".default or false); }
+      { "${deps.syn."1.0.33".proc_macro2}"."proc-macro" =
+        (f.proc_macro2."${deps.syn."1.0.33".proc_macro2}"."proc-macro" or false) ||
+        (syn."1.0.33"."proc-macro" or false) ||
+        (f."syn"."1.0.33"."proc-macro" or false); }
+      { "${deps.syn."1.0.33".proc_macro2}".default = (f.proc_macro2."${deps.syn."1.0.33".proc_macro2}".default or false); }
     ];
     quote = fold recursiveUpdate {} [
-      { "${deps.syn."1.0.17".quote}"."proc-macro" =
-        (f.quote."${deps.syn."1.0.17".quote}"."proc-macro" or false) ||
-        (syn."1.0.17"."proc-macro" or false) ||
-        (f."syn"."1.0.17"."proc-macro" or false); }
-      { "${deps.syn."1.0.17".quote}".default = (f.quote."${deps.syn."1.0.17".quote}".default or false); }
+      { "${deps.syn."1.0.33".quote}"."proc-macro" =
+        (f.quote."${deps.syn."1.0.33".quote}"."proc-macro" or false) ||
+        (syn."1.0.33"."proc-macro" or false) ||
+        (f."syn"."1.0.33"."proc-macro" or false); }
+      { "${deps.syn."1.0.33".quote}".default = (f.quote."${deps.syn."1.0.33".quote}".default or false); }
     ];
     syn = fold recursiveUpdate {} [
-      { "1.0.17"."clone-impls" =
-        (f.syn."1.0.17"."clone-impls" or false) ||
-        (f.syn."1.0.17".default or false) ||
-        (syn."1.0.17"."default" or false); }
-      { "1.0.17"."derive" =
-        (f.syn."1.0.17"."derive" or false) ||
-        (f.syn."1.0.17".default or false) ||
-        (syn."1.0.17"."default" or false); }
-      { "1.0.17"."parsing" =
-        (f.syn."1.0.17"."parsing" or false) ||
-        (f.syn."1.0.17".default or false) ||
-        (syn."1.0.17"."default" or false); }
-      { "1.0.17"."printing" =
-        (f.syn."1.0.17"."printing" or false) ||
-        (f.syn."1.0.17".default or false) ||
-        (syn."1.0.17"."default" or false); }
-      { "1.0.17"."proc-macro" =
-        (f.syn."1.0.17"."proc-macro" or false) ||
-        (f.syn."1.0.17".default or false) ||
-        (syn."1.0.17"."default" or false); }
-      { "1.0.17"."quote" =
-        (f.syn."1.0.17"."quote" or false) ||
-        (f.syn."1.0.17".printing or false) ||
-        (syn."1.0.17"."printing" or false); }
-      { "1.0.17".default = (f.syn."1.0.17".default or true); }
+      { "1.0.33"."clone-impls" =
+        (f.syn."1.0.33"."clone-impls" or false) ||
+        (f.syn."1.0.33".default or false) ||
+        (syn."1.0.33"."default" or false); }
+      { "1.0.33"."derive" =
+        (f.syn."1.0.33"."derive" or false) ||
+        (f.syn."1.0.33".default or false) ||
+        (syn."1.0.33"."default" or false); }
+      { "1.0.33"."parsing" =
+        (f.syn."1.0.33"."parsing" or false) ||
+        (f.syn."1.0.33".default or false) ||
+        (syn."1.0.33"."default" or false); }
+      { "1.0.33"."printing" =
+        (f.syn."1.0.33"."printing" or false) ||
+        (f.syn."1.0.33".default or false) ||
+        (syn."1.0.33"."default" or false); }
+      { "1.0.33"."proc-macro" =
+        (f.syn."1.0.33"."proc-macro" or false) ||
+        (f.syn."1.0.33".default or false) ||
+        (syn."1.0.33"."default" or false); }
+      { "1.0.33"."quote" =
+        (f.syn."1.0.33"."quote" or false) ||
+        (f.syn."1.0.33".printing or false) ||
+        (syn."1.0.33"."printing" or false); }
+      { "1.0.33".default = (f.syn."1.0.33".default or true); }
     ];
-    unicode_xid."${deps.syn."1.0.17".unicode_xid}".default = true;
+    unicode_xid."${deps.syn."1.0.33".unicode_xid}".default = true;
   }) [
-    (features_.proc_macro2."${deps."syn"."1.0.17"."proc_macro2"}" deps)
-    (features_.quote."${deps."syn"."1.0.17"."quote"}" deps)
-    (features_.unicode_xid."${deps."syn"."1.0.17"."unicode_xid"}" deps)
+    (features_.proc_macro2."${deps."syn"."1.0.33"."proc_macro2"}" deps)
+    (features_.quote."${deps."syn"."1.0.33"."quote"}" deps)
+    (features_.unicode_xid."${deps."syn"."1.0.33"."unicode_xid"}" deps)
   ];
 
 
 # end
-# synstructure-0.12.3
+# synstructure-0.12.4
 
-  crates.synstructure."0.12.3" = deps: { features?(features_.synstructure."0.12.3" deps {}) }: buildRustCrate {
+  crates.synstructure."0.12.4" = deps: { features?(features_.synstructure."0.12.4" deps {}) }: buildRustCrate {
     crateName = "synstructure";
-    version = "0.12.3";
+    version = "0.12.4";
     description = "Helper methods and macros for custom derives";
     authors = [ "Nika Layzell <nika@thelayzells.com>" ];
     edition = "2018";
-    sha256 = "1mi3yl5h54wkarzbm4ma4b3dqfjiy8rlvags4qxqhsy3j850rmcy";
+    sha256 = "12szx3szy6qvmfnhnj4dn7kl8p57mvg9vs22mxpj0jlcb9cx0kch";
     dependencies = mapFeatures features ([
-      (crates."proc_macro2"."${deps."synstructure"."0.12.3"."proc_macro2"}" deps)
-      (crates."quote"."${deps."synstructure"."0.12.3"."quote"}" deps)
-      (crates."syn"."${deps."synstructure"."0.12.3"."syn"}" deps)
-      (crates."unicode_xid"."${deps."synstructure"."0.12.3"."unicode_xid"}" deps)
+      (crates."proc_macro2"."${deps."synstructure"."0.12.4"."proc_macro2"}" deps)
+      (crates."quote"."${deps."synstructure"."0.12.4"."quote"}" deps)
+      (crates."syn"."${deps."synstructure"."0.12.4"."syn"}" deps)
+      (crates."unicode_xid"."${deps."synstructure"."0.12.4"."unicode_xid"}" deps)
     ]);
-    features = mkFeatures (features."synstructure"."0.12.3" or {});
+    features = mkFeatures (features."synstructure"."0.12.4" or {});
   };
-  features_.synstructure."0.12.3" = deps: f: updateFeatures f (rec {
+  features_.synstructure."0.12.4" = deps: f: updateFeatures f (rec {
     proc_macro2 = fold recursiveUpdate {} [
-      { "${deps.synstructure."0.12.3".proc_macro2}"."proc-macro" =
-        (f.proc_macro2."${deps.synstructure."0.12.3".proc_macro2}"."proc-macro" or false) ||
-        (synstructure."0.12.3"."proc-macro" or false) ||
-        (f."synstructure"."0.12.3"."proc-macro" or false); }
-      { "${deps.synstructure."0.12.3".proc_macro2}".default = (f.proc_macro2."${deps.synstructure."0.12.3".proc_macro2}".default or false); }
+      { "${deps.synstructure."0.12.4".proc_macro2}"."proc-macro" =
+        (f.proc_macro2."${deps.synstructure."0.12.4".proc_macro2}"."proc-macro" or false) ||
+        (synstructure."0.12.4"."proc-macro" or false) ||
+        (f."synstructure"."0.12.4"."proc-macro" or false); }
+      { "${deps.synstructure."0.12.4".proc_macro2}".default = (f.proc_macro2."${deps.synstructure."0.12.4".proc_macro2}".default or false); }
     ];
     quote = fold recursiveUpdate {} [
-      { "${deps.synstructure."0.12.3".quote}"."proc-macro" =
-        (f.quote."${deps.synstructure."0.12.3".quote}"."proc-macro" or false) ||
-        (synstructure."0.12.3"."proc-macro" or false) ||
-        (f."synstructure"."0.12.3"."proc-macro" or false); }
-      { "${deps.synstructure."0.12.3".quote}".default = (f.quote."${deps.synstructure."0.12.3".quote}".default or false); }
+      { "${deps.synstructure."0.12.4".quote}"."proc-macro" =
+        (f.quote."${deps.synstructure."0.12.4".quote}"."proc-macro" or false) ||
+        (synstructure."0.12.4"."proc-macro" or false) ||
+        (f."synstructure"."0.12.4"."proc-macro" or false); }
+      { "${deps.synstructure."0.12.4".quote}".default = (f.quote."${deps.synstructure."0.12.4".quote}".default or false); }
     ];
     syn = fold recursiveUpdate {} [
-      { "${deps.synstructure."0.12.3".syn}"."clone-impls" = true; }
-      { "${deps.synstructure."0.12.3".syn}"."derive" = true; }
-      { "${deps.synstructure."0.12.3".syn}"."extra-traits" = true; }
-      { "${deps.synstructure."0.12.3".syn}"."parsing" = true; }
-      { "${deps.synstructure."0.12.3".syn}"."printing" = true; }
-      { "${deps.synstructure."0.12.3".syn}"."proc-macro" =
-        (f.syn."${deps.synstructure."0.12.3".syn}"."proc-macro" or false) ||
-        (synstructure."0.12.3"."proc-macro" or false) ||
-        (f."synstructure"."0.12.3"."proc-macro" or false); }
-      { "${deps.synstructure."0.12.3".syn}"."visit" = true; }
-      { "${deps.synstructure."0.12.3".syn}".default = (f.syn."${deps.synstructure."0.12.3".syn}".default or false); }
+      { "${deps.synstructure."0.12.4".syn}"."clone-impls" = true; }
+      { "${deps.synstructure."0.12.4".syn}"."derive" = true; }
+      { "${deps.synstructure."0.12.4".syn}"."extra-traits" = true; }
+      { "${deps.synstructure."0.12.4".syn}"."parsing" = true; }
+      { "${deps.synstructure."0.12.4".syn}"."printing" = true; }
+      { "${deps.synstructure."0.12.4".syn}"."proc-macro" =
+        (f.syn."${deps.synstructure."0.12.4".syn}"."proc-macro" or false) ||
+        (synstructure."0.12.4"."proc-macro" or false) ||
+        (f."synstructure"."0.12.4"."proc-macro" or false); }
+      { "${deps.synstructure."0.12.4".syn}"."visit" = true; }
+      { "${deps.synstructure."0.12.4".syn}".default = (f.syn."${deps.synstructure."0.12.4".syn}".default or false); }
     ];
     synstructure = fold recursiveUpdate {} [
-      { "0.12.3"."proc-macro" =
-        (f.synstructure."0.12.3"."proc-macro" or false) ||
-        (f.synstructure."0.12.3".default or false) ||
-        (synstructure."0.12.3"."default" or false); }
-      { "0.12.3".default = (f.synstructure."0.12.3".default or true); }
+      { "0.12.4"."proc-macro" =
+        (f.synstructure."0.12.4"."proc-macro" or false) ||
+        (f.synstructure."0.12.4".default or false) ||
+        (synstructure."0.12.4"."default" or false); }
+      { "0.12.4".default = (f.synstructure."0.12.4".default or true); }
     ];
-    unicode_xid."${deps.synstructure."0.12.3".unicode_xid}".default = true;
+    unicode_xid."${deps.synstructure."0.12.4".unicode_xid}".default = true;
   }) [
-    (features_.proc_macro2."${deps."synstructure"."0.12.3"."proc_macro2"}" deps)
-    (features_.quote."${deps."synstructure"."0.12.3"."quote"}" deps)
-    (features_.syn."${deps."synstructure"."0.12.3"."syn"}" deps)
-    (features_.unicode_xid."${deps."synstructure"."0.12.3"."unicode_xid"}" deps)
+    (features_.proc_macro2."${deps."synstructure"."0.12.4"."proc_macro2"}" deps)
+    (features_.quote."${deps."synstructure"."0.12.4"."quote"}" deps)
+    (features_.syn."${deps."synstructure"."0.12.4"."syn"}" deps)
+    (features_.unicode_xid."${deps."synstructure"."0.12.4"."unicode_xid"}" deps)
   ];
 
 
@@ -3814,277 +4274,275 @@ rec {
 
 
 # end
-# time-0.1.42
+# time-0.1.43
 
-  crates.time."0.1.42" = deps: { features?(features_.time."0.1.42" deps {}) }: buildRustCrate {
+  crates.time."0.1.43" = deps: { features?(features_.time."0.1.43" deps {}) }: buildRustCrate {
     crateName = "time";
-    version = "0.1.42";
+    version = "0.1.43";
     description = "Utilities for working with time-related functions in Rust.\n";
     authors = [ "The Rust Project Developers" ];
-    sha256 = "1ny809kmdjwd4b478ipc33dz7q6nq7rxk766x8cnrg6zygcksmmx";
+    sha256 = "1hv2cwyyqrcycy3fapqf094q4qv1vzh9yp95l5k8m2mznjz7r6m0";
     dependencies = mapFeatures features ([
-      (crates."libc"."${deps."time"."0.1.42"."libc"}" deps)
+      (crates."libc"."${deps."time"."0.1.43"."libc"}" deps)
     ])
-      ++ (if kernel == "redox" then mapFeatures features ([
-      (crates."redox_syscall"."${deps."time"."0.1.42"."redox_syscall"}" deps)
-    ]) else [])
       ++ (if kernel == "windows" then mapFeatures features ([
-      (crates."winapi"."${deps."time"."0.1.42"."winapi"}" deps)
+      (crates."winapi"."${deps."time"."0.1.43"."winapi"}" deps)
     ]) else []);
   };
-  features_.time."0.1.42" = deps: f: updateFeatures f (rec {
-    libc."${deps.time."0.1.42".libc}".default = true;
-    redox_syscall."${deps.time."0.1.42".redox_syscall}".default = true;
-    time."0.1.42".default = (f.time."0.1.42".default or true);
+  features_.time."0.1.43" = deps: f: updateFeatures f (rec {
+    libc."${deps.time."0.1.43".libc}".default = true;
+    time."0.1.43".default = (f.time."0.1.43".default or true);
     winapi = fold recursiveUpdate {} [
-      { "${deps.time."0.1.42".winapi}"."minwinbase" = true; }
-      { "${deps.time."0.1.42".winapi}"."minwindef" = true; }
-      { "${deps.time."0.1.42".winapi}"."ntdef" = true; }
-      { "${deps.time."0.1.42".winapi}"."profileapi" = true; }
-      { "${deps.time."0.1.42".winapi}"."std" = true; }
-      { "${deps.time."0.1.42".winapi}"."sysinfoapi" = true; }
-      { "${deps.time."0.1.42".winapi}"."timezoneapi" = true; }
-      { "${deps.time."0.1.42".winapi}".default = true; }
+      { "${deps.time."0.1.43".winapi}"."minwinbase" = true; }
+      { "${deps.time."0.1.43".winapi}"."minwindef" = true; }
+      { "${deps.time."0.1.43".winapi}"."ntdef" = true; }
+      { "${deps.time."0.1.43".winapi}"."profileapi" = true; }
+      { "${deps.time."0.1.43".winapi}"."std" = true; }
+      { "${deps.time."0.1.43".winapi}"."sysinfoapi" = true; }
+      { "${deps.time."0.1.43".winapi}"."timezoneapi" = true; }
+      { "${deps.time."0.1.43".winapi}".default = true; }
     ];
   }) [
-    (features_.libc."${deps."time"."0.1.42"."libc"}" deps)
-    (features_.redox_syscall."${deps."time"."0.1.42"."redox_syscall"}" deps)
-    (features_.winapi."${deps."time"."0.1.42"."winapi"}" deps)
+    (features_.libc."${deps."time"."0.1.43"."libc"}" deps)
+    (features_.winapi."${deps."time"."0.1.43"."winapi"}" deps)
   ];
 
 
 # end
-# tokio-0.2.13
+# tokio-0.2.21
 
-  crates.tokio."0.2.13" = deps: { features?(features_.tokio."0.2.13" deps {}) }: buildRustCrate {
+  crates.tokio."0.2.21" = deps: { features?(features_.tokio."0.2.21" deps {}) }: buildRustCrate {
     crateName = "tokio";
-    version = "0.2.13";
+    version = "0.2.21";
     description = "An event-driven, non-blocking I/O platform for writing asynchronous I/O\nbacked applications.\n";
     authors = [ "Tokio Contributors <team@tokio.rs>" ];
     edition = "2018";
-    sha256 = "0dr3lbg1r2pmmjl8w28y1886ir3dygi8jqijlbjjbxsc0dwcbc3j";
+    sha256 = "0mrkzi73b48j7wzjf31djslga0iddq080lz3safghzppy9r0zhhz";
     dependencies = mapFeatures features ([
-      (crates."bytes"."${deps."tokio"."0.2.13"."bytes"}" deps)
-      (crates."pin_project_lite"."${deps."tokio"."0.2.13"."pin_project_lite"}" deps)
+      (crates."bytes"."${deps."tokio"."0.2.21"."bytes"}" deps)
+      (crates."pin_project_lite"."${deps."tokio"."0.2.21"."pin_project_lite"}" deps)
     ]
-      ++ (if features.tokio."0.2.13".fnv or false then [ (crates.fnv."${deps."tokio"."0.2.13".fnv}" deps) ] else [])
-      ++ (if features.tokio."0.2.13".iovec or false then [ (crates.iovec."${deps."tokio"."0.2.13".iovec}" deps) ] else [])
-      ++ (if features.tokio."0.2.13".lazy_static or false then [ (crates.lazy_static."${deps."tokio"."0.2.13".lazy_static}" deps) ] else [])
-      ++ (if features.tokio."0.2.13".memchr or false then [ (crates.memchr."${deps."tokio"."0.2.13".memchr}" deps) ] else [])
-      ++ (if features.tokio."0.2.13".mio or false then [ (crates.mio."${deps."tokio"."0.2.13".mio}" deps) ] else [])
-      ++ (if features.tokio."0.2.13".num_cpus or false then [ (crates.num_cpus."${deps."tokio"."0.2.13".num_cpus}" deps) ] else [])
-      ++ (if features.tokio."0.2.13".slab or false then [ (crates.slab."${deps."tokio"."0.2.13".slab}" deps) ] else [])
-      ++ (if features.tokio."0.2.13".tokio-macros or false then [ (crates.tokio_macros."${deps."tokio"."0.2.13".tokio_macros}" deps) ] else []))
-      ++ (if !(kernel == "windows") then mapFeatures features ([
+      ++ (if features.tokio."0.2.21".fnv or false then [ (crates.fnv."${deps."tokio"."0.2.21".fnv}" deps) ] else [])
+      ++ (if features.tokio."0.2.21".futures-core or false then [ (crates.futures_core."${deps."tokio"."0.2.21".futures_core}" deps) ] else [])
+      ++ (if features.tokio."0.2.21".iovec or false then [ (crates.iovec."${deps."tokio"."0.2.21".iovec}" deps) ] else [])
+      ++ (if features.tokio."0.2.21".lazy_static or false then [ (crates.lazy_static."${deps."tokio"."0.2.21".lazy_static}" deps) ] else [])
+      ++ (if features.tokio."0.2.21".memchr or false then [ (crates.memchr."${deps."tokio"."0.2.21".memchr}" deps) ] else [])
+      ++ (if features.tokio."0.2.21".mio or false then [ (crates.mio."${deps."tokio"."0.2.21".mio}" deps) ] else [])
+      ++ (if features.tokio."0.2.21".num_cpus or false then [ (crates.num_cpus."${deps."tokio"."0.2.21".num_cpus}" deps) ] else [])
+      ++ (if features.tokio."0.2.21".slab or false then [ (crates.slab."${deps."tokio"."0.2.21".slab}" deps) ] else [])
+      ++ (if features.tokio."0.2.21".tokio-macros or false then [ (crates.tokio_macros."${deps."tokio"."0.2.21".tokio_macros}" deps) ] else []))
+      ++ (if kernel == "loom" then mapFeatures features ([
 ]) else [])
       ++ (if (kernel == "linux" || kernel == "darwin") then mapFeatures features ([
     ]
-      ++ (if features.tokio."0.2.13".libc or false then [ (crates.libc."${deps."tokio"."0.2.13".libc}" deps) ] else [])
-      ++ (if features.tokio."0.2.13".mio-uds or false then [ (crates.mio_uds."${deps."tokio"."0.2.13".mio_uds}" deps) ] else [])
-      ++ (if features.tokio."0.2.13".signal-hook-registry or false then [ (crates.signal_hook_registry."${deps."tokio"."0.2.13".signal_hook_registry}" deps) ] else [])) else [])
+      ++ (if features.tokio."0.2.21".libc or false then [ (crates.libc."${deps."tokio"."0.2.21".libc}" deps) ] else [])
+      ++ (if features.tokio."0.2.21".mio-uds or false then [ (crates.mio_uds."${deps."tokio"."0.2.21".mio_uds}" deps) ] else [])
+      ++ (if features.tokio."0.2.21".signal-hook-registry or false then [ (crates.signal_hook_registry."${deps."tokio"."0.2.21".signal_hook_registry}" deps) ] else [])) else [])
       ++ (if kernel == "windows" then mapFeatures features ([
     ]
-      ++ (if features.tokio."0.2.13".mio-named-pipes or false then [ (crates.mio_named_pipes."${deps."tokio"."0.2.13".mio_named_pipes}" deps) ] else [])
-      ++ (if features.tokio."0.2.13".winapi or false then [ (crates.winapi."${deps."tokio"."0.2.13".winapi}" deps) ] else [])) else []);
-    features = mkFeatures (features."tokio"."0.2.13" or {});
+      ++ (if features.tokio."0.2.21".mio-named-pipes or false then [ (crates.mio_named_pipes."${deps."tokio"."0.2.21".mio_named_pipes}" deps) ] else [])
+      ++ (if features.tokio."0.2.21".winapi or false then [ (crates.winapi."${deps."tokio"."0.2.21".winapi}" deps) ] else [])) else []);
+    features = mkFeatures (features."tokio"."0.2.21" or {});
   };
-  features_.tokio."0.2.13" = deps: f: updateFeatures f (rec {
-    bytes."${deps.tokio."0.2.13".bytes}".default = true;
-    fnv."${deps.tokio."0.2.13".fnv}".default = true;
-    iovec."${deps.tokio."0.2.13".iovec}".default = true;
-    lazy_static."${deps.tokio."0.2.13".lazy_static}".default = true;
-    libc."${deps.tokio."0.2.13".libc}".default = true;
-    memchr."${deps.tokio."0.2.13".memchr}".default = true;
-    mio."${deps.tokio."0.2.13".mio}".default = true;
-    mio_named_pipes."${deps.tokio."0.2.13".mio_named_pipes}".default = true;
-    mio_uds."${deps.tokio."0.2.13".mio_uds}".default = true;
-    num_cpus."${deps.tokio."0.2.13".num_cpus}".default = true;
-    pin_project_lite."${deps.tokio."0.2.13".pin_project_lite}".default = true;
-    signal_hook_registry."${deps.tokio."0.2.13".signal_hook_registry}".default = true;
-    slab."${deps.tokio."0.2.13".slab}".default = true;
+  features_.tokio."0.2.21" = deps: f: updateFeatures f (rec {
+    bytes."${deps.tokio."0.2.21".bytes}".default = true;
+    fnv."${deps.tokio."0.2.21".fnv}".default = true;
+    futures_core."${deps.tokio."0.2.21".futures_core}".default = true;
+    iovec."${deps.tokio."0.2.21".iovec}".default = true;
+    lazy_static."${deps.tokio."0.2.21".lazy_static}".default = true;
+    libc."${deps.tokio."0.2.21".libc}".default = true;
+    memchr."${deps.tokio."0.2.21".memchr}".default = true;
+    mio."${deps.tokio."0.2.21".mio}".default = true;
+    mio_named_pipes."${deps.tokio."0.2.21".mio_named_pipes}".default = true;
+    mio_uds."${deps.tokio."0.2.21".mio_uds}".default = true;
+    num_cpus."${deps.tokio."0.2.21".num_cpus}".default = true;
+    pin_project_lite."${deps.tokio."0.2.21".pin_project_lite}".default = true;
+    signal_hook_registry."${deps.tokio."0.2.21".signal_hook_registry}".default = true;
+    slab."${deps.tokio."0.2.21".slab}".default = true;
     tokio = fold recursiveUpdate {} [
-      { "0.2.13"."blocking" =
-        (f.tokio."0.2.13"."blocking" or false) ||
-        (f.tokio."0.2.13".full or false) ||
-        (tokio."0.2.13"."full" or false); }
-      { "0.2.13"."dns" =
-        (f.tokio."0.2.13"."dns" or false) ||
-        (f.tokio."0.2.13".full or false) ||
-        (tokio."0.2.13"."full" or false) ||
-        (f.tokio."0.2.13".net or false) ||
-        (tokio."0.2.13"."net" or false); }
-      { "0.2.13"."fnv" =
-        (f.tokio."0.2.13"."fnv" or false) ||
-        (f.tokio."0.2.13".sync or false) ||
-        (tokio."0.2.13"."sync" or false); }
-      { "0.2.13"."fs" =
-        (f.tokio."0.2.13"."fs" or false) ||
-        (f.tokio."0.2.13".full or false) ||
-        (tokio."0.2.13"."full" or false); }
-      { "0.2.13"."futures-core" =
-        (f.tokio."0.2.13"."futures-core" or false) ||
-        (f.tokio."0.2.13".stream or false) ||
-        (tokio."0.2.13"."stream" or false); }
-      { "0.2.13"."io-driver" =
-        (f.tokio."0.2.13"."io-driver" or false) ||
-        (f.tokio."0.2.13".full or false) ||
-        (tokio."0.2.13"."full" or false) ||
-        (f.tokio."0.2.13".process or false) ||
-        (tokio."0.2.13"."process" or false) ||
-        (f.tokio."0.2.13".signal or false) ||
-        (tokio."0.2.13"."signal" or false) ||
-        (f.tokio."0.2.13".tcp or false) ||
-        (tokio."0.2.13"."tcp" or false) ||
-        (f.tokio."0.2.13".udp or false) ||
-        (tokio."0.2.13"."udp" or false) ||
-        (f.tokio."0.2.13".uds or false) ||
-        (tokio."0.2.13"."uds" or false); }
-      { "0.2.13"."io-std" =
-        (f.tokio."0.2.13"."io-std" or false) ||
-        (f.tokio."0.2.13".full or false) ||
-        (tokio."0.2.13"."full" or false); }
-      { "0.2.13"."io-util" =
-        (f.tokio."0.2.13"."io-util" or false) ||
-        (f.tokio."0.2.13".fs or false) ||
-        (tokio."0.2.13"."fs" or false) ||
-        (f.tokio."0.2.13".full or false) ||
-        (tokio."0.2.13"."full" or false); }
-      { "0.2.13"."iovec" =
-        (f.tokio."0.2.13"."iovec" or false) ||
-        (f.tokio."0.2.13".tcp or false) ||
-        (tokio."0.2.13"."tcp" or false); }
-      { "0.2.13"."lazy_static" =
-        (f.tokio."0.2.13"."lazy_static" or false) ||
-        (f.tokio."0.2.13".io-driver or false) ||
-        (tokio."0.2.13"."io-driver" or false) ||
-        (f.tokio."0.2.13".signal or false) ||
-        (tokio."0.2.13"."signal" or false); }
-      { "0.2.13"."libc" =
-        (f.tokio."0.2.13"."libc" or false) ||
-        (f.tokio."0.2.13".process or false) ||
-        (tokio."0.2.13"."process" or false) ||
-        (f.tokio."0.2.13".signal or false) ||
-        (tokio."0.2.13"."signal" or false) ||
-        (f.tokio."0.2.13".uds or false) ||
-        (tokio."0.2.13"."uds" or false); }
-      { "0.2.13"."macros" =
-        (f.tokio."0.2.13"."macros" or false) ||
-        (f.tokio."0.2.13".full or false) ||
-        (tokio."0.2.13"."full" or false); }
-      { "0.2.13"."memchr" =
-        (f.tokio."0.2.13"."memchr" or false) ||
-        (f.tokio."0.2.13".io-util or false) ||
-        (tokio."0.2.13"."io-util" or false); }
-      { "0.2.13"."mio" =
-        (f.tokio."0.2.13"."mio" or false) ||
-        (f.tokio."0.2.13".io-driver or false) ||
-        (tokio."0.2.13"."io-driver" or false); }
-      { "0.2.13"."mio-named-pipes" =
-        (f.tokio."0.2.13"."mio-named-pipes" or false) ||
-        (f.tokio."0.2.13".process or false) ||
-        (tokio."0.2.13"."process" or false); }
-      { "0.2.13"."mio-uds" =
-        (f.tokio."0.2.13"."mio-uds" or false) ||
-        (f.tokio."0.2.13".signal or false) ||
-        (tokio."0.2.13"."signal" or false) ||
-        (f.tokio."0.2.13".uds or false) ||
-        (tokio."0.2.13"."uds" or false); }
-      { "0.2.13"."net" =
-        (f.tokio."0.2.13"."net" or false) ||
-        (f.tokio."0.2.13".full or false) ||
-        (tokio."0.2.13"."full" or false); }
-      { "0.2.13"."num_cpus" =
-        (f.tokio."0.2.13"."num_cpus" or false) ||
-        (f.tokio."0.2.13".rt-threaded or false) ||
-        (tokio."0.2.13"."rt-threaded" or false); }
-      { "0.2.13"."process" =
-        (f.tokio."0.2.13"."process" or false) ||
-        (f.tokio."0.2.13".full or false) ||
-        (tokio."0.2.13"."full" or false); }
-      { "0.2.13"."rt-core" =
-        (f.tokio."0.2.13"."rt-core" or false) ||
-        (f.tokio."0.2.13".blocking or false) ||
-        (tokio."0.2.13"."blocking" or false) ||
-        (f.tokio."0.2.13".dns or false) ||
-        (tokio."0.2.13"."dns" or false) ||
-        (f.tokio."0.2.13".fs or false) ||
-        (tokio."0.2.13"."fs" or false) ||
-        (f.tokio."0.2.13".full or false) ||
-        (tokio."0.2.13"."full" or false) ||
-        (f.tokio."0.2.13".io-std or false) ||
-        (tokio."0.2.13"."io-std" or false) ||
-        (f.tokio."0.2.13".rt-threaded or false) ||
-        (tokio."0.2.13"."rt-threaded" or false); }
-      { "0.2.13"."rt-threaded" =
-        (f.tokio."0.2.13"."rt-threaded" or false) ||
-        (f.tokio."0.2.13".full or false) ||
-        (tokio."0.2.13"."full" or false); }
-      { "0.2.13"."rt-util" =
-        (f.tokio."0.2.13"."rt-util" or false) ||
-        (f.tokio."0.2.13".full or false) ||
-        (tokio."0.2.13"."full" or false); }
-      { "0.2.13"."signal" =
-        (f.tokio."0.2.13"."signal" or false) ||
-        (f.tokio."0.2.13".full or false) ||
-        (tokio."0.2.13"."full" or false) ||
-        (f.tokio."0.2.13".process or false) ||
-        (tokio."0.2.13"."process" or false); }
-      { "0.2.13"."signal-hook-registry" =
-        (f.tokio."0.2.13"."signal-hook-registry" or false) ||
-        (f.tokio."0.2.13".signal or false) ||
-        (tokio."0.2.13"."signal" or false); }
-      { "0.2.13"."slab" =
-        (f.tokio."0.2.13"."slab" or false) ||
-        (f.tokio."0.2.13".time or false) ||
-        (tokio."0.2.13"."time" or false); }
-      { "0.2.13"."stream" =
-        (f.tokio."0.2.13"."stream" or false) ||
-        (f.tokio."0.2.13".full or false) ||
-        (tokio."0.2.13"."full" or false); }
-      { "0.2.13"."sync" =
-        (f.tokio."0.2.13"."sync" or false) ||
-        (f.tokio."0.2.13".full or false) ||
-        (tokio."0.2.13"."full" or false); }
-      { "0.2.13"."tcp" =
-        (f.tokio."0.2.13"."tcp" or false) ||
-        (f.tokio."0.2.13".net or false) ||
-        (tokio."0.2.13"."net" or false); }
-      { "0.2.13"."time" =
-        (f.tokio."0.2.13"."time" or false) ||
-        (f.tokio."0.2.13".full or false) ||
-        (tokio."0.2.13"."full" or false); }
-      { "0.2.13"."tokio-macros" =
-        (f.tokio."0.2.13"."tokio-macros" or false) ||
-        (f.tokio."0.2.13".macros or false) ||
-        (tokio."0.2.13"."macros" or false); }
-      { "0.2.13"."udp" =
-        (f.tokio."0.2.13"."udp" or false) ||
-        (f.tokio."0.2.13".net or false) ||
-        (tokio."0.2.13"."net" or false); }
-      { "0.2.13"."uds" =
-        (f.tokio."0.2.13"."uds" or false) ||
-        (f.tokio."0.2.13".net or false) ||
-        (tokio."0.2.13"."net" or false); }
-      { "0.2.13".default = (f.tokio."0.2.13".default or true); }
+      { "0.2.21"."blocking" =
+        (f.tokio."0.2.21"."blocking" or false) ||
+        (f.tokio."0.2.21".full or false) ||
+        (tokio."0.2.21"."full" or false); }
+      { "0.2.21"."dns" =
+        (f.tokio."0.2.21"."dns" or false) ||
+        (f.tokio."0.2.21".full or false) ||
+        (tokio."0.2.21"."full" or false) ||
+        (f.tokio."0.2.21".net or false) ||
+        (tokio."0.2.21"."net" or false); }
+      { "0.2.21"."fnv" =
+        (f.tokio."0.2.21"."fnv" or false) ||
+        (f.tokio."0.2.21".sync or false) ||
+        (tokio."0.2.21"."sync" or false); }
+      { "0.2.21"."fs" =
+        (f.tokio."0.2.21"."fs" or false) ||
+        (f.tokio."0.2.21".full or false) ||
+        (tokio."0.2.21"."full" or false); }
+      { "0.2.21"."futures-core" =
+        (f.tokio."0.2.21"."futures-core" or false) ||
+        (f.tokio."0.2.21".stream or false) ||
+        (tokio."0.2.21"."stream" or false); }
+      { "0.2.21"."io-driver" =
+        (f.tokio."0.2.21"."io-driver" or false) ||
+        (f.tokio."0.2.21".full or false) ||
+        (tokio."0.2.21"."full" or false) ||
+        (f.tokio."0.2.21".process or false) ||
+        (tokio."0.2.21"."process" or false) ||
+        (f.tokio."0.2.21".signal or false) ||
+        (tokio."0.2.21"."signal" or false) ||
+        (f.tokio."0.2.21".tcp or false) ||
+        (tokio."0.2.21"."tcp" or false) ||
+        (f.tokio."0.2.21".udp or false) ||
+        (tokio."0.2.21"."udp" or false) ||
+        (f.tokio."0.2.21".uds or false) ||
+        (tokio."0.2.21"."uds" or false); }
+      { "0.2.21"."io-std" =
+        (f.tokio."0.2.21"."io-std" or false) ||
+        (f.tokio."0.2.21".full or false) ||
+        (tokio."0.2.21"."full" or false); }
+      { "0.2.21"."io-util" =
+        (f.tokio."0.2.21"."io-util" or false) ||
+        (f.tokio."0.2.21".fs or false) ||
+        (tokio."0.2.21"."fs" or false) ||
+        (f.tokio."0.2.21".full or false) ||
+        (tokio."0.2.21"."full" or false); }
+      { "0.2.21"."iovec" =
+        (f.tokio."0.2.21"."iovec" or false) ||
+        (f.tokio."0.2.21".tcp or false) ||
+        (tokio."0.2.21"."tcp" or false); }
+      { "0.2.21"."lazy_static" =
+        (f.tokio."0.2.21"."lazy_static" or false) ||
+        (f.tokio."0.2.21".io-driver or false) ||
+        (tokio."0.2.21"."io-driver" or false) ||
+        (f.tokio."0.2.21".signal or false) ||
+        (tokio."0.2.21"."signal" or false); }
+      { "0.2.21"."libc" =
+        (f.tokio."0.2.21"."libc" or false) ||
+        (f.tokio."0.2.21".process or false) ||
+        (tokio."0.2.21"."process" or false) ||
+        (f.tokio."0.2.21".signal or false) ||
+        (tokio."0.2.21"."signal" or false) ||
+        (f.tokio."0.2.21".uds or false) ||
+        (tokio."0.2.21"."uds" or false); }
+      { "0.2.21"."macros" =
+        (f.tokio."0.2.21"."macros" or false) ||
+        (f.tokio."0.2.21".full or false) ||
+        (tokio."0.2.21"."full" or false); }
+      { "0.2.21"."memchr" =
+        (f.tokio."0.2.21"."memchr" or false) ||
+        (f.tokio."0.2.21".io-util or false) ||
+        (tokio."0.2.21"."io-util" or false); }
+      { "0.2.21"."mio" =
+        (f.tokio."0.2.21"."mio" or false) ||
+        (f.tokio."0.2.21".io-driver or false) ||
+        (tokio."0.2.21"."io-driver" or false); }
+      { "0.2.21"."mio-named-pipes" =
+        (f.tokio."0.2.21"."mio-named-pipes" or false) ||
+        (f.tokio."0.2.21".process or false) ||
+        (tokio."0.2.21"."process" or false); }
+      { "0.2.21"."mio-uds" =
+        (f.tokio."0.2.21"."mio-uds" or false) ||
+        (f.tokio."0.2.21".signal or false) ||
+        (tokio."0.2.21"."signal" or false) ||
+        (f.tokio."0.2.21".uds or false) ||
+        (tokio."0.2.21"."uds" or false); }
+      { "0.2.21"."net" =
+        (f.tokio."0.2.21"."net" or false) ||
+        (f.tokio."0.2.21".full or false) ||
+        (tokio."0.2.21"."full" or false); }
+      { "0.2.21"."num_cpus" =
+        (f.tokio."0.2.21"."num_cpus" or false) ||
+        (f.tokio."0.2.21".rt-threaded or false) ||
+        (tokio."0.2.21"."rt-threaded" or false); }
+      { "0.2.21"."process" =
+        (f.tokio."0.2.21"."process" or false) ||
+        (f.tokio."0.2.21".full or false) ||
+        (tokio."0.2.21"."full" or false); }
+      { "0.2.21"."rt-core" =
+        (f.tokio."0.2.21"."rt-core" or false) ||
+        (f.tokio."0.2.21".blocking or false) ||
+        (tokio."0.2.21"."blocking" or false) ||
+        (f.tokio."0.2.21".dns or false) ||
+        (tokio."0.2.21"."dns" or false) ||
+        (f.tokio."0.2.21".fs or false) ||
+        (tokio."0.2.21"."fs" or false) ||
+        (f.tokio."0.2.21".full or false) ||
+        (tokio."0.2.21"."full" or false) ||
+        (f.tokio."0.2.21".io-std or false) ||
+        (tokio."0.2.21"."io-std" or false) ||
+        (f.tokio."0.2.21".rt-threaded or false) ||
+        (tokio."0.2.21"."rt-threaded" or false); }
+      { "0.2.21"."rt-threaded" =
+        (f.tokio."0.2.21"."rt-threaded" or false) ||
+        (f.tokio."0.2.21".full or false) ||
+        (tokio."0.2.21"."full" or false); }
+      { "0.2.21"."rt-util" =
+        (f.tokio."0.2.21"."rt-util" or false) ||
+        (f.tokio."0.2.21".full or false) ||
+        (tokio."0.2.21"."full" or false); }
+      { "0.2.21"."signal" =
+        (f.tokio."0.2.21"."signal" or false) ||
+        (f.tokio."0.2.21".full or false) ||
+        (tokio."0.2.21"."full" or false) ||
+        (f.tokio."0.2.21".process or false) ||
+        (tokio."0.2.21"."process" or false); }
+      { "0.2.21"."signal-hook-registry" =
+        (f.tokio."0.2.21"."signal-hook-registry" or false) ||
+        (f.tokio."0.2.21".signal or false) ||
+        (tokio."0.2.21"."signal" or false); }
+      { "0.2.21"."slab" =
+        (f.tokio."0.2.21"."slab" or false) ||
+        (f.tokio."0.2.21".time or false) ||
+        (tokio."0.2.21"."time" or false); }
+      { "0.2.21"."stream" =
+        (f.tokio."0.2.21"."stream" or false) ||
+        (f.tokio."0.2.21".full or false) ||
+        (tokio."0.2.21"."full" or false); }
+      { "0.2.21"."sync" =
+        (f.tokio."0.2.21"."sync" or false) ||
+        (f.tokio."0.2.21".full or false) ||
+        (tokio."0.2.21"."full" or false); }
+      { "0.2.21"."tcp" =
+        (f.tokio."0.2.21"."tcp" or false) ||
+        (f.tokio."0.2.21".net or false) ||
+        (tokio."0.2.21"."net" or false); }
+      { "0.2.21"."time" =
+        (f.tokio."0.2.21"."time" or false) ||
+        (f.tokio."0.2.21".full or false) ||
+        (tokio."0.2.21"."full" or false); }
+      { "0.2.21"."tokio-macros" =
+        (f.tokio."0.2.21"."tokio-macros" or false) ||
+        (f.tokio."0.2.21".macros or false) ||
+        (tokio."0.2.21"."macros" or false); }
+      { "0.2.21"."udp" =
+        (f.tokio."0.2.21"."udp" or false) ||
+        (f.tokio."0.2.21".net or false) ||
+        (tokio."0.2.21"."net" or false); }
+      { "0.2.21"."uds" =
+        (f.tokio."0.2.21"."uds" or false) ||
+        (f.tokio."0.2.21".net or false) ||
+        (tokio."0.2.21"."net" or false); }
+      { "0.2.21".default = (f.tokio."0.2.21".default or true); }
     ];
-    tokio_macros."${deps.tokio."0.2.13".tokio_macros}".default = true;
-    winapi."${deps.tokio."0.2.13".winapi}".default = (f.winapi."${deps.tokio."0.2.13".winapi}".default or false);
+    tokio_macros."${deps.tokio."0.2.21".tokio_macros}".default = true;
+    winapi."${deps.tokio."0.2.21".winapi}".default = (f.winapi."${deps.tokio."0.2.21".winapi}".default or false);
   }) [
-    (features_.bytes."${deps."tokio"."0.2.13"."bytes"}" deps)
-    (features_.fnv."${deps."tokio"."0.2.13"."fnv"}" deps)
-    (features_.iovec."${deps."tokio"."0.2.13"."iovec"}" deps)
-    (features_.lazy_static."${deps."tokio"."0.2.13"."lazy_static"}" deps)
-    (features_.memchr."${deps."tokio"."0.2.13"."memchr"}" deps)
-    (features_.mio."${deps."tokio"."0.2.13"."mio"}" deps)
-    (features_.num_cpus."${deps."tokio"."0.2.13"."num_cpus"}" deps)
-    (features_.pin_project_lite."${deps."tokio"."0.2.13"."pin_project_lite"}" deps)
-    (features_.slab."${deps."tokio"."0.2.13"."slab"}" deps)
-    (features_.tokio_macros."${deps."tokio"."0.2.13"."tokio_macros"}" deps)
-    (features_.libc."${deps."tokio"."0.2.13"."libc"}" deps)
-    (features_.mio_uds."${deps."tokio"."0.2.13"."mio_uds"}" deps)
-    (features_.signal_hook_registry."${deps."tokio"."0.2.13"."signal_hook_registry"}" deps)
-    (features_.mio_named_pipes."${deps."tokio"."0.2.13"."mio_named_pipes"}" deps)
-    (features_.winapi."${deps."tokio"."0.2.13"."winapi"}" deps)
+    (features_.bytes."${deps."tokio"."0.2.21"."bytes"}" deps)
+    (features_.fnv."${deps."tokio"."0.2.21"."fnv"}" deps)
+    (features_.futures_core."${deps."tokio"."0.2.21"."futures_core"}" deps)
+    (features_.iovec."${deps."tokio"."0.2.21"."iovec"}" deps)
+    (features_.lazy_static."${deps."tokio"."0.2.21"."lazy_static"}" deps)
+    (features_.memchr."${deps."tokio"."0.2.21"."memchr"}" deps)
+    (features_.mio."${deps."tokio"."0.2.21"."mio"}" deps)
+    (features_.num_cpus."${deps."tokio"."0.2.21"."num_cpus"}" deps)
+    (features_.pin_project_lite."${deps."tokio"."0.2.21"."pin_project_lite"}" deps)
+    (features_.slab."${deps."tokio"."0.2.21"."slab"}" deps)
+    (features_.tokio_macros."${deps."tokio"."0.2.21"."tokio_macros"}" deps)
+    (features_.libc."${deps."tokio"."0.2.21"."libc"}" deps)
+    (features_.mio_uds."${deps."tokio"."0.2.21"."mio_uds"}" deps)
+    (features_.signal_hook_registry."${deps."tokio"."0.2.21"."signal_hook_registry"}" deps)
+    (features_.mio_named_pipes."${deps."tokio"."0.2.21"."mio_named_pipes"}" deps)
+    (features_.winapi."${deps."tokio"."0.2.21"."winapi"}" deps)
   ];
 
 
@@ -4171,6 +4629,72 @@ rec {
     (features_.log."${deps."tokio_util"."0.2.0"."log"}" deps)
     (features_.pin_project_lite."${deps."tokio_util"."0.2.0"."pin_project_lite"}" deps)
     (features_.tokio."${deps."tokio_util"."0.2.0"."tokio"}" deps)
+  ];
+
+
+# end
+# tokio-util-0.3.1
+
+  crates.tokio_util."0.3.1" = deps: { features?(features_.tokio_util."0.3.1" deps {}) }: buildRustCrate {
+    crateName = "tokio-util";
+    version = "0.3.1";
+    description = "Additional utilities for working with Tokio.\n";
+    authors = [ "Tokio Contributors <team@tokio.rs>" ];
+    edition = "2018";
+    sha256 = "1gbhqkmjdwvy9x382av1jndr0z4ajjks60a44n8cfz8p3z32ksf0";
+    dependencies = mapFeatures features ([
+      (crates."bytes"."${deps."tokio_util"."0.3.1"."bytes"}" deps)
+      (crates."futures_core"."${deps."tokio_util"."0.3.1"."futures_core"}" deps)
+      (crates."futures_sink"."${deps."tokio_util"."0.3.1"."futures_sink"}" deps)
+      (crates."log"."${deps."tokio_util"."0.3.1"."log"}" deps)
+      (crates."pin_project_lite"."${deps."tokio_util"."0.3.1"."pin_project_lite"}" deps)
+      (crates."tokio"."${deps."tokio_util"."0.3.1"."tokio"}" deps)
+    ]);
+    features = mkFeatures (features."tokio_util"."0.3.1" or {});
+  };
+  features_.tokio_util."0.3.1" = deps: f: updateFeatures f (rec {
+    bytes."${deps.tokio_util."0.3.1".bytes}".default = true;
+    futures_core."${deps.tokio_util."0.3.1".futures_core}".default = true;
+    futures_sink."${deps.tokio_util."0.3.1".futures_sink}".default = true;
+    log."${deps.tokio_util."0.3.1".log}".default = true;
+    pin_project_lite."${deps.tokio_util."0.3.1".pin_project_lite}".default = true;
+    tokio = fold recursiveUpdate {} [
+      { "${deps.tokio_util."0.3.1".tokio}"."stream" =
+        (f.tokio."${deps.tokio_util."0.3.1".tokio}"."stream" or false) ||
+        (tokio_util."0.3.1"."codec" or false) ||
+        (f."tokio_util"."0.3.1"."codec" or false); }
+      { "${deps.tokio_util."0.3.1".tokio}"."udp" =
+        (f.tokio."${deps.tokio_util."0.3.1".tokio}"."udp" or false) ||
+        (tokio_util."0.3.1"."udp" or false) ||
+        (f."tokio_util"."0.3.1"."udp" or false); }
+      { "${deps.tokio_util."0.3.1".tokio}".default = true; }
+    ];
+    tokio_util = fold recursiveUpdate {} [
+      { "0.3.1"."codec" =
+        (f.tokio_util."0.3.1"."codec" or false) ||
+        (f.tokio_util."0.3.1".full or false) ||
+        (tokio_util."0.3.1"."full" or false); }
+      { "0.3.1"."compat" =
+        (f.tokio_util."0.3.1"."compat" or false) ||
+        (f.tokio_util."0.3.1".full or false) ||
+        (tokio_util."0.3.1"."full" or false); }
+      { "0.3.1"."futures-io" =
+        (f.tokio_util."0.3.1"."futures-io" or false) ||
+        (f.tokio_util."0.3.1".compat or false) ||
+        (tokio_util."0.3.1"."compat" or false); }
+      { "0.3.1"."udp" =
+        (f.tokio_util."0.3.1"."udp" or false) ||
+        (f.tokio_util."0.3.1".full or false) ||
+        (tokio_util."0.3.1"."full" or false); }
+      { "0.3.1".default = (f.tokio_util."0.3.1".default or true); }
+    ];
+  }) [
+    (features_.bytes."${deps."tokio_util"."0.3.1"."bytes"}" deps)
+    (features_.futures_core."${deps."tokio_util"."0.3.1"."futures_core"}" deps)
+    (features_.futures_sink."${deps."tokio_util"."0.3.1"."futures_sink"}" deps)
+    (features_.log."${deps."tokio_util"."0.3.1"."log"}" deps)
+    (features_.pin_project_lite."${deps."tokio_util"."0.3.1"."pin_project_lite"}" deps)
+    (features_.tokio."${deps."tokio_util"."0.3.1"."tokio"}" deps)
   ];
 
 
@@ -4623,39 +5147,42 @@ rec {
 
 
 # end
-# tower-limit-0.3.0
+# tower-limit-0.3.1
 
-  crates.tower_limit."0.3.0" = deps: { features?(features_.tower_limit."0.3.0" deps {}) }: buildRustCrate {
+  crates.tower_limit."0.3.1" = deps: { features?(features_.tower_limit."0.3.1" deps {}) }: buildRustCrate {
     crateName = "tower-limit";
-    version = "0.3.0";
+    version = "0.3.1";
     description = "Limit maximum request rate to a `Service`.\n";
     authors = [ "Tower Maintainers <team@tower-rs.com>" ];
     edition = "2018";
-    sha256 = "0azlr6ll6rd85zms88d27j1b85rvp9lqk7bgbvjjad5bh100w479";
+    sha256 = "1mx1r0dn8s5rx4p5xi21il6iads6k5j50h580bffxap8b06kx2id";
     dependencies = mapFeatures features ([
-      (crates."futures_core"."${deps."tower_limit"."0.3.0"."futures_core"}" deps)
-      (crates."pin_project"."${deps."tower_limit"."0.3.0"."pin_project"}" deps)
-      (crates."tokio"."${deps."tower_limit"."0.3.0"."tokio"}" deps)
-      (crates."tower_layer"."${deps."tower_limit"."0.3.0"."tower_layer"}" deps)
-      (crates."tower_service"."${deps."tower_limit"."0.3.0"."tower_service"}" deps)
+      (crates."futures_core"."${deps."tower_limit"."0.3.1"."futures_core"}" deps)
+      (crates."pin_project"."${deps."tower_limit"."0.3.1"."pin_project"}" deps)
+      (crates."tokio"."${deps."tower_limit"."0.3.1"."tokio"}" deps)
+      (crates."tower_layer"."${deps."tower_limit"."0.3.1"."tower_layer"}" deps)
+      (crates."tower_load"."${deps."tower_limit"."0.3.1"."tower_load"}" deps)
+      (crates."tower_service"."${deps."tower_limit"."0.3.1"."tower_service"}" deps)
     ]);
   };
-  features_.tower_limit."0.3.0" = deps: f: updateFeatures f (rec {
-    futures_core."${deps.tower_limit."0.3.0".futures_core}".default = (f.futures_core."${deps.tower_limit."0.3.0".futures_core}".default or false);
-    pin_project."${deps.tower_limit."0.3.0".pin_project}".default = true;
+  features_.tower_limit."0.3.1" = deps: f: updateFeatures f (rec {
+    futures_core."${deps.tower_limit."0.3.1".futures_core}".default = (f.futures_core."${deps.tower_limit."0.3.1".futures_core}".default or false);
+    pin_project."${deps.tower_limit."0.3.1".pin_project}".default = true;
     tokio = fold recursiveUpdate {} [
-      { "${deps.tower_limit."0.3.0".tokio}"."time" = true; }
-      { "${deps.tower_limit."0.3.0".tokio}".default = true; }
+      { "${deps.tower_limit."0.3.1".tokio}"."time" = true; }
+      { "${deps.tower_limit."0.3.1".tokio}".default = true; }
     ];
-    tower_layer."${deps.tower_limit."0.3.0".tower_layer}".default = true;
-    tower_limit."0.3.0".default = (f.tower_limit."0.3.0".default or true);
-    tower_service."${deps.tower_limit."0.3.0".tower_service}".default = true;
+    tower_layer."${deps.tower_limit."0.3.1".tower_layer}".default = true;
+    tower_limit."0.3.1".default = (f.tower_limit."0.3.1".default or true);
+    tower_load."${deps.tower_limit."0.3.1".tower_load}".default = true;
+    tower_service."${deps.tower_limit."0.3.1".tower_service}".default = true;
   }) [
-    (features_.futures_core."${deps."tower_limit"."0.3.0"."futures_core"}" deps)
-    (features_.pin_project."${deps."tower_limit"."0.3.0"."pin_project"}" deps)
-    (features_.tokio."${deps."tower_limit"."0.3.0"."tokio"}" deps)
-    (features_.tower_layer."${deps."tower_limit"."0.3.0"."tower_layer"}" deps)
-    (features_.tower_service."${deps."tower_limit"."0.3.0"."tower_service"}" deps)
+    (features_.futures_core."${deps."tower_limit"."0.3.1"."futures_core"}" deps)
+    (features_.pin_project."${deps."tower_limit"."0.3.1"."pin_project"}" deps)
+    (features_.tokio."${deps."tower_limit"."0.3.1"."tokio"}" deps)
+    (features_.tower_layer."${deps."tower_limit"."0.3.1"."tower_layer"}" deps)
+    (features_.tower_load."${deps."tower_limit"."0.3.1"."tower_load"}" deps)
+    (features_.tower_service."${deps."tower_limit"."0.3.1"."tower_service"}" deps)
   ];
 
 
@@ -4938,89 +5465,92 @@ rec {
 
 
 # end
-# tracing-0.1.13
+# tracing-0.1.15
 
-  crates.tracing."0.1.13" = deps: { features?(features_.tracing."0.1.13" deps {}) }: buildRustCrate {
+  crates.tracing."0.1.15" = deps: { features?(features_.tracing."0.1.15" deps {}) }: buildRustCrate {
     crateName = "tracing";
-    version = "0.1.13";
+    version = "0.1.15";
     description = "Application-level tracing for Rust.\n";
     authors = [ "Eliza Weisman <eliza@buoyant.io>" "Tokio Contributors <team@tokio.rs>" ];
     edition = "2018";
-    sha256 = "0rb6mvfp9pkzrrjxc5mgxac4hgn255fk5i3pq6915xsf1qpl7n6j";
+    sha256 = "0w2fpdqqpc138vl24178cwj17km76w3hgmggybgyijiris6k0c6n";
     dependencies = mapFeatures features ([
-      (crates."cfg_if"."${deps."tracing"."0.1.13"."cfg_if"}" deps)
-      (crates."tracing_core"."${deps."tracing"."0.1.13"."tracing_core"}" deps)
+      (crates."cfg_if"."${deps."tracing"."0.1.15"."cfg_if"}" deps)
+      (crates."tracing_core"."${deps."tracing"."0.1.15"."tracing_core"}" deps)
     ]
-      ++ (if features.tracing."0.1.13".log or false then [ (crates.log."${deps."tracing"."0.1.13".log}" deps) ] else [])
-      ++ (if features.tracing."0.1.13".tracing-attributes or false then [ (crates.tracing_attributes."${deps."tracing"."0.1.13".tracing_attributes}" deps) ] else []));
-    features = mkFeatures (features."tracing"."0.1.13" or {});
+      ++ (if features.tracing."0.1.15".log or false then [ (crates.log."${deps."tracing"."0.1.15".log}" deps) ] else [])
+      ++ (if features.tracing."0.1.15".tracing-attributes or false then [ (crates.tracing_attributes."${deps."tracing"."0.1.15".tracing_attributes}" deps) ] else []));
+    features = mkFeatures (features."tracing"."0.1.15" or {});
   };
-  features_.tracing."0.1.13" = deps: f: updateFeatures f (rec {
-    cfg_if."${deps.tracing."0.1.13".cfg_if}".default = true;
-    log."${deps.tracing."0.1.13".log}".default = true;
+  features_.tracing."0.1.15" = deps: f: updateFeatures f (rec {
+    cfg_if."${deps.tracing."0.1.15".cfg_if}".default = true;
+    log."${deps.tracing."0.1.15".log}".default = true;
     tracing = fold recursiveUpdate {} [
-      { "0.1.13"."attributes" =
-        (f.tracing."0.1.13"."attributes" or false) ||
-        (f.tracing."0.1.13".default or false) ||
-        (tracing."0.1.13"."default" or false); }
-      { "0.1.13"."log" =
-        (f.tracing."0.1.13"."log" or false) ||
-        (f.tracing."0.1.13".log-always or false) ||
-        (tracing."0.1.13"."log-always" or false); }
-      { "0.1.13"."std" =
-        (f.tracing."0.1.13"."std" or false) ||
-        (f.tracing."0.1.13".default or false) ||
-        (tracing."0.1.13"."default" or false); }
-      { "0.1.13"."tracing-attributes" =
-        (f.tracing."0.1.13"."tracing-attributes" or false) ||
-        (f.tracing."0.1.13".attributes or false) ||
-        (tracing."0.1.13"."attributes" or false); }
-      { "0.1.13".default = (f.tracing."0.1.13".default or true); }
+      { "0.1.15"."attributes" =
+        (f.tracing."0.1.15"."attributes" or false) ||
+        (f.tracing."0.1.15".default or false) ||
+        (tracing."0.1.15"."default" or false); }
+      { "0.1.15"."log" =
+        (f.tracing."0.1.15"."log" or false) ||
+        (f.tracing."0.1.15".log-always or false) ||
+        (tracing."0.1.15"."log-always" or false); }
+      { "0.1.15"."std" =
+        (f.tracing."0.1.15"."std" or false) ||
+        (f.tracing."0.1.15".default or false) ||
+        (tracing."0.1.15"."default" or false); }
+      { "0.1.15"."tracing-attributes" =
+        (f.tracing."0.1.15"."tracing-attributes" or false) ||
+        (f.tracing."0.1.15".attributes or false) ||
+        (tracing."0.1.15"."attributes" or false); }
+      { "0.1.15".default = (f.tracing."0.1.15".default or true); }
     ];
-    tracing_attributes."${deps.tracing."0.1.13".tracing_attributes}".default = true;
+    tracing_attributes."${deps.tracing."0.1.15".tracing_attributes}".default = true;
     tracing_core = fold recursiveUpdate {} [
-      { "${deps.tracing."0.1.13".tracing_core}"."std" =
-        (f.tracing_core."${deps.tracing."0.1.13".tracing_core}"."std" or false) ||
-        (tracing."0.1.13"."std" or false) ||
-        (f."tracing"."0.1.13"."std" or false); }
-      { "${deps.tracing."0.1.13".tracing_core}".default = (f.tracing_core."${deps.tracing."0.1.13".tracing_core}".default or false); }
+      { "${deps.tracing."0.1.15".tracing_core}"."std" =
+        (f.tracing_core."${deps.tracing."0.1.15".tracing_core}"."std" or false) ||
+        (tracing."0.1.15"."std" or false) ||
+        (f."tracing"."0.1.15"."std" or false); }
+      { "${deps.tracing."0.1.15".tracing_core}".default = (f.tracing_core."${deps.tracing."0.1.15".tracing_core}".default or false); }
     ];
   }) [
-    (features_.cfg_if."${deps."tracing"."0.1.13"."cfg_if"}" deps)
-    (features_.log."${deps."tracing"."0.1.13"."log"}" deps)
-    (features_.tracing_attributes."${deps."tracing"."0.1.13"."tracing_attributes"}" deps)
-    (features_.tracing_core."${deps."tracing"."0.1.13"."tracing_core"}" deps)
+    (features_.cfg_if."${deps."tracing"."0.1.15"."cfg_if"}" deps)
+    (features_.log."${deps."tracing"."0.1.15"."log"}" deps)
+    (features_.tracing_attributes."${deps."tracing"."0.1.15"."tracing_attributes"}" deps)
+    (features_.tracing_core."${deps."tracing"."0.1.15"."tracing_core"}" deps)
   ];
 
 
 # end
-# tracing-attributes-0.1.7
+# tracing-attributes-0.1.8
 
-  crates.tracing_attributes."0.1.7" = deps: { features?(features_.tracing_attributes."0.1.7" deps {}) }: buildRustCrate {
+  crates.tracing_attributes."0.1.8" = deps: { features?(features_.tracing_attributes."0.1.8" deps {}) }: buildRustCrate {
     crateName = "tracing-attributes";
-    version = "0.1.7";
+    version = "0.1.8";
     description = "Procedural macro attributes for automatically instrumenting functions.\n";
     authors = [ "Tokio Contributors <team@tokio.rs>" "Eliza Weisman <eliza@buoyant.io>" "David Barsky <dbarsky@amazon.com>" ];
     edition = "2018";
-    sha256 = "1lfsmzhq5sqkxzkp0jxvwfmiyl33vqg3338dx7l4wqsz8qjfbnia";
+    sha256 = "0j654sz8fxvl5i4yj1v0nwvdhg0r9zvhk2ccmy0c396izs3m8b8k";
     procMacro = true;
     dependencies = mapFeatures features ([
-      (crates."quote"."${deps."tracing_attributes"."0.1.7"."quote"}" deps)
-      (crates."syn"."${deps."tracing_attributes"."0.1.7"."syn"}" deps)
+      (crates."proc_macro2"."${deps."tracing_attributes"."0.1.8"."proc_macro2"}" deps)
+      (crates."quote"."${deps."tracing_attributes"."0.1.8"."quote"}" deps)
+      (crates."syn"."${deps."tracing_attributes"."0.1.8"."syn"}" deps)
     ]);
-    features = mkFeatures (features."tracing_attributes"."0.1.7" or {});
+    features = mkFeatures (features."tracing_attributes"."0.1.8" or {});
   };
-  features_.tracing_attributes."0.1.7" = deps: f: updateFeatures f (rec {
-    quote."${deps.tracing_attributes."0.1.7".quote}".default = true;
+  features_.tracing_attributes."0.1.8" = deps: f: updateFeatures f (rec {
+    proc_macro2."${deps.tracing_attributes."0.1.8".proc_macro2}".default = true;
+    quote."${deps.tracing_attributes."0.1.8".quote}".default = true;
     syn = fold recursiveUpdate {} [
-      { "${deps.tracing_attributes."0.1.7".syn}"."extra-traits" = true; }
-      { "${deps.tracing_attributes."0.1.7".syn}"."full" = true; }
-      { "${deps.tracing_attributes."0.1.7".syn}".default = true; }
+      { "${deps.tracing_attributes."0.1.8".syn}"."extra-traits" = true; }
+      { "${deps.tracing_attributes."0.1.8".syn}"."full" = true; }
+      { "${deps.tracing_attributes."0.1.8".syn}".default = true; }
     ];
-    tracing_attributes."0.1.7".default = (f.tracing_attributes."0.1.7".default or true);
+    tracing_attributes."0.1.8".default = (f.tracing_attributes."0.1.8".default or true);
   }) [
-    (features_.quote."${deps."tracing_attributes"."0.1.7"."quote"}" deps)
-    (features_.syn."${deps."tracing_attributes"."0.1.7"."syn"}" deps)
+    (features_.proc_macro2."${deps."tracing_attributes"."0.1.8"."proc_macro2"}" deps)
+    (features_.quote."${deps."tracing_attributes"."0.1.8"."quote"}" deps)
+    (features_.syn."${deps."tracing_attributes"."0.1.8"."syn"}" deps)
   ];
 
 
@@ -5058,64 +5588,66 @@ rec {
 
 
 # end
-# tracing-futures-0.2.3
+# tracing-futures-0.2.4
 
-  crates.tracing_futures."0.2.3" = deps: { features?(features_.tracing_futures."0.2.3" deps {}) }: buildRustCrate {
+  crates.tracing_futures."0.2.4" = deps: { features?(features_.tracing_futures."0.2.4" deps {}) }: buildRustCrate {
     crateName = "tracing-futures";
-    version = "0.2.3";
+    version = "0.2.4";
     description = "Utilities for instrumenting `futures` with `tracing`.\n";
     authors = [ "Eliza Weisman <eliza@buoyant.io>" "Tokio Contributors <team@tokio.rs>" ];
     edition = "2018";
-    sha256 = "0z0j7qzk4kgyhkd30qv4dyj45b6ylfpk5zgx5pkiir7n9v4rj072";
+    sha256 = "015w628lggwjxywdbp98cdwak5m72g4321frziiy9anx6pli8s1p";
     dependencies = mapFeatures features ([
-      (crates."tracing"."${deps."tracing_futures"."0.2.3"."tracing"}" deps)
+      (crates."tracing"."${deps."tracing_futures"."0.2.4"."tracing"}" deps)
     ]
-      ++ (if features.tracing_futures."0.2.3".pin-project or false then [ (crates.pin_project."${deps."tracing_futures"."0.2.3".pin_project}" deps) ] else []));
-    features = mkFeatures (features."tracing_futures"."0.2.3" or {});
+      ++ (if features.tracing_futures."0.2.4".pin-project or false then [ (crates.pin_project."${deps."tracing_futures"."0.2.4".pin_project}" deps) ] else []));
+    features = mkFeatures (features."tracing_futures"."0.2.4" or {});
   };
-  features_.tracing_futures."0.2.3" = deps: f: updateFeatures f (rec {
-    pin_project."${deps.tracing_futures."0.2.3".pin_project}".default = true;
+  features_.tracing_futures."0.2.4" = deps: f: updateFeatures f (rec {
+    pin_project."${deps.tracing_futures."0.2.4".pin_project}".default = true;
     tracing = fold recursiveUpdate {} [
-      { "${deps.tracing_futures."0.2.3".tracing}"."std" =
-        (f.tracing."${deps.tracing_futures."0.2.3".tracing}"."std" or false) ||
-        (tracing_futures."0.2.3"."std" or false) ||
-        (f."tracing_futures"."0.2.3"."std" or false); }
-      { "${deps.tracing_futures."0.2.3".tracing}".default = (f.tracing."${deps.tracing_futures."0.2.3".tracing}".default or false); }
+      { "${deps.tracing_futures."0.2.4".tracing}"."std" =
+        (f.tracing."${deps.tracing_futures."0.2.4".tracing}"."std" or false) ||
+        (tracing_futures."0.2.4"."std" or false) ||
+        (f."tracing_futures"."0.2.4"."std" or false); }
+      { "${deps.tracing_futures."0.2.4".tracing}".default = (f.tracing."${deps.tracing_futures."0.2.4".tracing}".default or false); }
     ];
     tracing_futures = fold recursiveUpdate {} [
-      { "0.2.3"."futures" =
-        (f.tracing_futures."0.2.3"."futures" or false) ||
-        (f.tracing_futures."0.2.3".futures-03 or false) ||
-        (tracing_futures."0.2.3"."futures-03" or false); }
-      { "0.2.3"."futures-task" =
-        (f.tracing_futures."0.2.3"."futures-task" or false) ||
-        (f.tracing_futures."0.2.3".futures-03 or false) ||
-        (tracing_futures."0.2.3"."futures-03" or false); }
-      { "0.2.3"."futures_01" =
-        (f.tracing_futures."0.2.3"."futures_01" or false) ||
-        (f.tracing_futures."0.2.3".futures-01 or false) ||
-        (tracing_futures."0.2.3"."futures-01" or false); }
-      { "0.2.3"."pin-project" =
-        (f.tracing_futures."0.2.3"."pin-project" or false) ||
-        (f.tracing_futures."0.2.3".std-future or false) ||
-        (tracing_futures."0.2.3"."std-future" or false); }
-      { "0.2.3"."std" =
-        (f.tracing_futures."0.2.3"."std" or false) ||
-        (f.tracing_futures."0.2.3".default or false) ||
-        (tracing_futures."0.2.3"."default" or false) ||
-        (f.tracing_futures."0.2.3".futures-03 or false) ||
-        (tracing_futures."0.2.3"."futures-03" or false); }
-      { "0.2.3"."std-future" =
-        (f.tracing_futures."0.2.3"."std-future" or false) ||
-        (f.tracing_futures."0.2.3".default or false) ||
-        (tracing_futures."0.2.3"."default" or false) ||
-        (f.tracing_futures."0.2.3".futures-03 or false) ||
-        (tracing_futures."0.2.3"."futures-03" or false); }
-      { "0.2.3".default = (f.tracing_futures."0.2.3".default or true); }
+      { "0.2.4"."futures" =
+        (f.tracing_futures."0.2.4"."futures" or false) ||
+        (f.tracing_futures."0.2.4".futures-03 or false) ||
+        (tracing_futures."0.2.4"."futures-03" or false); }
+      { "0.2.4"."futures-task" =
+        (f.tracing_futures."0.2.4"."futures-task" or false) ||
+        (f.tracing_futures."0.2.4".futures-03 or false) ||
+        (tracing_futures."0.2.4"."futures-03" or false); }
+      { "0.2.4"."futures_01" =
+        (f.tracing_futures."0.2.4"."futures_01" or false) ||
+        (f.tracing_futures."0.2.4".futures-01 or false) ||
+        (tracing_futures."0.2.4"."futures-01" or false); }
+      { "0.2.4"."pin-project" =
+        (f.tracing_futures."0.2.4"."pin-project" or false) ||
+        (f.tracing_futures."0.2.4".std-future or false) ||
+        (tracing_futures."0.2.4"."std-future" or false); }
+      { "0.2.4"."std" =
+        (f.tracing_futures."0.2.4"."std" or false) ||
+        (f.tracing_futures."0.2.4".default or false) ||
+        (tracing_futures."0.2.4"."default" or false) ||
+        (f.tracing_futures."0.2.4".futures-01 or false) ||
+        (tracing_futures."0.2.4"."futures-01" or false) ||
+        (f.tracing_futures."0.2.4".futures-03 or false) ||
+        (tracing_futures."0.2.4"."futures-03" or false); }
+      { "0.2.4"."std-future" =
+        (f.tracing_futures."0.2.4"."std-future" or false) ||
+        (f.tracing_futures."0.2.4".default or false) ||
+        (tracing_futures."0.2.4"."default" or false) ||
+        (f.tracing_futures."0.2.4".futures-03 or false) ||
+        (tracing_futures."0.2.4"."futures-03" or false); }
+      { "0.2.4".default = (f.tracing_futures."0.2.4".default or true); }
     ];
   }) [
-    (features_.pin_project."${deps."tracing_futures"."0.2.3"."pin_project"}" deps)
-    (features_.tracing."${deps."tracing_futures"."0.2.3"."tracing"}" deps)
+    (features_.pin_project."${deps."tracing_futures"."0.2.4"."pin_project"}" deps)
+    (features_.tracing."${deps."tracing_futures"."0.2.4"."tracing"}" deps)
   ];
 
 
@@ -5151,18 +5683,18 @@ rec {
 
 
 # end
-# unicode-xid-0.2.0
+# unicode-xid-0.2.1
 
-  crates.unicode_xid."0.2.0" = deps: { features?(features_.unicode_xid."0.2.0" deps {}) }: buildRustCrate {
+  crates.unicode_xid."0.2.1" = deps: { features?(features_.unicode_xid."0.2.1" deps {}) }: buildRustCrate {
     crateName = "unicode-xid";
-    version = "0.2.0";
+    version = "0.2.1";
     description = "Determine whether characters have the XID_Start\nor XID_Continue properties according to\nUnicode Standard Annex #31.\n";
     authors = [ "erick.tryzelaar <erick.tryzelaar@gmail.com>" "kwantam <kwantam@gmail.com>" ];
-    sha256 = "1c85gb3p3qhbjvfyjb31m06la4f024jx319k10ig7n47dz2fk8v7";
-    features = mkFeatures (features."unicode_xid"."0.2.0" or {});
+    sha256 = "1fph4gggixccg801ab40q44svyny7kfkmr7j1isb571xgfav13j5";
+    features = mkFeatures (features."unicode_xid"."0.2.1" or {});
   };
-  features_.unicode_xid."0.2.0" = deps: f: updateFeatures f (rec {
-    unicode_xid."0.2.0".default = (f.unicode_xid."0.2.0".default or true);
+  features_.unicode_xid."0.2.1" = deps: f: updateFeatures f (rec {
+    unicode_xid."0.2.1".default = (f.unicode_xid."0.2.1".default or true);
   }) [];
 
 
@@ -5293,36 +5825,36 @@ rec {
 
 
 # end
-# winapi-0.3.8
+# winapi-0.3.9
 
-  crates.winapi."0.3.8" = deps: { features?(features_.winapi."0.3.8" deps {}) }: buildRustCrate {
+  crates.winapi."0.3.9" = deps: { features?(features_.winapi."0.3.9" deps {}) }: buildRustCrate {
     crateName = "winapi";
-    version = "0.3.8";
+    version = "0.3.9";
     description = "Raw FFI bindings for all of Windows API.";
     authors = [ "Peter Atashian <retep998@gmail.com>" ];
-    sha256 = "084ialbgww1vxry341fmkg5crgpvab3w52ahx1wa54yqjgym0vxs";
+    sha256 = "1r53g3rwnb8pwv8qa0hdxxn3s3iiix0n2anan33n0r2gdck70qsn";
     build = "build.rs";
     dependencies = (if kernel == "i686-pc-windows-gnu" then mapFeatures features ([
-      (crates."winapi_i686_pc_windows_gnu"."${deps."winapi"."0.3.8"."winapi_i686_pc_windows_gnu"}" deps)
+      (crates."winapi_i686_pc_windows_gnu"."${deps."winapi"."0.3.9"."winapi_i686_pc_windows_gnu"}" deps)
     ]) else [])
       ++ (if kernel == "x86_64-pc-windows-gnu" then mapFeatures features ([
-      (crates."winapi_x86_64_pc_windows_gnu"."${deps."winapi"."0.3.8"."winapi_x86_64_pc_windows_gnu"}" deps)
+      (crates."winapi_x86_64_pc_windows_gnu"."${deps."winapi"."0.3.9"."winapi_x86_64_pc_windows_gnu"}" deps)
     ]) else []);
-    features = mkFeatures (features."winapi"."0.3.8" or {});
+    features = mkFeatures (features."winapi"."0.3.9" or {});
   };
-  features_.winapi."0.3.8" = deps: f: updateFeatures f (rec {
+  features_.winapi."0.3.9" = deps: f: updateFeatures f (rec {
     winapi = fold recursiveUpdate {} [
-      { "0.3.8"."impl-debug" =
-        (f.winapi."0.3.8"."impl-debug" or false) ||
-        (f.winapi."0.3.8".debug or false) ||
-        (winapi."0.3.8"."debug" or false); }
-      { "0.3.8".default = (f.winapi."0.3.8".default or true); }
+      { "0.3.9"."impl-debug" =
+        (f.winapi."0.3.9"."impl-debug" or false) ||
+        (f.winapi."0.3.9".debug or false) ||
+        (winapi."0.3.9"."debug" or false); }
+      { "0.3.9".default = (f.winapi."0.3.9".default or true); }
     ];
-    winapi_i686_pc_windows_gnu."${deps.winapi."0.3.8".winapi_i686_pc_windows_gnu}".default = true;
-    winapi_x86_64_pc_windows_gnu."${deps.winapi."0.3.8".winapi_x86_64_pc_windows_gnu}".default = true;
+    winapi_i686_pc_windows_gnu."${deps.winapi."0.3.9".winapi_i686_pc_windows_gnu}".default = true;
+    winapi_x86_64_pc_windows_gnu."${deps.winapi."0.3.9".winapi_x86_64_pc_windows_gnu}".default = true;
   }) [
-    (features_.winapi_i686_pc_windows_gnu."${deps."winapi"."0.3.8"."winapi_i686_pc_windows_gnu"}" deps)
-    (features_.winapi_x86_64_pc_windows_gnu."${deps."winapi"."0.3.8"."winapi_x86_64_pc_windows_gnu"}" deps)
+    (features_.winapi_i686_pc_windows_gnu."${deps."winapi"."0.3.9"."winapi_i686_pc_windows_gnu"}" deps)
+    (features_.winapi_x86_64_pc_windows_gnu."${deps."winapi"."0.3.9"."winapi_x86_64_pc_windows_gnu"}" deps)
   ];
 
 
@@ -5359,36 +5891,36 @@ rec {
 
 
 # end
-# winapi-util-0.1.3
+# winapi-util-0.1.5
 
-  crates.winapi_util."0.1.3" = deps: { features?(features_.winapi_util."0.1.3" deps {}) }: buildRustCrate {
+  crates.winapi_util."0.1.5" = deps: { features?(features_.winapi_util."0.1.5" deps {}) }: buildRustCrate {
     crateName = "winapi-util";
-    version = "0.1.3";
+    version = "0.1.5";
     description = "A dumping ground for high level safe wrappers over winapi.";
     authors = [ "Andrew Gallant <jamslam@gmail.com>" ];
     edition = "2018";
-    sha256 = "106v0s03m17lsxiznchghp6z1wzxmwim25d7jc9l7kqmhm88brmn";
+    sha256 = "0h8l3gjhdsa0s6ibiv277jgg6q7vwplwxir44hcjizws9avpcphj";
     dependencies = (if kernel == "windows" then mapFeatures features ([
-      (crates."winapi"."${deps."winapi_util"."0.1.3"."winapi"}" deps)
+      (crates."winapi"."${deps."winapi_util"."0.1.5"."winapi"}" deps)
     ]) else []);
   };
-  features_.winapi_util."0.1.3" = deps: f: updateFeatures f (rec {
+  features_.winapi_util."0.1.5" = deps: f: updateFeatures f (rec {
     winapi = fold recursiveUpdate {} [
-      { "${deps.winapi_util."0.1.3".winapi}"."consoleapi" = true; }
-      { "${deps.winapi_util."0.1.3".winapi}"."errhandlingapi" = true; }
-      { "${deps.winapi_util."0.1.3".winapi}"."fileapi" = true; }
-      { "${deps.winapi_util."0.1.3".winapi}"."minwindef" = true; }
-      { "${deps.winapi_util."0.1.3".winapi}"."processenv" = true; }
-      { "${deps.winapi_util."0.1.3".winapi}"."std" = true; }
-      { "${deps.winapi_util."0.1.3".winapi}"."winbase" = true; }
-      { "${deps.winapi_util."0.1.3".winapi}"."wincon" = true; }
-      { "${deps.winapi_util."0.1.3".winapi}"."winerror" = true; }
-      { "${deps.winapi_util."0.1.3".winapi}"."winnt" = true; }
-      { "${deps.winapi_util."0.1.3".winapi}".default = true; }
+      { "${deps.winapi_util."0.1.5".winapi}"."consoleapi" = true; }
+      { "${deps.winapi_util."0.1.5".winapi}"."errhandlingapi" = true; }
+      { "${deps.winapi_util."0.1.5".winapi}"."fileapi" = true; }
+      { "${deps.winapi_util."0.1.5".winapi}"."minwindef" = true; }
+      { "${deps.winapi_util."0.1.5".winapi}"."processenv" = true; }
+      { "${deps.winapi_util."0.1.5".winapi}"."std" = true; }
+      { "${deps.winapi_util."0.1.5".winapi}"."winbase" = true; }
+      { "${deps.winapi_util."0.1.5".winapi}"."wincon" = true; }
+      { "${deps.winapi_util."0.1.5".winapi}"."winerror" = true; }
+      { "${deps.winapi_util."0.1.5".winapi}"."winnt" = true; }
+      { "${deps.winapi_util."0.1.5".winapi}".default = true; }
     ];
-    winapi_util."0.1.3".default = (f.winapi_util."0.1.3".default or true);
+    winapi_util."0.1.5".default = (f.winapi_util."0.1.5".default or true);
   }) [
-    (features_.winapi."${deps."winapi_util"."0.1.3"."winapi"}" deps)
+    (features_.winapi."${deps."winapi_util"."0.1.5"."winapi"}" deps)
   ];
 
 
@@ -5438,23 +5970,24 @@ rec {
 
 
 # end
-# yaml-rust-0.4.3
+# yaml-rust-0.4.4
 
-  crates.yaml_rust."0.4.3" = deps: { features?(features_.yaml_rust."0.4.3" deps {}) }: buildRustCrate {
+  crates.yaml_rust."0.4.4" = deps: { features?(features_.yaml_rust."0.4.4" deps {}) }: buildRustCrate {
     crateName = "yaml-rust";
-    version = "0.4.3";
+    version = "0.4.4";
     description = "The missing YAML 1.2 parser for rust";
     authors = [ "Yuheng Chen <yuhengchen@sensetime.com>" ];
-    sha256 = "09p179lz1gjdpa0c58164dc4cs7ijw3j1aqflpshnl1zwvfsgwyx";
+    edition = "2018";
+    sha256 = "07yx11pcnq2pg61dj77g8hjn1bz5hh7byv4c7xdw07ip4az610y0";
     dependencies = mapFeatures features ([
-      (crates."linked_hash_map"."${deps."yaml_rust"."0.4.3"."linked_hash_map"}" deps)
+      (crates."linked_hash_map"."${deps."yaml_rust"."0.4.4"."linked_hash_map"}" deps)
     ]);
   };
-  features_.yaml_rust."0.4.3" = deps: f: updateFeatures f (rec {
-    linked_hash_map."${deps.yaml_rust."0.4.3".linked_hash_map}".default = true;
-    yaml_rust."0.4.3".default = (f.yaml_rust."0.4.3".default or true);
+  features_.yaml_rust."0.4.4" = deps: f: updateFeatures f (rec {
+    linked_hash_map."${deps.yaml_rust."0.4.4".linked_hash_map}".default = true;
+    yaml_rust."0.4.4".default = (f.yaml_rust."0.4.4".default or true);
   }) [
-    (features_.linked_hash_map."${deps."yaml_rust"."0.4.3"."linked_hash_map"}" deps)
+    (features_.linked_hash_map."${deps."yaml_rust"."0.4.4"."linked_hash_map"}" deps)
   ];
 
 
