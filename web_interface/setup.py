@@ -46,7 +46,7 @@ class BuildPackageProtos(setuptools.Command):
 
 setup(
     name="audio_recorder",
-    version="0.3.0",
+    version="0.4.0",
     packages=find_packages(),
     setup_requires=['grpcio-tools'],
     include_package_data=True,
