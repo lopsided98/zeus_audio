@@ -5,19 +5,18 @@ authors = ["Ben Wolsieffer <benwolsieffer@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-audio_server_proto = { path = "./audio_server_proto" }
-alsa = { git = "https://github.com/lopsided98/alsa-rs" }
+alsa = { git = "https://github.com/lopsided98/alsa-rs", branch = "master" }
 #alsa = { path = "../alsa-rs" }
 env_logger = "0"
 failure = "0"
 failure_derive = "0"
 futures = { version = "0.3", features = ["compat"] }
-futures01 = { package = "futures", version = "0.1" }
 hound = "3"
 libc = "0"
 log = "0"
-protobuf = "2"
-grpcio = { version = "0", default-features = false, features = ["protobuf-codec"] }
+tonic = "0.1"
+prost = "0.6"
+prost-types = "0.6"
 tokio = { version = "0.2", features = ["macros", "rt-core", "rt-threaded", "io-driver", "process", "blocking"] }
 hostname = "0"
 serde = "1"
@@ -29,6 +28,9 @@ nix = "0.15"
 # tokio does not support >0.6
 mio = "0.6"
 pin-utils = "0.1.0-alpha.4"
+
+[build-dependencies]
+tonic-build = "0.1"
 
 [profile.release]
 debug = true

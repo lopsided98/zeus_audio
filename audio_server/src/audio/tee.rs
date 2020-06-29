@@ -1,13 +1,13 @@
 use std::fmt;
 use std::pin::Pin;
 use std::sync::Arc;
-use std::sync::mpsc;
 use std::sync::Mutex;
 use std::sync::Weak;
 
 use failure::Fail;
 use failure::format_err;
 use futures::Sink;
+use futures::channel::mpsc;
 use futures::stream::{FusedStream, Stream};
 use futures::task::{Context, Poll, Waker};
 
@@ -31,11 +31,11 @@ pub enum Error {
 pub struct TeeMap<St, F, U> {
     stream: St,
     f: F,
-    // TODO: use futures::sync::mpsc
-    rx: mpsc::Receiver<EndpointMessage<U>>,
+    rx: mpsc::UnboundedReceiver<EndpointMessage<U>>,
     endpoints: Vec<Weak<ItemWrapper<U>>>,
 }
 
+#[derive(Debug)]
 enum EndpointMessage<U> {
     NewEndpoint(Weak<ItemWrapper<U>>),
     TaskWake(Waker),
@@ -44,14 +44,14 @@ enum EndpointMessage<U> {
 /// Used to register endpoints of a [TeeMap].
 #[derive(Clone)]
 pub struct EndpointRegistration<U> {
-    tx: mpsc::Sender<EndpointMessage<U>>
+    tx: mpsc::UnboundedSender<EndpointMessage<U>>
 }
 
 /// Endpoint stream for a [TeeMap].
 #[derive(Debug)]
 pub struct Endpoint<U> {
     item: Arc<ItemWrapper<U>>,
-    tx: mpsc::Sender<EndpointMessage<U>>,
+    tx: mpsc::UnboundedSender<EndpointMessage<U>>,
 }
 
 impl<St: Unpin, F, U> Unpin for TeeMap<St, F, U> {}
@@ -70,11 +70,11 @@ impl<St, F, U> TeeMap<St, F, U>
 {
     pin_utils::unsafe_pinned!(stream: St);
     pin_utils::unsafe_unpinned!(f: F);
-    pin_utils::unsafe_unpinned!(rx: mpsc::Receiver<EndpointMessage<U>>);
+    pin_utils::unsafe_pinned!(rx: mpsc::UnboundedReceiver<EndpointMessage<U>>);
     pin_utils::unsafe_unpinned!(endpoints: Vec<Weak<ItemWrapper<U>>>);
 
     pub fn new(stream: St, f: F) -> (Self, EndpointRegistration<U>) {
-        let (tx, rx) = mpsc::channel();
+        let (tx, rx) = mpsc::unbounded();
         (Self { stream, f, rx, endpoints: Vec::new() }, EndpointRegistration::<U> { tx })
     }
 
@@ -173,15 +173,18 @@ impl<St, T, E, F, U> Stream for TeeMap<St, F, U>
             }
         }
 
-        while let Ok(msg) = self.as_mut().rx().try_recv() {
-            match msg {
-                EndpointMessage::NewEndpoint(item) => {
-                    log::debug!("New endpoint");
-                    self.as_mut().endpoints().push(item)
+        match self.as_mut().rx().poll_next(cx) {
+            Poll::Ready(Some(msg)) => match msg {
+                    EndpointMessage::NewEndpoint(item) => {
+                        log::debug!("New endpoint");
+                        self.as_mut().endpoints().push(item)
+                    }
+                    EndpointMessage::TaskWake(waker) =>
+                        waker.wake()
                 }
-                EndpointMessage::TaskWake(waker) =>
-                    waker.wake()
-            }
+            // Stop the stream if the registrator is dropped
+            Poll::Ready(None) => return Poll::Ready(None),
+            Poll::Pending => ()
         }
 
         Poll::Ready(res)
@@ -195,7 +198,7 @@ impl<St, T, E, F, U> Stream for TeeMap<St, F, U>
 impl<U> EndpointRegistration<U> {
     pub fn add_endpoint(&self) -> Result<Endpoint<U>, Error> {
         let item = Arc::new(Mutex::new(None));
-        self.tx.send(EndpointMessage::NewEndpoint(Arc::downgrade(&item)))
+        self.tx.unbounded_send(EndpointMessage::NewEndpoint(Arc::downgrade(&item)))
             .map_err(|e| Error::RegistrationError(format_err!("{}", e)))?;
         Ok(Endpoint { item, tx: self.tx.clone() })
     }
@@ -214,7 +217,7 @@ impl<U> Stream for Endpoint<U> {
         match item {
             None => {
                 // Ask the source to wake us when there is a new message
-                if self.tx.send(EndpointMessage::TaskWake(cx.waker().clone())).is_err() {
+                if self.tx.unbounded_send(EndpointMessage::TaskWake(cx.waker().clone())).is_err() {
                     // Receiver disconnected, the stream must have finished and been dropped
                     Poll::Ready(None)
                 } else {
@@ -228,8 +231,8 @@ impl<U> Stream for Endpoint<U> {
 
 #[cfg(test)]
 mod tests {
-    use futures::future::join;
     use futures::{StreamExt, TryStreamExt};
+    use futures::future::join;
 
     use super::*;
 

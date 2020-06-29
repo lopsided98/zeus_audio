@@ -4,9 +4,7 @@ mkShell {
   buildInputs = [
     rustc
     cargo
-    grpc
-    protobuf
-    zlib
+    rustfmt
     alsaLib
     cmake
     pkgconfig
@@ -26,4 +24,3 @@ mkShell {
   }}/bin";
   RUST_SRC_PATH = rustPlatform.rustcSrc;
 }
-

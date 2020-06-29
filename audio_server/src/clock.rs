@@ -5,7 +5,6 @@ use std::sync::atomic::Ordering;
 
 use failure::Fail;
 use tokio::process::Command;
-use futures::Future;
 
 #[derive(Debug, Fail)]
 pub enum Error {
@@ -46,7 +45,7 @@ impl Clock {
     /// Manually set the time to the specified value, relative to the Unix
     /// epoch. This can only be called on the master, and can only be done
     /// once.
-    pub fn set_time(&mut self, seconds: i64, nanos: i32) -> Result<(), Error> {
+    pub fn set_time(&self, seconds: i64, nanos: i32) -> Result<(), Error> {
         if !self.master {
             Err(Error::NotMaster)
         } else if self.time_set.load(Ordering::Relaxed) {
@@ -69,47 +68,43 @@ impl Clock {
     /// Start NTP time synchronization. This starts the chronyd systemd service
     /// and sends a burst synchronization command. This can only be run on
     /// other than the master, and it can only be run once.
-    pub fn start_sync(&self) -> impl Future<Output=Result<(), Error>> {
-        let master = self.master;
-        let time_set = self.time_set.clone();
-        async move {
-            if master {
-                return Err(Error::Master);
-            }
-            if time_set.load(Ordering::Relaxed) {
-                return Err(Error::TimeAlreadySet);
-            }
-
-            let systemctl_output = Command::new("sudo")
-                .arg("-n") // Non-interactive mode
-                .arg("systemctl")
-                .arg("start")
-                .arg("chronyd")
-                .output().await
-                .map_err(|e| Error::StartSyncFailed(e.into()))?;
-
-            if !systemctl_output.status.success() {
-                let stderr = std::str::from_utf8(&systemctl_output.stderr)
-                    .map_err(|e| Error::StartSyncFailed(e.into()))?;
-                return Err(Error::StartSyncFailed(failure::format_err!("Failed to start chronyd: {}", stderr)));
-            }
-
-
-            let chronyc_output = Self::chronyc_command()
-                .arg("-m")
-                .arg("burst 10/15")
-                .arg("waitsync 30 0 0 0.5")
-                .output().await
-                .map_err(|e| Error::StartSyncFailed(e.into()))?;
-
-            if !chronyc_output.status.success() {
-                let stdout = std::str::from_utf8(&chronyc_output.stdout)
-                    .map_err(|e| Error::StartSyncFailed(e.into()))?;
-                return Err(Error::StartSyncFailed(failure::format_err!("Failed to synchronize clock: {}", stdout)));
-            }
-
-            time_set.store(true, Ordering::Relaxed);
-            Ok(())
+    pub async fn start_sync(&self) -> Result<(), Error> {
+        if self.master {
+            return Err(Error::Master);
         }
+        if self.time_set.load(Ordering::Relaxed) {
+            return Err(Error::TimeAlreadySet);
+        }
+
+        let systemctl_output = Command::new("sudo")
+            .arg("-n") // Non-interactive mode
+            .arg("systemctl")
+            .arg("start")
+            .arg("chronyd")
+            .output().await
+            .map_err(|e| Error::StartSyncFailed(e.into()))?;
+
+        if !systemctl_output.status.success() {
+            let stderr = std::str::from_utf8(&systemctl_output.stderr)
+                .map_err(|e| Error::StartSyncFailed(e.into()))?;
+            return Err(Error::StartSyncFailed(failure::format_err!("Failed to start chronyd: {}", stderr)));
+        }
+
+
+        let chronyc_output = Self::chronyc_command()
+            .arg("-m")
+            .arg("burst 10/15")
+            .arg("waitsync 30 0 0 0.5")
+            .output().await
+            .map_err(|e| Error::StartSyncFailed(e.into()))?;
+
+        if !chronyc_output.status.success() {
+            let stdout = std::str::from_utf8(&chronyc_output.stdout)
+                .map_err(|e| Error::StartSyncFailed(e.into()))?;
+            return Err(Error::StartSyncFailed(failure::format_err!("Failed to synchronize clock: {}", stdout)));
+        }
+
+        self.time_set.store(true, Ordering::Relaxed);
+        Ok(())
     }
 }

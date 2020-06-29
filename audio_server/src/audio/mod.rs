@@ -667,14 +667,14 @@ pub struct RecorderController {
 }
 
 impl RecorderController {
-    fn send_mixer_control<T>(&mut self, rx: ControlReceiver<T>, control: MixerControl) -> impl Future<Output=ControlResult<T>> {
+    fn send_mixer_control<T>(&self, rx: ControlReceiver<T>, control: MixerControl) -> impl Future<Output=ControlResult<T>> {
         self.mixer_tx.unbounded_send(control)
             .expect("Mixer shutdown");
         // If the sending end of the oneshot is dropped automatically respond with a cancelled error
         rx.unwrap_or_else(|_| Err(ControlError::Cancelled))
     }
 
-    fn send_recorder_control<T>(&mut self, rx: ControlReceiver<T>, control: RecorderControl) -> impl Future<Output=ControlResult<T>> {
+    fn send_recorder_control<T>(&self, rx: ControlReceiver<T>, control: RecorderControl) -> impl Future<Output=ControlResult<T>> {
         self.recorder_tx.unbounded_send(control)
             .expect("Audio stream shutdown");
         // If the sending end of the oneshot is dropped automatically respond with a cancelled error
@@ -686,27 +686,27 @@ impl RecorderController {
             .map_err(|e| ControlError::Failed(e.into()))
     }
 
-    pub fn get_state(&mut self) -> impl Future<Output=ControlResult<RecorderState>> {
+    pub fn get_state(&self) -> impl Future<Output=ControlResult<RecorderState>> {
         let (tx, rx) = oneshot::channel();
         self.send_recorder_control(rx, RecorderControl::GetState(tx))
     }
 
-    pub fn start_recording(&mut self, time: AudioTimestamp) -> impl Future<Output=ControlResult<StartRecordingResponse>> {
+    pub fn start_recording(&self, time: AudioTimestamp) -> impl Future<Output=ControlResult<StartRecordingResponse>> {
         let (tx, rx) = oneshot::channel();
         self.send_recorder_control(rx, RecorderControl::StartRecording(time, tx))
     }
 
-    pub fn stop_recording(&mut self) -> impl Future<Output=ControlResult<()>> {
+    pub fn stop_recording(&self) -> impl Future<Output=ControlResult<()>> {
         let (tx, rx) = oneshot::channel();
         self.send_recorder_control(rx, RecorderControl::StopRecording(tx))
     }
 
-    pub fn set_mixer(&mut self, values: Vec<f32>) -> impl Future<Output=ControlResult<()>> {
+    pub fn set_mixer(&self, values: Vec<f32>) -> impl Future<Output=ControlResult<()>> {
         let (tx, rx) = oneshot::channel();
         self.send_mixer_control(rx, MixerControl::SetMixer(values, tx))
     }
 
-    pub fn get_mixer(&mut self) -> impl Future<Output=ControlResult<Vec<f32>>> {
+    pub fn get_mixer(&self) -> impl Future<Output=ControlResult<Vec<f32>>> {
         let (tx, rx) = oneshot::channel();
         self.send_mixer_control(rx, MixerControl::GetMixer(tx))
     }

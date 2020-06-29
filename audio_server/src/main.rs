@@ -7,11 +7,12 @@ use std::io::Write;
 use std::path::Path;
 
 use failure::ResultExt;
+use futures::TryFutureExt;
 
 use audio_server::audio::AudioRecorderBuilder;
+use audio_server::audio::MixerEnum;
 use audio_server::clock::Clock;
 use audio_server::server;
-use audio_server::audio::MixerEnum;
 
 const SETTINGS_ENV_VAR: &str = "AUDIO_SERVER_SETTINGS";
 
@@ -102,11 +103,11 @@ async fn main() -> Result<(), failure::Error> {
 
     let clock = Clock::new(config.clock_master);
 
-    // Store result to avoid dropping it
-    let _s = server::run(audio_control, clock)?;
     log::info!("Server started");
-
-    tokio::spawn(audio.run()).await??;
+    tokio::spawn(futures::future::try_join(
+        server::run(audio_control, clock),
+        audio.run().map_err(|e| e.into()),
+    )).await??;
 
     Ok(())
 }
