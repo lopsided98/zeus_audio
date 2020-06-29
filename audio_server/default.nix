@@ -1,4 +1,4 @@
-{ callPackage, defaultCrateOverrides, grpc, protobuf, alsaLib, perl, cmake, pkgconfig }:
+{ callPackage, defaultCrateOverrides, pkgconfig, alsaLib  }:
 
 ((callPackage ./Cargo.nix {
   cratesIO = callPackage ./crates-io.nix {};
@@ -7,10 +7,6 @@
     alsa-sys = oldAttrs: {
       nativeBuildInputs = [ pkgconfig ];
       buildInputs = [ alsaLib ];
-    };
-    grpcio-sys = oldAttrs: {
-      nativeBuildInputs = [ perl cmake ];
-      buildInputs = [ grpc ];
     };
   };
 })
