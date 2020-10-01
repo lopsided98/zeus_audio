@@ -9,7 +9,6 @@ mkShell {
     cmake
     pkgconfig
     which
-    carnix
     nix-prefetch-git
   ];
 

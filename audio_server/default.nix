@@ -1,9 +1,9 @@
-{ callPackage, defaultCrateOverrides, pkgconfig, alsaLib  }:
+{ pkgs, callPackage, defaultCrateOverrides, pkgconfig, alsaLib  }:
 
-((callPackage ./Cargo.nix {
-  cratesIO = callPackage ./crates-io.nix {};
-}).audio_server {}).override (old: {
-  crateOverrides = defaultCrateOverrides // {
+(import ./Cargo.nix { inherit pkgs; }).rootCrate.build.override ({
+  crateOverrides ? {}, ...
+}: {
+  crateOverrides = crateOverrides // {
     alsa-sys = oldAttrs: {
       nativeBuildInputs = [ pkgconfig ];
       buildInputs = [ alsaLib ];
