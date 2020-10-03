@@ -173,8 +173,9 @@ impl<St, T, E, F, U> Stream for TeeMap<St, F, U>
             }
         }
 
-        match self.as_mut().rx().poll_next(cx) {
-            Poll::Ready(Some(msg)) => match msg {
+        loop {
+            match self.as_mut().rx().poll_next(cx) {
+                Poll::Ready(Some(msg)) => match msg {
                     EndpointMessage::NewEndpoint(item) => {
                         log::debug!("New endpoint");
                         self.as_mut().endpoints().push(item)
@@ -182,9 +183,10 @@ impl<St, T, E, F, U> Stream for TeeMap<St, F, U>
                     EndpointMessage::TaskWake(waker) =>
                         waker.wake()
                 }
-            // Stop the stream if the registrator is dropped
-            Poll::Ready(None) => return Poll::Ready(None),
-            Poll::Pending => ()
+                // Stop the stream if the registrator is dropped
+                Poll::Ready(None) => return Poll::Ready(None),
+                Poll::Pending => break
+            }
         }
 
         Poll::Ready(res)
