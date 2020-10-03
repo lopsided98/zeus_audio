@@ -1,12 +1,12 @@
-{ buildPythonPackage, grpcio-tools, flask, flask-cors, grpcio, pyyaml }:
+{ buildPythonPackage, python, flask, flask-cors, grpcio, pyyaml }:
   
 buildPythonPackage rec {
   pname = "audio_recorder";
   version = "0.4.0";
   
-  src = { outPath = ./.; revCount = 1234; shortRev = "abcdef"; };
+  src = ./.;
         
-  nativeBuildInputs = [
+  nativeBuildInputs = with python.pythonForBuild.pkgs; [
     grpcio-tools
     flask
   ];
@@ -17,6 +17,9 @@ buildPythonPackage rec {
     grpcio
     pyyaml
   ];
+
+  # False positive due to both build and host grpcio on PYTHONPATH
+  dontUsePythonCatchConflicts = true;
 
   postShellHook = ''
     export PYTHONPATH="${toString ./.}:$PYTHONPATH"

@@ -33,8 +33,10 @@
       overlay = final: prev: {
         audio-recorder = {
           audio-server = final.callPackage ./audio_server { };
-          web-interface = final.callPackage ./web_interface { };
+          web-interface = final.python3Packages.callPackage ./web_interface { };
         };
       };
+
+      nixosModule = import ./module.nix { inherit (self) overlay; };
     };
 }
