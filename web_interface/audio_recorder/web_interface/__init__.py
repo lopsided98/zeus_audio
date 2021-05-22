@@ -1,3 +1,3 @@
-from audio_recorder.web_interface.controller import app
+from audio_recorder.web_interface.controller import init
 
-__all__ = [app]
+__all__ = [init]

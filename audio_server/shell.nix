@@ -10,7 +10,7 @@ mkShell {
     cmake
     pkgconfig
     which
-    nix-prefetch-git
+    crate2nix
   ];
 
   # Doesn't work in debug builds

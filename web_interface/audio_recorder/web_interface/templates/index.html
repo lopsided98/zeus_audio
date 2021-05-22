@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
 {% block head %}
-    <script type="module" src="{{ url_for('static', filename='js/recorder.js') }}"></script>
+    <script type="module" src="{{ static('js/recorder.js') }}"></script>
 
     {# dialog polyfill #}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/dialog-polyfill.css') }}">
-    <script type="module" src="{{ url_for('static', filename='js/dialog-polyfill.js') }}"></script>
+    <link rel="stylesheet" href="{{ static('css/dialog-polyfill.css') }}">
+    <script type="module" src="{{ static('js/dialog-polyfill.js') }}"></script>
 
 {% endblock %}
 
@@ -17,7 +17,7 @@
             body="Are you sure you want to shutdown all devices?",
             confirm_text="Shutdown") }}
     <div class="flex overflow-x-auto h-100 mxhi6">
-        <section class="flex flex-column items-center pr1 br mr1" data-base-url="{{ device }}">
+        <section class="flex flex-column items-center pr1 br mr1">
             <span>All</span>
             <button id="record-all-button"
                     class="f2 bg-transparent bn dim dim-disabled red typcn typcn-media-record"></button>
@@ -27,7 +27,7 @@
             <button id="shutdown-all-button"
                     class="f2 bg-transparent bn dim dim-disabled light-gray typcn typcn-power"></button>
         </section>
-        {% for device in config.DEVICES %}
+        {% for device in devices %}
             <section class="device flex flex-column items-center ph1" data-base-url="{{ device }}">
                 <span>{{ loop.index }}</span>
                 <button class="record-button f2 flex-shrink-0 bg-transparent bn dim dim-disabled light-red typcn typcn-media-record-outline"></button>

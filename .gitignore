@@ -3,5 +3,6 @@ dist/
 .idea/
 *.egg-info/
 *.wav
+.vscode/
 target/
 result

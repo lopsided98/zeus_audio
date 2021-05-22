@@ -1,7 +1,7 @@
 { overlay }:
 { config, lib, pkgs, inputs, ... }: with lib; let
   cfg = config.services.zeusAudio;
-  uwsgiSocket = "${config.services.uwsgi.runDir}/audio-recorder.sock";
+  aiohttpSocket = "/run/audio-recorder/audio-recorder.sock";
 in {
 
   options.services.zeusAudio = {
@@ -93,28 +93,19 @@ in {
       '';
     };
 
-    services.uwsgi = {
-      enable = true;
-      user = "nginx";
-      group = "nginx";
-      plugins = [ "python3" ];
-      instance = {
-        type = "emperor";
-        vassals.audio-recorder = {
-          type = "normal";
-          pythonPackages = self: with self; [ pkgs.audio-recorder.web-interface ];
-          env = [
-            "PATH=/run/wrappers/bin"
-            "AUDIO_RECORDER_SETTINGS=${pkgs.writeText "audio-recorder-settings.py" ''
-              DEVICES=[${concatMapStrings (d: "\"${escape ["\""] d}\",") cfg.devices}]
-            ''}"
-          ];
-          socket = uwsgiSocket;
-          module = "audio_recorder.web_interface";
-          callable = "app";
-          processes = 2;
-          threads = 4;
-        };
+    systemd.services.audio-recorder = {
+      path = [ "/run/wrappers" ];
+      wantedBy = [ "nginx.service" ];
+      serviceConfig = {
+        User = "nginx";
+        Group = "nginx";
+        ExecStart = let
+          env = pkgs.python3.withPackages (p: [ pkgs.audio-recorder.web-interface ]);
+        in escapeShellArgs ([ env.interpreter "-m" "aiohttp.web"
+          "--path" aiohttpSocket
+          "audio_recorder.web_interface:init"
+        ] ++ concatMap (d: [ "--device" d ]) cfg.devices);
+        RuntimeDirectory = "audio-recorder";
       };
     };
 
@@ -135,7 +126,9 @@ in {
 
           "@audio_recorder" = {
             extraConfig = ''
-              uwsgi_pass unix:${uwsgiSocket};
+              proxy_set_header Host $host;
+              proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+              proxy_pass http://unix:${aiohttpSocket};
             '';
           };
 

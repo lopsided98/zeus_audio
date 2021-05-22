@@ -1,21 +1,25 @@
-{ buildPythonPackage, python, flask, flask-cors, grpcio, pyyaml }:
+{ lib, buildPythonPackage, python, aiohttp, aiohttp-cors, aiohttp-jinja2, grpcio
+, dev ? false, pylint, rope, black }:
   
 buildPythonPackage rec {
   pname = "audio_recorder";
-  version = "0.4.0";
-  
+  version = "0.5.0";
+
   src = ./.;
-        
+
   nativeBuildInputs = with python.pythonForBuild.pkgs; [
     grpcio-tools
-    flask
+  ] ++ lib.optionals dev [
+    pylint
+    rope
+    black
   ];
 
   propagatedBuildInputs = [
-    flask
-    flask-cors
+    aiohttp
+    aiohttp-cors
+    aiohttp-jinja2
     grpcio
-    pyyaml
   ];
 
   # False positive due to both build and host grpcio on PYTHONPATH
