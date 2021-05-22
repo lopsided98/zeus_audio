@@ -58,7 +58,7 @@ in {
     systemd.services.audio-server = {
       path = [ "/run/wrappers" pkgs.systemd ];
       environment = {
-        RUST_LOG = "debug";
+        RUST_LOG = "info";
         AUDIO_SERVER_SETTINGS = pkgs.writeText "audio-server-settings.yaml" (builtins.toJSON {
           systemd_logging = true;
           audio_dir = "/var/lib/${cfg.audioDir}";
