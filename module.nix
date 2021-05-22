@@ -70,7 +70,9 @@ in {
           clock_master = cfg.clockMaster;
         });
       };
-      wantedBy = [ "multi-user.target" ];
+      # Don't start until sound card is available
+      wantedBy = [ "sound.target" ];
+      after = [ "sound.target" ];
       serviceConfig = {
         User = "audio-server";
         Group = "audio-recorder";
@@ -106,6 +108,7 @@ in {
           "audio_recorder.web_interface:init"
         ] ++ concatMap (d: [ "--device" d ]) cfg.devices);
         RuntimeDirectory = "audio-recorder";
+        Restart = "always";
       };
     };
 
