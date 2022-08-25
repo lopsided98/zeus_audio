@@ -24,10 +24,28 @@ in {
       description = "ALSA card index";
     };
 
-    control = mkOption {
+    mixerControl = mkOption {
       type = types.str;
       default = "Capture";
       description = "Name of the capture volume control";
+    };
+
+    mixerEnums = mkOption {
+      type = types.listOf (types.submodule {
+        options = {
+          control = mkOption {
+            type = types.str;
+            description = "Control name";
+          };
+
+          value = mkOption {
+            type = types.str;
+            description = "Control enum value";
+          };
+        };
+      });
+      default = [];
+      description = "List of mixer enum controls and values to set at startup";
     };
 
     devices = mkOption {
@@ -62,11 +80,8 @@ in {
         AUDIO_SERVER_SETTINGS = pkgs.writeText "audio-server-settings.yaml" (builtins.toJSON {
           systemd_logging = true;
           audio_dir = "/var/lib/${cfg.audioDir}";
-          mixer_control = cfg.control;
-          mixer_enums = [ {
-            control = "Capture Mux";
-            value = "LINE_IN";
-          } ];
+          mixer_control = cfg.mixerControl;
+          mixer_enums = cfg.mixerEnums;
           clock_master = cfg.clockMaster;
         });
       };
