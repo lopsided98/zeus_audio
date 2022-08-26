@@ -118,9 +118,9 @@ in {
         Group = "nginx";
         ExecStart = let
           env = pkgs.python3.withPackages (p: [ pkgs.audio-recorder.web-interface ]);
-        in escapeShellArgs ([ env.interpreter "-m" "aiohttp.web"
-          "--path" aiohttpSocket
-          "audio_recorder.web_interface:init"
+        in escapeShellArgs ([ env.interpreter "-m"
+          "audio_recorder.web_interface.controller"
+          "--socket" aiohttpSocket
         ] ++ concatMap (d: [ "--device" d ]) cfg.devices);
         RuntimeDirectory = "audio-recorder";
         Restart = "always";

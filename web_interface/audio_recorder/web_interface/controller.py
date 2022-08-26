@@ -1,4 +1,5 @@
 import argparse
+import asyncio
 import json
 import logging
 import os
@@ -129,13 +130,20 @@ async def shutdown(request: web.Request) -> web.Response:
     web.Response(status=204)
 
 
-def init(argv) -> web.Application:
+def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--socket", help="Unix domain socket to bind to")
+    parser.add_argument("--host", help="Host to bind to")
+    parser.add_argument("--port", help="TCP port number to listen on")
     parser.add_argument("--audio-server", default="localhost:34876")
-    parser.add_argument('--device', action='append')
-    args = parser.parse_args(argv)
+    parser.add_argument("--device", action="append")
+    args = parser.parse_args()
 
     app_dir = os.path.dirname(__file__)
+
+    # Make sure everything runs on the same event loop
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
 
     print(args.device)
     app = web.Application()
@@ -174,4 +182,7 @@ def init(argv) -> web.Application:
         app, loader=jinja2.FileSystemLoader(os.path.join(app_dir, "templates"))
     )
 
-    return app
+    web.run_app(app, loop=loop, path=args.socket, host=args.host, port=args.port)
+
+if __name__ == "__main__":
+    main()
