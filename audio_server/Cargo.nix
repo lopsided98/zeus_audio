@@ -4650,7 +4650,7 @@ rec {
                       crateConfig.sha256;
                   }
                 );
-                extraRustcOpts = lib.lists.optional (targetFeatures != [ ]) "-C target-feature=${lib.concatMapStringsSep "," (x: "+${x}") targetFeatures}";
+                extraRustcOpts = [ "-C" "linker=${pkgs.stdenv.cc.targetPrefix}cc" ] ++ lib.lists.optional (targetFeatures != [ ]) "-C target-feature=${lib.concatMapStringsSep "," (x: "+${x}") targetFeatures}";
                 inherit features dependencies buildDependencies crateRenames release;
               }
             );
