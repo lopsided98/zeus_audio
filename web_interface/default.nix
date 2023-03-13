@@ -22,6 +22,8 @@ buildPythonPackage rec {
     grpcio
   ];
 
+  outputs = [ "out" "dev" ];
+
   # False positive due to both build and host grpcio on PYTHONPATH
   dontUsePythonCatchConflicts = true;
 
