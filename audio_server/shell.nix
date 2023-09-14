@@ -8,7 +8,7 @@ mkShell {
     rustfmt
     alsaLib
     cmake
-    pkgconfig
+    pkg-config
     which
     crate2nix
   ];
