@@ -6,7 +6,7 @@ mkShell {
     rustc
     cargo
     rustfmt
-    alsaLib
+    alsa-lib
     cmake
     pkg-config
     which
