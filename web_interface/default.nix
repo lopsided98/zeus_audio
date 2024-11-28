@@ -7,7 +7,7 @@ buildPythonPackage rec {
 
   src = ./.;
 
-  nativeBuildInputs = with python.pythonForBuild.pkgs; [
+  nativeBuildInputs = with python.pythonOnBuildForHost.pkgs; [
     grpcio-tools
   ] ++ lib.optionals dev [
     pylint
