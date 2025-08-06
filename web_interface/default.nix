@@ -1,9 +1,12 @@
-{ lib, buildPythonPackage, python, aiohttp, aiohttp-cors, aiohttp-jinja2, grpcio
-, dev ? false, pylint, rope, black }:
+{ lib, buildPythonPackage, setuptools, python, aiohttp, aiohttp-cors,
+  aiohttp-jinja2, grpcio , dev ? false, pylint, rope, black }:
   
 buildPythonPackage rec {
   pname = "audio_recorder";
   version = "0.5.0";
+
+  pyproject = true;
+  build-system = [ setuptools ];
 
   src = ./.;
 
